@@ -194,6 +194,12 @@ in total, leaving room for Sonnet slices and reruns. Test 1 decides whether the 
   L40S) shows no echo. Relayed to the editor session with a question for the user about a small-K variant. Second
   calibration (counterbalanced polarity, experimenter-inverted fading, K = 4 and 2) launched with the same agent,
   budget ≈ $5. Scenario spend so far: ≈ $1.0.
+  **User decision (relayed ~19:00 UTC):** K = 16 quiet regime first. If the second calibration gives a resolvable echo
+  under the frozen go rule, re-freeze the K = 16 predictions for the fixed design (Fable) before any swarm data, then
+  run the three-world contrast (echo function, X₂, c₂, common-bias response, kicks, asynchronous control); no boundary
+  sweep at K = 16. Write-up must say that inverting faded calls tests the reaction term's sign structure given negative
+  couplings, not whether agents act on distrust. Small K (2 or 4) deferred: a separate experiment with its own frozen
+  sparse-graph predictions, only after checking back with the user. K = 4/2 gains dropped from the second calibration.
 
 ## Next
 
