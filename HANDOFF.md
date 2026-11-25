@@ -1,6 +1,6 @@
 # HANDOFF: swarm-cavity overnight run
 
-Last updated: 2026-11-25 04:10 UTC. Running in tmux session `swarm-cavity` (attach: `tmux attach -t swarm-cavity`).
+Last updated: 2026-11-25 05:45 UTC. Running in tmux session `swarm-cavity` (attach: `tmux attach -t swarm-cavity`).
 
 ## Spend against the $2,000
 
@@ -57,10 +57,36 @@ Control wasn't connected.
   refusals on 6 of 12 calls. Renamed to `rationale` with neutral wording, it drew 0 of 12, with unchanged beliefs.
   Cost $0.008.
 
+- **Theory** (`theory/`, Fable 5.2; summary in `theory/README.md`). Every formula was checked against direct
+  simulation of a toy swarm. Claim 1 holds after three corrections: the noise covariance uses the full correlation,
+  the echo is two rounds rather than three, and the kernel is the neighbour population's. The corrected equations
+  match an N=4000 simulation to 0.004. The other claims:
+  - Claim 2 is false as stated. The boundary is d·g(1+|γ|)=1, and negative γ destabilizes too, into period-4
+    oscillation instead of period 2. Freezing happens only at γ=1, after hundreds of rounds, so nothing sharp in γ is
+    visible at T=10.
+  - Claim 3's PR theory holds, but PR doesn't fall before a zealot flip. N·Var(m_B) rises 5–20× instead.
+  - Claim 4 has the sign of the γ effect backwards. γ>0 widens the hysteresis loop and barely moves the forward
+    threshold.
+  - Claim 6 as written extracts a content direction, not a coupling.
+  Two zero-cost predictions already pass on the Physics of Agents data: period-2 flicker on bipartite graphs, and
+  coupling-induced replica overlap.
+
+## Revised experiment plan (replaces the spec's Exps 1–3; Exp 4 is on hold)
+
+In order, with estimated costs: (0) zero-cost Physics of Agents analyses; (1) single-agent calibration, testing
+scalar-field sufficiency and measuring conformity slope and channel gains, about $2–40; (2) the reciprocity signature
+at N=64, period index vs γ with an asynchronous control, about $160; (3) zero-shot DMFT curves at N=32 and 64, about
+$25–180; (4) zealot hysteresis vs γ, about $170; (5) PR vs Var(m_B) as an early warning, about $60. That's about $600
+in total, leaving room for Sonnet slices and reruns. Test 1 decides whether the couplings are strong enough for tests
+2–4 to show anything.
+
 ## In progress
 
-- **Theory (Fable 5.2 agent):** deriving corrected versions of Claims 1–6 in `theory/`, with numerical checks, a
-  solver spec with analytic test cases, and a prioritized list of predictions worth testing.
+- DMFT solver (`theory/dmft_solver.py`) against the spec's reference numbers, which is gate (a).
+- Swarm environment (evidence game, shared prompts, signed-inbox directed graphs with fixed in-degree,
+  synchronous and asynchronous modes, a mock backend) and the single-agent cavity probe harness.
+- Zero-cost Physics of Agents analyses: field sufficiency in inbox counts, the asynchronous control for the flicker,
+  and effective g and Λ.
 
 ## Decisions for you to review
 
