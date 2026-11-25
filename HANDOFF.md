@@ -221,7 +221,10 @@ in total, leaving room for Sonnet slices and reruns. Test 1 decides whether the 
   (`theory/analyst_signrule.md`, commit 1799988; X₂ = +0.057 / 0 / +0.010, kicks settle the antagonistic sign); the
   analyst agent is implementing `experiments/09-analyst-signrule/` (blind review before launch, ≈ $8–15 of pods).
   Worker log: W1 `aniket-sc-09-analyst-signrule` (A40, $0.59/h) launched, projected ~6.3 h ≈ $3.7, cap $4.72; W2
-  (antagonistic runs) to follow, projected ~7 h ≈ $4.1.
+  (antagonistic runs, A40) projected ~7 h ≈ $4.1. User added the asynchronous control: Amendment 1 of the note (commit
+  f613f1b, frozen before asynchronous data; block-random schedule, 16 × 16) and of the 09 definition (re-checked by the
+  reviewer), 4 asynchronous mutual + 4 asynchronous one-way runs; W3 and W4 (A40) each ≈ 2.9 h ≈ $1.7 (timed at 111 s
+  per asynchronous round). 09 total projection ≈ $11.2; analyst-scenario pod spend ≈ $12.6 when done.
 - **Kick stage 2** (`experiments/07_kick/DESIGN_stage2.md` revision 3, commit 653a1ce, after a blind review that found an
   outcome-correlated slope factor, fixed with lagged factors; stage 1's asymmetry 0.60 ± 0.05 survives the fix): base
   runs done (40/40, 0 missing, $19.58), saturation null frozen, replay check passed, twins running in tmux
