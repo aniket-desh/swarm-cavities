@@ -1,6 +1,6 @@
 # HANDOFF: swarm-cavity
 
-Last updated: 2026-11-25 15:00 UTC. Working copy: `/workspace/swarm-cavity` again (the volume is now 1 TB; the
+Last updated: 2026-11-25 16:30 UTC. Working copy: `/workspace/swarm-cavity` again (the volume is now 1 TB; the
 `/workspace-global` clone is stale). The overnight session died at about 08:25 UTC when its OAuth token was revoked;
 this afternoon's session resumed the plan at 14:20 and lost its editor connection at 14:42 (nothing was lost; see
 "Afternoon session").
@@ -9,9 +9,9 @@ this afternoon's session resumed the plan at 14:20 and lost its editor connectio
 
 | | so far |
 |---|---|
-| Anthropic API (experiment code, `budget/ledger.jsonl`) | $8.88 (24,258 calls) |
-| Runpod pods (`orch spend`) | $0.00 (no worker has been launched) |
-| **total** | **$8.88** |
+| Anthropic API (experiment code, `budget/ledger.jsonl`) | $10.1 (running; see `sc-spend`) |
+| Runpod pods (`orch spend`) | ≈ $0.80 (one A40 worker running) |
+| **total** | **≈ $11** |
 
 ## Afternoon session (14:20–15:00 UTC): pilot and transfer check
 
@@ -160,8 +160,30 @@ in total, leaving room for Sonnet slices and reruns. Test 1 decides whether the 
   can't move; confirmatory runs will skip such agents. Echo values not yet examined: they wait until the theory
   agent's predictions are frozen (`experiments/07_kick/analyze_kick.py`, slopes through the origin, leave-one-out
   factorization test, verified on synthetic twins).
-- Running in parallel: a Fable agent on `theory/quiet_regime.md` (revised surrogate, what still discriminates, echo
-  predictions) and an Opus agent on the GPU track (`experiments/06_qwen_*`).
+- **Theory revised** (`theory/quiet_regime.md`, Fable agent, commit 91e267c): an anchored agent law (own-answer weight
+  ≈0.7 when the inbox is unchanged, ≈0.2 when it is new) fits both the white probes and the pilot; period-4 and
+  amplification predictions are unmeasurable for Haiku; the reaction term is measured directly by kick and echo,
+  with frozen predictions (linear response vs anchoring law). `theory/README.md` rewritten as the single current
+  statement of the theory (commit eb379f8).
+- **Kick stage 1 designed and frozen** (`experiments/07_kick/DESIGN.md` revision 3, commit 9056751): both wordings,
+  K=2, γ ∈ {−1, 0, +1}, 8 graphs × 2 replicas, ~2,000 twins per |γ|=1 cell, 256 sham twins per cell, decision rules
+  fixed before data. Two blind reviews: the first found a P0 (batch base runs vs realtime twins with no sham control)
+  and five P1s, all fixed; the second found two rule problems (rule 2 centred on the wrong null, an underpowered
+  per-cell sham check), fixed by refreezing F, F_open and the matched difference under both laws with the revised
+  estimators (`refreeze_predictions.py`) and pooling the sham test. A content control from the transfer data showed
+  fresh agents respond 0.62–0.84 as much per unit to weakly leaning messages, so the kick-size ratio is reported
+  only. Batch API path checked (works, 50% off, ~6 min per round) but not used for stage 1.
+- **Base runs** (tag `kick1-20261125`, 48 runs, ~$26 projected): the first launch was killed by the container's
+  8 GB memory limit after 1,534 calls ($0.37; checkpointed, nothing lost) because every Runner held its own copy of
+  the 180 MB replay cache. Fixed in `engine/runner.py` (one shared cache per process, slim entries, incremental
+  reads; commit after 9056751) and relaunched with 16 concurrent runs (process RSS ≈ 380 MB) in tmux `sc-kick1base`.
+- **GPU track** (Opus agent): worker `aniket-sc-06-qwen-calibration` running on an A40 at $0.59/h (8 h cap); pod
+  spend so far ≈ $0.80 (orch estimate).
+- **Analyst scenario** (new request from the user, relayed by the editor session): a Fable agent is writing frozen
+  predictions (`theory/analyst_scenario.md`, `theory/checks/analyst_predictions.json`) for N = 256–1,024 Qwen analysts
+  at K = 16 in mutual / one-way / antagonistic trust worlds. Spend tracking for this scenario: projection before every
+  launch, worker spend logged here, a message to the editor session at each $50 crossed, stop if a worker exceeds
+  1.5× its projection. Scenario spend so far: $0.
 
 ## Next
 
