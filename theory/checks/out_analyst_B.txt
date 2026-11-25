@@ -1,0 +1,74 @@
+Part B. Stability.
+
+B1. Mutual world, logistic sampled calls, no news, no notes (an equilibrium system): chi = sum_tau R(tau) = 1 + c1,
+    Lam(0) = g^2 (1 + c1)^2, Lam(pi) = g^2 (1 - c1)^2, c1 = lag-1 autocorrelation of calls (zero without memory),
+    and <sigma(t) sigma(t+2)> = <s^2>. DMFT, lags 1..25, M = 2e5, 3 seeds (80 lags with memory).
+    a = 2.0, kappa = 0.0: g^2 = 0.2500  chi = 0.9931±0.0040  1 + c1 = 0.9987  Lam(0), Lam(pi) = 0.2466, 0.2496  g^2 (1 ± c1)^2 = 0.2493, 0.2507  C_sig(t, t-2) = 0.2026  <s^2> = 0.2037
+    a = 3.0, kappa = 0.0: g^2 = 0.5625  chi = 0.9780±0.0049  1 + c1 = 0.9966  Lam(0), Lam(pi) = 0.5381, 0.5385  g^2 (1 ± c1)^2 = 0.5587, 0.5663  C_sig(t, t-2) = 0.3806  <s^2> = 0.3803
+    a = 3.5, kappa = 0.0: g^2 = 0.7656  chi = 0.9273±0.0020  1 + c1 = 0.9978  Lam(0), Lam(pi) = 0.6583, 0.6503  g^2 (1 ± c1)^2 = 0.7623, 0.7689  C_sig(t, t-2) = 0.4657  <s^2> = 0.4664
+    a = 1.5, kappa = 0.5: g^2 = 0.1406  chi = 1.5277±0.0166  1 + c1 = 1.5177  Lam(0), Lam(pi) = 0.3282, 0.0328  g^2 (1 ± c1)^2 = 0.3239, 0.0327  C_sig(t, t-2) = 0.3417  <s^2> = 0.3396
+    a = 2.0, kappa = 0.5: g^2 = 0.2500  chi = 1.5432±0.0197  1 + c1 = 1.5670  Lam(0), Lam(pi) = 0.5955, 0.0485  g^2 (1 ± c1)^2 = 0.6139, 0.0469  C_sig(t, t-2) = 0.4324  <s^2> = 0.4294
+    The identity on actual graphs (any N, K; with memory kappa the couplings stay symmetric):
+    a = 3.0, a0 = 0.4, kappa = 0.0, N = 256: <sigma(t) sigma(t+2)> = 0.4318±0.0064   <s^2> = 0.4325±0.0053
+    a = 4.0, a0 = 0.4, kappa = 0.0, N = 256: <sigma(t) sigma(t+2)> = 0.5735±0.0062   <s^2> = 0.5742±0.0051
+    a = 3.0, a0 = 0.4, kappa = 0.5, N = 256: <sigma(t) sigma(t+2)> = 0.6478±0.0076   <s^2> = 0.6500±0.0069
+    a = 4.0, a0 = 0.4, kappa = 0.0, N = 1024: <sigma(t) sigma(t+2)> = 0.5751±0.0031   <s^2> = 0.5738±0.0025
+    With news the law is not logistic and the identity becomes <sigma(t) sigma(t+2)> = <phi(u)^2> < <s^2>:
+    a = 4, nu = 0.5: <sigma(t) sigma(t+2)> = 0.4549   <s^2> = 0.5317
+
+B2. Tree form at K = 16. Mutual world, a+ = a- = a, no news: Lam_tree = (K - 1) tanh^2(a / K); summed squared
+    correlations of calls at equal times (even distances) 1 + K t^2 Lam / (1 - Lam^2) and at lag 1 (odd distances)
+    K t^2 / (1 - Lam^2), t = tanh(a / K). Simulation: N = 2048, 3000 rounds, products of two replicas (no bias).
+    a = 2.0: Lam_tree = 0.232 (K = inf: g^2 = 0.250);  equal time: sim 1.061, tree 1.061;  lag 1: sim 0.262, tree 0.261
+    a = 3.0: Lam_tree = 0.515 (K = inf: g^2 = 0.562);  equal time: sim 1.387, tree 1.385;  lag 1: sim 0.750, tree 0.748
+    a = 3.6: Lam_tree = 0.734 (K = inf: g^2 = 0.810);  equal time: sim 2.237, tree 2.249;  lag 1: sim 1.689, tree 1.701
+    boundary Lam_tree = 1: a_c = 4.227 (a- = a+), 4.791 (a- = 0.75 a+), 5.392 (a- = 0.5 a+); K = inf: 4.000, 4.525, 5.060
+
+B3. Lam(omega) at omega = 0, pi/2, pi per world, from the solver (nested: 3000 sites x 64 copies sharing notes and
+    news, T = 40). Reference design nu = 0.5, a0 = 0.3 unless stated. Monte Carlo error about 0.02.
+    one-way closed form: Lam = g^2 <(E_thermal sech^2 x)^2>.  mutual estimate: (g beta_eff)^2, beta_eff = (1 + pi nu^2/2)^(-1/2).
+    a = (2, 2): g^2 = 0.250, Jbar = 0.00, gamma_eff(ant) = -1.00 | mut [0.16, 0.10, 0.17] one [0.13, 0.13, 0.14] ant [0.10, 0.18, 0.10]
+    a = (3, 3): g^2 = 0.562, Jbar = 0.00, gamma_eff(ant) = -1.00 | mut [0.36, 0.14, 0.38] one [0.21, 0.23, 0.23] ant [0.14, 0.40, 0.13]
+    a = (4, 4): g^2 = 1.000, Jbar = 0.00, gamma_eff(ant) = -1.00 | mut [0.61, 0.14, 0.59] one [0.31, 0.32, 0.30] ant [0.14, 0.69, 0.14]
+    a = (5, 5): g^2 = 1.562, Jbar = 0.00, gamma_eff(ant) = -1.00 | mut [0.78, 0.14, 0.80] one [0.38, 0.39, 0.37] ant [0.14, 0.86, 0.15]
+    a = (6, 6): g^2 = 2.250, Jbar = 0.00, gamma_eff(ant) = -1.00 | mut [0.85, 0.12, 0.88] one [0.41, 0.42, 0.41] ant [0.10, 0.89, 0.12]
+    a = (4, 3): g^2 = 0.781, Jbar = 0.50, gamma_eff(ant) = -0.96 | mut [0.49, 0.15, 0.49] one [0.26, 0.28, 0.27] ant [0.15, 0.55, 0.16]
+    a = (5.3, 4): g^2 = 1.378, Jbar = 0.65, gamma_eff(ant) = -0.96 | mut [0.73, 0.14, 0.74] one [0.37, 0.37, 0.34] ant [0.16, 0.82, 0.15]
+    a = (4, 2): g^2 = 0.625, Jbar = 1.00, gamma_eff(ant) = -0.80 | mut [0.39, 0.14, 0.40] one [0.23, 0.25, 0.24] ant [0.17, 0.39, 0.16]
+    a = (6, 3): g^2 = 1.406, Jbar = 1.50, gamma_eff(ant) = -0.80 | mut [0.72, 0.14, 0.71] one [0.36, 0.38, 0.35] ant [0.18, 0.70, 0.17]
+    sensitivity at a = (4, 4):
+      nu = 0, a0 = 0                    | mut [0.83, 0.13, 0.82] one [0.40, 0.37, 0.39] ant [0.13, 0.81, 0.14]
+      nu = 0.5, a0 = 0                  | mut [0.72, 0.15, 0.66] one [0.31, 0.33, 0.36] ant [0.14, 0.70, 0.16]
+      nu = 1.0, a0 = 0.3                | mut [0.41, 0.15, 0.41] one [0.25, 0.26, 0.29] ant [0.14, 0.45, 0.17]
+      nu = 0.5, a0 = 0.6                | mut [0.50, 0.15, 0.47] one [0.29, 0.28, 0.30] ant [0.17, 0.61, 0.16]
+      nu = 0.5, a0 = 0.3, kappa = 0.5   | mut [0.86, 0.08, 0.08] one [0.47, 0.22, 0.15] ant [0.23, 0.30, 0.11]
+      nu = 0.5, a0 = 0.3, kappa = 1.0   | mut [0.80, 0.02, 0.00] one [0.54, 0.09, 0.06] ant [0.34, 0.16, 0.08]
+
+B4. One-way world: Lam = g^2 d^2 with d = <sech^2(sqrt(g^2 + nu^2) z)> (a0 = 0) stays below 2/pi at any gain.
+    nu = 0.0: Lam at g = 0.5, 1, 2, 4, 16: [0.171, 0.367, 0.532, 0.606, 0.635]   (2/pi = 0.637)
+    nu = 0.5: Lam at g = 0.5, 1, 2, 4, 16: [0.132, 0.319, 0.506, 0.597, 0.634]   (2/pi = 0.637)
+    Mutual world with news: chi(g) = sum_tau R(tau) and Lam = g^2 chi^2 (a0 = 0; lags 1..25, M = 2e5, 3 seeds);
+    boundary where g chi(g) = 1, taking chi at g = 0.75 (a = 3), where the kernel sum has converged.
+    nu = 0.00: chi(g=0.5) = 0.993±0.004, chi(g=0.75) = 0.978±0.005; slope of phi at 0 = 1.000, (1 + pi nu^2/2)^-1/2 = 1.000;  g_c = 1.022, a_c(K=inf) = 4.09, a_c(K=16 tree) = 4.32
+    nu = 0.25: chi(g=0.5) = 0.943±0.006, chi(g=0.75) = 0.942±0.003; slope of phi at 0 = 0.944, (1 + pi nu^2/2)^-1/2 = 0.954;  g_c = 1.062, a_c(K=inf) = 4.25, a_c(K=16 tree) = 4.49
+    nu = 0.50: chi(g=0.5) = 0.835±0.005, chi(g=0.75) = 0.840±0.004; slope of phi at 0 = 0.826, (1 + pi nu^2/2)^-1/2 = 0.847;  g_c = 1.190, a_c(K=inf) = 4.76, a_c(K=16 tree) = 5.03
+    nu = 0.75: chi(g=0.5) = 0.712±0.008, chi(g=0.75) = 0.726±0.005; slope of phi at 0 = 0.707, (1 + pi nu^2/2)^-1/2 = 0.729;  g_c = 1.378, a_c(K=inf) = 5.51, a_c(K=16 tree) = 5.82
+    nu = 1.00: chi(g=0.5) = 0.614±0.006, chi(g=0.75) = 0.616±0.006; slope of phi at 0 = 0.606, (1 + pi nu^2/2)^-1/2 = 0.624;  g_c = 1.623, a_c(K=inf) = 6.49, a_c(K=16 tree) = 6.86
+    Antagonistic world: Lam(pi/2) against the fade ratio r = a-/a+ at fixed g^2, with the mean coupling set to zero
+    in the solver to isolate reciprocity from herding (nu = 0.5, a0 = 0; pooled kernel, M = 2e5, T = 40).
+    g^2 = 0.64:  r = 1.0: gamma_eff = -1.00, Lam = 0.47;  r = 0.75: gamma_eff = -0.96, Lam = 0.45;  r = 0.5: gamma_eff = -0.80, Lam = 0.40;  r = 0.25: gamma_eff = -0.47, Lam = 0.33;  r = 0.0: gamma_eff = -0.00, Lam = 0.26;
+    g^2 = 1.0:  r = 1.0: gamma_eff = -1.00, Lam = 0.71;  r = 0.75: gamma_eff = -0.96, Lam = 0.68;  r = 0.5: gamma_eff = -0.80, Lam = 0.59;  r = 0.25: gamma_eff = -0.47, Lam = 0.44;  r = 0.0: gamma_eff = -0.00, Lam = 0.33;
+    g^2 = 1.44:  r = 1.0: gamma_eff = -1.00, Lam = 0.83;  r = 0.75: gamma_eff = -0.96, Lam = 0.81;  r = 0.5: gamma_eff = -0.80, Lam = 0.74;  r = 0.25: gamma_eff = -0.47, Lam = 0.55;  r = 0.0: gamma_eff = -0.00, Lam = 0.39;
+    g^2 = 4.0:  r = 1.0: gamma_eff = -1.00, Lam = 0.89;  r = 0.75: gamma_eff = -0.96, Lam = 0.89;  r = 0.5: gamma_eff = -0.80, Lam = 0.91;  r = 0.25: gamma_eff = -0.47, Lam = 0.79;  r = 0.0: gamma_eff = -0.00, Lam = 0.55;
+
+B5. Herding margin. Response of the mean call to a small common bias, chi_u = dm/dc = chi / (1 - Jbar chi);
+    the swarm herds (Curie-Weiss instability) when Jbar chi = 1. chi per world from the solver at Jbar = 0,
+    then the tilt Jbar_c = 1 / chi at which herding sets in. nu = 0.5, a0 = 0.3; lags 1..25, M = 2e5, 3 seeds.
+    g^2 = 0.250:  mutual chi = 0.780, Jbar_c = 1.28;  oneway chi = 0.699, Jbar_c = 1.43;  antagonistic chi = 0.621, Jbar_c = 1.61;  Curie-Weiss chi = 0.785, Jbar_c = 1.27
+    g^2 = 0.562:  mutual chi = 0.776, Jbar_c = 1.29;  oneway chi = 0.622, Jbar_c = 1.61;  antagonistic chi = 0.500, Jbar_c = 2.00;  Curie-Weiss chi = 0.785, Jbar_c = 1.27
+    g^2 = 1.000:  mutual chi = 0.733, Jbar_c = 1.36;  oneway chi = 0.555, Jbar_c = 1.80;  antagonistic chi = 0.391, Jbar_c = 2.56;  Curie-Weiss chi = 0.785, Jbar_c = 1.27
+    g^2 = 1.562:  mutual chi = 0.642, Jbar_c = 1.56;  oneway chi = 0.493, Jbar_c = 2.03;  antagonistic chi = 0.298, Jbar_c = 3.35;  Curie-Weiss chi = 0.785, Jbar_c = 1.27
+    check on graphs (N = 1024, 4 graphs, T = 40): mean belief m under a common bias c = 0.1 at a = (4.4, 3.6), Jbar = 0.4
+    mutual        m sim = 0.1082±0.0089   DMFT = 0.1065
+    oneway        m sim = 0.0758±0.0017   DMFT = 0.0717
+    antagonistic  m sim = 0.0465±0.0017   DMFT = 0.0465

@@ -1,0 +1,27 @@
+Part D. Kick twins. Flip one analyst's call as its readers see it at t0 (D = -2 sigma_i(t0)), replay t0+1, t0+2.
+r_A, r_D: belief change of an ally-tie / faded-tie reader at t0+1 per unit kick; E: belief change of the kicked
+analyst at t0+2 per unit kick; E_x the same in logit; lin = linear response, r = (+a+/K, -a-/K) <d>, E = Gamma <d_i d_j>.
+N = 256, 4 graphs x 2 replicas x t0 in {8, 12}, every analyst kicked once per (replica, t0): 4096 twins per cell.
+sd = s.d. of one twin's echo per unit kick; n3 = twins for |E| = 3 s.e.; crn = calls redrawn with the base run's
+uniforms, ind = calls of every changed analyst redrawn independently.
+
+  quiet (2,2)     mutual        r_A +0.0845 (lin +0.0841)  r_D -0.0849 (lin -0.0841)  E +0.1226±0.0017 (lin +0.1145; ind +0.1151)  E_x +0.1767 (lin +0.1685)  sd crn 0.112 ind 0.214  n3 crn 7 ind 31  E/pred(r) 1.067
+  quiet (2,2)     oneway        r_A +0.0883 (lin +0.0878)  r_D -0.0881 (lin -0.0878)  E -0.0000±0.0000 (lin +0.0000; ind -0.0000)  E_x +0.0000 (lin +0.0000)  sd crn 0.000 ind 0.000  n3 crn inf ind inf  max|echo| 5.6e-17
+  quiet (2,2)     antagonistic  r_A +0.0870 (lin +0.0862)  r_D -0.0864 (lin -0.0862)  E -0.1182±0.0017 (lin -0.1205; ind -0.1222)  E_x -0.1678 (lin -0.1718)  sd crn 0.112 ind 0.213  n3 crn 8 ind 27  E/pred(r) 0.984
+
+  mid (3,3)       mutual        r_A +0.1067 (lin +0.1051)  r_D -0.1070 (lin -0.1051)  E +0.1912±0.0026 (lin +0.1839; ind +0.1986)  E_x +0.3110 (lin +0.3225)  sd crn 0.166 ind 0.265  n3 crn 7 ind 16  E/pred(r) 1.047
+  mid (3,3)       oneway        r_A +0.1181 (lin +0.1169)  r_D -0.1176 (lin -0.1169)  E -0.0000±0.0000 (lin +0.0000; ind -0.0000)  E_x -0.0000 (lin +0.0000)  sd crn 0.000 ind 0.000  n3 crn inf ind inf  max|echo| 1.1e-16
+  mid (3,3)       antagonistic  r_A +0.1130 (lin +0.1115)  r_D -0.1128 (lin -0.1115)  E -0.2128±0.0028 (lin -0.1997; ind -0.2104)  E_x -0.3421 (lin -0.3308)  sd crn 0.180 ind 0.272  n3 crn 6 ind 15  E/pred(r) 1.043
+
+  near (4,4)      mutual        r_A +0.1159 (lin +0.1129)  r_D -0.1166 (lin -0.1129)  E +0.2520±0.0034 (lin +0.2088; ind +0.2450)  E_x +0.4776 (lin +0.4579)  sd crn 0.218 ind 0.290  n3 crn 7 ind 13  E/pred(r) 1.165
+  near (4,4)      oneway        r_A +0.1398 (lin +0.1386)  r_D -0.1398 (lin -0.1386)  E +0.0000±0.0000 (lin +0.0000; ind +0.0000)  E_x -0.0000 (lin +0.0000)  sd crn 0.000 ind 0.000  n3 crn inf ind inf  max|echo| 1.1e-16
+  near (4,4)      antagonistic  r_A +0.1199 (lin +0.1162)  r_D -0.1194 (lin -0.1162)  E -0.2598±0.0035 (lin -0.2228; ind -0.2544)  E_x -0.4828 (lin -0.4719)  sd crn 0.224 ind 0.293  n3 crn 7 ind 12  E/pred(r) 1.134
+
+  close (5,5)     mutual        r_A +0.1181 (lin +0.1133)  r_D -0.1177 (lin -0.1133)  E +0.2871±0.0040 (lin +0.2152; ind +0.2630)  E_x +0.6152 (lin +0.5701)  sd crn 0.257 ind 0.310  n3 crn 7 ind 12  E/pred(r) 1.291
+  close (5,5)     oneway        r_A +0.1541 (lin +0.1523)  r_D -0.1546 (lin -0.1523)  E +0.0000±0.0000 (lin +0.0000; ind +0.0000)  E_x +0.0000 (lin +0.0000)  sd crn 0.000 ind 0.000  n3 crn inf ind inf  max|echo| 1.1e-16
+  close (5,5)     antagonistic  r_A +0.1197 (lin +0.1149)  r_D -0.1195 (lin -0.1149)  E -0.2638±0.0039 (lin -0.2152; ind -0.2701)  E_x -0.5825 (lin -0.5840)  sd crn 0.249 ind 0.310  n3 crn 8 ind 12  E/pred(r) 1.152
+
+  tilted (4,3)    mutual        r_A +0.1297 (lin +0.1273)  r_D -0.0976 (lin -0.0955)  E +0.2556±0.0033 (lin +0.2035; ind +0.2327)  E_x +0.4467 (lin +0.3960)  sd crn 0.211 ind 0.289  n3 crn 6 ind 14  E/pred(r) 1.212
+  tilted (4,3)    oneway        r_A +0.1474 (lin +0.1462)  r_D -0.1108 (lin -0.1097)  E +0.0000±0.0000 (lin +0.0000; ind +0.0000)  E_x -0.0000 (lin +0.0000)  sd crn 0.000 ind 0.000  n3 crn inf ind inf  max|echo| 1.1e-16
+  tilted (4,3)    antagonistic  r_A +0.1334 (lin +0.1306)  r_D -0.1000 (lin -0.0979)  E -0.2360±0.0031 (lin -0.2130; ind -0.2269)  E_x -0.4083 (lin -0.3931)  sd crn 0.198 ind 0.285  n3 crn 6 ind 14  E/pred(r) 1.106
+

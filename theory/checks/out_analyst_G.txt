@@ -1,0 +1,51 @@
+Part G. Where the boundary is on K = 16 graphs, from long simulations. N = 2048, one graph per world, 4 replicas,
+1500 rounds (the first 300 dropped). A = amplification (analyst_lib.chi_sg); on a tree 1/A = 1 - Lam, so 1/A falls
+linearly to zero at the boundary, rounded at finite N (at the boundary A is of order N^(1/3) = 13). c20, c40 = lag
+correlations of replica differences of beliefs at lags 20 and 40. a_c = zero of the least-squares line through the
+points with 1/A > 0.15 (the curve is slightly convex, so this overestimates a_c by a few percent).
+
+  mutual        nu = 0.0, a0 = 0.0, a =  2.6: A =   1.67  1/A = 0.600  c2 +0.501  c20 +0.014  c40 -0.000
+  mutual        nu = 0.0, a0 = 0.0, a =  3.0: A =   2.15  1/A = 0.465  c2 +0.591  c20 +0.057  c40 +0.008
+  mutual        nu = 0.0, a0 = 0.0, a =  3.3: A =   2.70  1/A = 0.371  c2 +0.650  c20 +0.111  c40 +0.037
+  mutual        nu = 0.0, a0 = 0.0, a =  3.6: A =   3.80  1/A = 0.263  c2 +0.700  c20 +0.182  c40 +0.088
+  mutual        nu = 0.0, a0 = 0.0, a =  4.0: A =   7.28  1/A = 0.137  c2 +0.757  c20 +0.300  c40 +0.187
+  mutual        nu = 0.0, a0 = 0.0, a =  4.4: A =  14.97  1/A = 0.067  c2 +0.810  c20 +0.433  c40 +0.329
+  -> a_c = 4.40 from 4 points   (tree form x news factor, no notes: 4.23)
+
+  mutual        nu = 0.5, a0 = 0.0, a =  3.0: A =   1.63  1/A = 0.615  c2 +0.475  c20 +0.010  c40 +0.003
+  mutual        nu = 0.5, a0 = 0.0, a =  3.5: A =   2.12  1/A = 0.472  c2 +0.569  c20 +0.050  c40 +0.010
+  mutual        nu = 0.5, a0 = 0.0, a =  4.0: A =   3.20  1/A = 0.313  c2 +0.656  c20 +0.144  c40 +0.060
+  mutual        nu = 0.5, a0 = 0.0, a =  4.5: A =   6.23  1/A = 0.160  c2 +0.725  c20 +0.262  c40 +0.149
+  mutual        nu = 0.5, a0 = 0.0, a =  5.0: A =  22.90  1/A = 0.044  c2 +0.784  c20 +0.400  c40 +0.301
+  mutual        nu = 0.5, a0 = 0.0, a =  5.5: A = 134.15  1/A = 0.007  c2 +0.854  c20 +0.591  c40 +0.516
+  -> a_c = 5.03 from 4 points   (tree form x news factor, no notes: 4.99)
+
+  mutual        nu = 0.5, a0 = 0.3, a =  3.0: A =   1.51  1/A = 0.661  c2 +0.433  c20 +0.005  c40 +0.001
+  mutual        nu = 0.5, a0 = 0.3, a =  4.0: A =   2.30  1/A = 0.434  c2 +0.601  c20 +0.076  c40 +0.018
+  mutual        nu = 0.5, a0 = 0.3, a =  4.5: A =   2.89  1/A = 0.346  c2 +0.652  c20 +0.132  c40 +0.044
+  mutual        nu = 0.5, a0 = 0.3, a =  5.0: A =   5.36  1/A = 0.186  c2 +0.727  c20 +0.266  c40 +0.157
+  mutual        nu = 0.5, a0 = 0.3, a =  5.5: A =   8.03  1/A = 0.125  c2 +0.758  c20 +0.332  c40 +0.219
+  mutual        nu = 0.5, a0 = 0.3, a =  6.0: A =  43.14  1/A = 0.023  c2 +0.796  c20 +0.433  c40 +0.339
+  mutual        nu = 0.5, a0 = 0.3, a =  7.0: A = 107.55  1/A = 0.009  c2 +0.862  c20 +0.607  c40 +0.533
+  -> a_c = 5.89 from 4 points   (tree form x news factor, no notes: 4.99)
+
+  antagonistic  nu = 0.5, a0 = 0.3, a =  3.0: A =   1.58  1/A = 0.635  c2 -0.445  c20 +0.007  c40 -0.003
+  antagonistic  nu = 0.5, a0 = 0.3, a =  4.0: A =   2.84  1/A = 0.352  c2 -0.621  c20 +0.110  c40 +0.032
+  antagonistic  nu = 0.5, a0 = 0.3, a =  4.5: A =   5.59  1/A = 0.179  c2 -0.697  c20 +0.231  c40 +0.128
+  antagonistic  nu = 0.5, a0 = 0.3, a =  5.0: A =  10.64  1/A = 0.094  c2 -0.743  c20 +0.332  c40 +0.228
+  antagonistic  nu = 0.5, a0 = 0.3, a =  6.0: A = 121.69  1/A = 0.008  c2 -0.838  c20 +0.572  c40 +0.501
+  antagonistic  nu = 0.5, a0 = 0.3, a =  7.0: A =  12.94  1/A = 0.077  c2 -0.848  c20 +0.599  c40 +0.526
+  -> a_c = 5.12 from 3 points   (tree form x news factor, no notes: 4.99)
+
+  oneway        nu = 0.5, a0 = 0.3, a =  4.0: A =   1.45  1/A = 0.690  c2 +0.000  c20 -0.000  c40 +0.001
+  oneway        nu = 0.5, a0 = 0.3, a =  6.0: A =   1.75  1/A = 0.570  c2 -0.001  c20 -0.001  c40 +0.002
+  oneway        nu = 0.5, a0 = 0.3, a =  8.0: A =   2.01  1/A = 0.497  c2 -0.001  c20 -0.000  c40 -0.000
+  oneway        nu = 0.5, a0 = 0.3, a = 12.0: A =   2.34  1/A = 0.428  c2 -0.001  c20 -0.000  c40 +0.000
+
+  mutual        nu = 0.25, a0 = 0.15, a =  3.0: A =   1.84  1/A = 0.544  c2 +0.541  c20 +0.024  c40 +0.003
+  mutual        nu = 0.25, a0 = 0.15, a =  3.5: A =   2.59  1/A = 0.385  c2 +0.638  c20 +0.100  c40 +0.026
+  mutual        nu = 0.25, a0 = 0.15, a =  4.0: A =   3.91  1/A = 0.255  c2 +0.706  c20 +0.200  c40 +0.096
+  mutual        nu = 0.25, a0 = 0.15, a =  4.5: A =   9.82  1/A = 0.102  c2 +0.766  c20 +0.329  c40 +0.222
+  mutual        nu = 0.25, a0 = 0.15, a =  5.0: A =  29.17  1/A = 0.034  c2 +0.814  c20 +0.455  c40 +0.363
+  -> a_c = 4.87 from 3 points   (tree form x news factor, no notes: 4.43)
+
