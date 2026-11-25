@@ -161,8 +161,14 @@ inbox and whose call is sampled from its belief:
   the call give a positive a₋ (+0.10). No prompt variant removes the SELL bias (best c = −0.38, listing SELL first).
   With the measured bias no cell has a resolvable echo (best |Γ|(1−q)² = 0.024 against 0.03). With the bias removed
   by the experimenter the mutual echo would be resolvable (ρ₂ ≈ +0.06 to +0.09), and since a₋ < 0 the theory's sign
-  rule predicts a positive echo in the "antagonistic" graphs; whether to run that test is the user's call. Small K is
-  deferred.
+  rule predicts a positive echo in the "antagonistic" graphs. Small K is deferred.
+- **The user chose the de-biased sign-rule test** (`analyst_signrule.md`, frozen at commit 1799988): calls sampled by
+  the experimenter from tanh(x − ĉ), ĉ = −0.637 (08b cell P0), N = 256, K = 16, T = 20, 12 runs (2 mutual / 5 one-way /
+  5 "antagonistic") plus about 570 kick twins. Predicted memory-robust echo X₂ = +0.057 / 0 / +0.010 (calls only; up to
+  +0.017 if notes leak the sender's confidence), kick echoes +0.055 / 0 / +0.009–0.017; mutual against one-way resolves
+  at about 10 s.e., the "antagonistic" sign mainly through the kicks. The antagonistic sign rule is conditional on the
+  swarm's own measured couplings. It tests the reaction term's sign rule given the measured couplings, not distrust;
+  notes are still written from the biased belief. Running as `experiments/09-analyst-signrule/`.
 
 ## Files
 

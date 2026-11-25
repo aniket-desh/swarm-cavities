@@ -217,7 +217,13 @@ in total, leaving room for Sonnet slices and reruns. Test 1 decides whether the 
   Reversed fading backfires (a₋ = −0.52), the SELL bias is reduced but not removed (best c = −0.38), no resolvable echo
   at the measured bias. Relayed with two options for the user: stop and report, or a de-biased sign-rule test (mutual
   positive / one-way zero / "antagonistic" weakly positive since a₋ < 0; about $6 plus a re-freeze). Scenario pod
-  spend ≈ $1.35. Waiting for the user's decision.
+  spend ≈ $1.35. **User chose option (b)** (de-biased sign-rule test): predictions frozen by Fable
+  (`theory/analyst_signrule.md`, commit 1799988; X₂ = +0.057 / 0 / +0.010, kicks settle the antagonistic sign); the
+  analyst agent is implementing `experiments/09-analyst-signrule/` (blind review before launch, ≈ $8–15 of pods).
+- **Kick stage 2** (`experiments/07_kick/DESIGN_stage2.md` revision 3, commit 653a1ce, after a blind review that found an
+  outcome-correlated slope factor, fixed with lagged factors; stage 1's asymmetry 0.60 ± 0.05 survives the fix): base
+  runs done (40/40, 0 missing, $19.58), saturation null frozen, replay check passed, twins running in tmux
+  `sc-kick2twins` (`experiments/07_kick/run_stage2_twins.sh`, reruns each command until clean).
 
 ## Next
 
