@@ -40,7 +40,7 @@ TAG = "calib-20261125"          # fixed, so re-runs resume from checkpoints inst
 OUT = ROOT / "results" / "calibration"
 LEDGER = ROOT / "budget" / "ledger.jsonl"
 H = 1
-CAPS = {"suff": 3.0, "conf": 1.0, "gains": 0.4, "gains_inv": 0.4, "white": 2.0}
+CAPS = {"suff": 4.0, "conf": 1.0, "gains": 0.4, "gains_inv": 0.4, "white": 2.0}
 
 
 def designs():
