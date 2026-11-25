@@ -73,6 +73,13 @@ def cells(name: str) -> list[dict]:
         # gamma in {-1, 0, +1}, 8 graphs each (graphs 0-7; confirmatory)
         return [dict(base, wording=w, K=2, p_neg=0.5, gamma=g, graph=G)
                 for w, g, G in itertools.product(("inverted", "label"), (-1.0, 0.0, 1.0), range(8))]
+    if name == "kick2":
+        # base runs for stage 2 of the kick-and-echo test (experiments/07_kick/DESIGN_stage2.md): inverted wording;
+        # K=2 at gamma = +-0.5 (additivity against stage 1's gamma = +-1) and K=4 at gamma in {-1, 0, +1}; graphs 0-7
+        return ([dict(base, wording="inverted", K=2, p_neg=0.5, gamma=g, graph=G) for g, G in
+                 itertools.product((-0.5, 0.5), range(8))] +
+                [dict(base, wording="inverted", K=4, p_neg=0.5, gamma=g, graph=G) for g, G in
+                 itertools.product((-1.0, 0.0, 1.0), range(8))])
     raise ValueError(f"unknown cell set {name}")
 
 

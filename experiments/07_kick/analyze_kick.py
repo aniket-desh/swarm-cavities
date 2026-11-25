@@ -41,6 +41,10 @@ from cells import graph_for  # noqa: E402
 from engine.ledger import read_jsonl  # noqa: E402
 
 S_MIN = 0.1
+D_MODE = "lagged"          # "--stage1-frozen" reproduces stage 1's frozen estimator (concurrent d, ivw pooling)
+T0_ONLY = None
+POOL_MODE = "equal"        # pooled values: "equal" = unweighted mean over cells (stage 2, matches the predictions);
+                           # "ivw" = inverse-variance weights fixed from per-cell s.e. (stage 1's frozen estimator)
 TYPES = (+1, -1)
 ONE_SHOT_A_PLUS = {("inverted", 2): 0.80, ("inverted", 4): 0.66, ("label", 2): 0.54, ("label", 4): 0.40}  # transfer check
 _ROWS: dict = {}
@@ -61,7 +65,14 @@ def twin_sums(tw: dict, J: np.ndarray) -> dict:
     s0 = base_state(tw["base_experiment_id"], tw["rep"], tw["t0"])
     base = 2 * np.array(tw["base_p"]) - 1                    # (2, N): rounds t0+1, t0+2
     ds = 2 * (np.array(tw["twin_p"]) - np.array(tw["base_p"]))
-    d1, d2 = 1 - base[0] ** 2, 1 - base[1] ** 2
+    # slope factors. "lagged" (default from stage 2 on): each response's factor from the state BEFORE it, readers'
+    # from s(t0) and the receiver's at t0+2 from s(t0+1). "concurrent" (stage 1's frozen estimator): from the base draws
+    # of the same round, which share noise with the outcome (base draw subtracted in Delta s) and bias the alignment
+    # split (stage-2 design review, P0).
+    if D_MODE == "lagged":
+        d1, d2 = 1 - s0 ** 2, 1 - base[0] ** 2
+    else:
+        d1, d2 = 1 - base[0] ** 2, 1 - base[1] ** 2
     readers = np.flatnonzero(J[:, i])
     o = {"i": i, "D": D, "s0": s0[i], "y": ds[1, i], "self_t1": ds[0, i], "graph": tw["graph"],
          "sent": np.array(tw["sent"]), "missing": np.array(tw["missing"]), "readers": readers}
@@ -133,6 +144,9 @@ def estimates(Q: list[dict], w: np.ndarray, cuts) -> dict:
     out["closed_frac_confirming"] = frac_conf
     out["F_open_matched"] = out["F_open_confirm"] if frac_conf > 0.5 else out["F_open_disconfirm"]
     out["F_minus_open_matched"] = out["F"] - out["F_open_matched"]
+    # confirm/disconfirm asymmetry (stage-1 finding, pre-registered for stage 2): ratio of the open-path slopes
+    out["open_confirm_over_disconfirm"] = (out["F_open_confirm"] / out["F_open_disconfirm"]
+                                           if out["F_open_disconfirm"] else np.nan)
     aD = np.abs(D)
     small, large = aD <= cuts[0], aD >= cuts[1]
     rs = _slope_ratio(float(np.sum((w * col("r_num1"))[small])), float(np.sum((w * col("r_den1"))[small])))
@@ -223,6 +237,8 @@ def load(tag: str) -> dict:
     Js = {}
     for p in sorted((ROOT / "results").glob(f"{tag}-*/twins.jsonl")):
         for tw in read_jsonl(p):
+            if T0_ONLY is not None and tw["t0"] != T0_ONLY:
+                continue
             key = (tw["wording"], tw["K"], tw["p_neg"], tw["gamma"], tw["N"])
             gk = key + (tw["graph"],)
             if gk not in Js:
@@ -233,7 +249,7 @@ def load(tag: str) -> dict:
 
 
 POOL_KEYS = ("F", "F_open", "F_open_matched", "F_minus_open_matched", "F_confirm", "F_open_confirm", "F_disconfirm",
-             "F_open_disconfirm", "rA_ratio")
+             "F_open_disconfirm", "open_confirm_over_disconfirm", "rA_ratio")
 SHAM_KEYS = ("r_agree", "r_disagree", "echo")
 
 
@@ -242,42 +258,63 @@ def _tercile_cuts(Q):
     return (np.quantile(aD, 1 / 3), np.quantile(aD, 2 / 3))
 
 
-def joint_pooled(rows: list[dict], n_boot: int = 1000) -> dict:
-    """Pooled statistics over the |gamma| = 1 cells with a joint bootstrap: one resample of graph indices per draw,
-    applied to every cell, because cells with the same graph index share evidence (and the two wordings at a gamma
-    share the graph). Real-twin statistics are inverse-variance weighted with weights fixed from the per-cell s.e.;
-    sham slopes are pooled the same way."""
-    use = [r for r in rows if abs(r["gamma"]) == 1]
+def joint_pooled(rows: list[dict], n_boot: int = 1000, K: int | None = None) -> dict:
+    """Pooled statistics over the cells with reciprocated ties (optionally one K only) with a joint bootstrap: one
+    resample of graph indices per draw, applied to every cell, because cells with the same graph index share evidence
+    (and cells at the same K and gamma share the graph). Weights: POOL_MODE ("equal": unweighted mean over cells, as
+    the frozen predictions are pooled; "ivw": inverse-variance weights fixed from the per-cell s.e.). The pooled
+    confirm/disconfirm ratio is the ratio of the pooled open-path slopes, computed per draw."""
+    use = [r for r in rows if r["gamma"] != 0 and (K is None or r["K"] == K)]
+    if not use:
+        return {}
     graphs = sorted({q["graph"] for r in use for q in r["_Q"]})
     rng = np.random.default_rng(1)
     draws = [np.bincount(rng.integers(len(graphs), size=len(graphs)), minlength=len(graphs)) for _ in range(n_boot)]
+    cuts_Q = [_tercile_cuts(r["_Q"]) for r in use]
+    cuts_S = [_tercile_cuts(r["_S"]) if r["_S"] else (0, 0) for r in use]
 
-    def pool(key, sets, se_key):
+    def weights(se_key):
+        if POOL_MODE == "equal":
+            return np.full(len(use), 1 / len(use))
         wts = np.array([1 / r[se_key] ** 2 if r.get(se_key, 0) > 0 else 0.0 for r in use])
-        if wts.sum() == 0:
-            return np.nan, np.nan
-        wts = wts / wts.sum()
-        cuts = [_tercile_cuts(Q) if Q else (0, 0) for Q in sets]
-        point = sum(wt * estimates(Q, np.ones(len(Q)), c)[key] for wt, Q, c in zip(wts, sets, cuts) if wt > 0)
-        bs = []
-        for d in draws:
-            v = 0.0
-            for wt, Q, c in zip(wts, sets, cuts):
-                if wt > 0:
-                    w = np.array([d[graphs.index(q["graph"])] for q in Q], float)
-                    v += wt * estimates(Q, w, c)[key]
-            bs.append(v)
-        return float(point), float(np.nanstd(bs, ddof=1))
+        return wts / wts.sum() if wts.sum() > 0 else wts
 
-    out = {k: pool(k, [r["_Q"] for r in use], k + "_se") for k in POOL_KEYS}
+    def per_draw(sets, cuts, w_twin=None):
+        """per-cell estimate dicts for one weighting of twins (None: point estimate)"""
+        out = []
+        for Q, c in zip(sets, cuts):
+            w = np.ones(len(Q)) if w_twin is None else np.array([w_twin[graphs.index(q["graph"])] for q in Q], float)
+            out.append(estimates(Q, w, c) if Q else None)
+        return out
+
+    def pool_from(ests, key, wts):
+        return float(sum(wt * e[key] for wt, e in zip(wts, ests) if e is not None and wt > 0))
+
+    res = {}
+    point_Q = per_draw([r["_Q"] for r in use], cuts_Q)
+    boot_Q = [per_draw([r["_Q"] for r in use], cuts_Q, d) for d in draws]
+    for k in POOL_KEYS:
+        wts = weights(k + "_se")
+        res[k] = (pool_from(point_Q, k, wts), float(np.nanstd([pool_from(b, k, wts) for b in boot_Q], ddof=1)))
+    wc, wd = weights("F_open_confirm_se"), weights("F_open_disconfirm_se")
+    ratio = lambda ests: pool_from(ests, "F_open_confirm", wc) / pool_from(ests, "F_open_disconfirm", wd)
+    res["pooled_open_confirm_over_disconfirm"] = (ratio(point_Q), float(np.nanstd([ratio(b) for b in boot_Q], ddof=1)))
     if all(len(r["_S"]) >= 10 for r in use):
-        out.update({f"sham_{k}": pool(k, [r["_S"] for r in use], f"sham_{k}_se") for k in SHAM_KEYS})
-    return out
+        point_S = per_draw([r["_S"] for r in use], cuts_S)
+        boot_S = [per_draw([r["_S"] for r in use], cuts_S, d) for d in draws]
+        for k in SHAM_KEYS:
+            wts = weights(f"sham_{k}_se")
+            res[f"sham_{k}"] = (pool_from(point_S, k, wts), float(np.nanstd([pool_from(b, k, wts) for b in boot_S], ddof=1)))
+    return res
 
 
 if __name__ == "__main__":
     tag = sys.argv[1]
     mode = "methods" if "--methods" in sys.argv else "null" if "--null" in sys.argv else "full"
+    if "--stage1-frozen" in sys.argv:           # reproduce stage 1's frozen estimator exactly
+        D_MODE, POOL_MODE = "concurrent", "ivw"
+    if "--t0" in sys.argv:                      # restrict to twins kicked at one t0 (early-kick arm)
+        T0_ONLY = int(sys.argv[sys.argv.index("--t0") + 1])
     if mode == "null":                      # here <tag> is the BASE tag; reads base runs only
         out = null_ratio_from_base(tag, t0s=(5,) if tag.startswith("pilot") else (6, 8),
                                    reps=(0,) if tag.startswith("pilot") else (0, 1))
@@ -306,8 +343,15 @@ if __name__ == "__main__":
         print(line, flush=True)
     if mode == "full":
         pool = joint_pooled(rows)
-        print("pooled over |gamma|=1 cells (joint graph bootstrap):",
+        print(f"pooled over cells with reciprocated ties (joint graph bootstrap, {POOL_MODE} weights, d {D_MODE}):",
               {k: (round(v[0], 4), round(v[1], 4)) for k, v in pool.items()})
+        Ks = sorted({r["K"] for r in rows})
+        pool_by_K = {}
+        if len(Ks) > 1:
+            for K in Ks:
+                pool_by_K[K] = joint_pooled(rows, K=K)
+                print(f"  K={K} only:", {k: (round(v[0], 4), round(v[1], 4)) for k, v in pool_by_K[K].items()
+                                         if not k.startswith("sham")})
         # rule 0: pooled sham slopes, each tested at 3 s.e. (Bonferroni over the three slopes); on failure the pooled
         # offset is subtracted from the real slope with its s.e. propagated
         for k in SHAM_KEYS:
@@ -316,5 +360,6 @@ if __name__ == "__main__":
                 print(f"  sham {k}: {off:+.4f} ({se:.4f}) -> {'PASS' if abs(off) < 3 * se else 'FAIL: subtract'}; "
                       f"minimum detectable offset (3 s.e.) {3 * se:.4f}")
         clean = [{k: v for k, v in r.items() if not k.startswith("_")} for r in rows]
-        (ROOT / "results" / f"{tag}-summary.json").write_text(json.dumps({"cells": clean, "pooled": pool}, indent=1,
-                                                                          default=float))
+        (ROOT / "results" / f"{tag}-summary.json").write_text(json.dumps(
+            {"cells": clean, "pooled": pool, "pooled_by_K": {str(k): v for k, v in pool_by_K.items()},
+             "d_mode": D_MODE, "pool_mode": POOL_MODE}, indent=1, default=float))
