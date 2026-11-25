@@ -15,8 +15,13 @@ approved_utc: 2026-11-25T21:21:53Z
 
 # Analyst de-biased sign-rule test: Qwen3.5-9B swarms (N=256, K=16, T=20) in mutual, one-way and antagonistic graphs, echo function and kick twins against frozen predictions
 
-This definition launches **two workers** from the same contract: W1 (mutual and one-way) and W2 (antagonistic and one
-one-way run). Each worker has the time cap and budget above, so the worst case is 2 × $9 = $18.
+This definition launches **four workers** from the same contract:
+- W1: mutual and one-way synchronous runs;
+- W2: antagonistic and one one-way synchronous run;
+- W3: asynchronous mutual runs (Amendment 1);
+- W4: asynchronous one-way runs (Amendment 1).
+
+Each worker has the time cap and budget above, so the worst case is 4 × $9 = $36.
 
 ## Question
 
@@ -276,19 +281,30 @@ comparison from the data.
   |dX₂ − Ĝd| > 0.25|Ĝd| + 3 se means the single-site reduction fails.
 - **F6, kick against echo function.** |E − dX₂| > 3 se + 0.15|dX₂| in a world whose twins are powered is falsified.
   Unpowered twins give "unpowered", which decides nothing.
-- **F7, asynchronous control.** Not run.
+- **F7, asynchronous control** (Amendment 1 below; theory note Amendment 1, A5, applied exactly).
+  - **Statistics.** D_τ = ρ_τ(mutual) − ρ_τ(one-way), as world means. T₇ = ½·D₂(sync) − D₂(async), with D₂(sync) and
+    its s.e. from this experiment's synchronous runs (pooled s.e.), and
+    s.e.(T₇)² = ¼·s.e.(D₂ sync)² + σ_m²/n_m + σ_o²/n_o, where σ is the asynchronous run s.d. of ρ₂ in each world.
+  - **Decision.** T₇ > 3 se is **confirmed**; T₇ < −3 se is **falsified**; otherwise **not resolved**, reported with
+    the ratio D₂(async)/D₂(sync) (predicted 0.21).
+  - **Positive check, same runs.** D₁(async) > 3 se passes. D₁(async) < −3 se, or |D₁(async)| < 3 se while
+    D₂(sync) > 0.03, is **falsified**, whatever T₇ is.
+  - **Secondary:** D₁ − D₂ (asynchronous) > 0, from the per-run ρ₁ − ρ₂.
+  - **Reported:** D₁(async)/D₂(sync), predicted 0.71.
+  - **Caveat (A4):** if D₂(sync) < 0.04, the lag-1 check is the main test.
 
 **Verdict table** (implemented in `analyze.verdict`; the strings are `analyze.py`'s outcomes):
 
 | condition, checked in this order | label |
 |---|---|
-| any of F1, F3, F3 notes-kept, F4 or F6 starts with "falsified" | **not supported** (the falsified ones named) |
+| any of F1, F3, F3 notes-kept, F4 or F6 starts with "falsified", or F7's T₇ or positive check is "falsified" | **not supported** (the falsified ones named) |
 | F1 "unresolved (G_M d <= 0.03)" | **inconclusive** |
 | F3 "consistent (sign resolved)" | **supported**: reciprocity, ordering and the antagonistic sign |
 | F3 "no sign predicted (\|G_A d\| + 2 se < 0.004) …" without "but an echo is resolved" | **supported**: reciprocity and ordering; antagonistic world a second null as predicted |
 | otherwise (F3 "consistent (sign not resolved at 3 se)", F3 "sign of G_A not resolved …", or an unexpected resolved echo when none is predicted) | **inconclusive (antagonistic part)**: reciprocity and ordering confirmed, antagonistic sign not resolved |
 
-Appended to every label: "one-step memory holds" (F2 consistent) or "one-step memory fails (F2)". A falsified F2 does
+Appended to every label: the F7 outcome (T₇ confirmed or not resolved, positive check, secondary), and
+"one-step memory holds" (F2 consistent) or "one-step memory fails (F2)". A falsified F2 does
 not by itself make the sign rule "not supported", because F1, F3, F4 and F6 use differences or the kick echo, which are
 free of the own-note path. Also appended: the F6 status (consistent, or unpowered) and the F5 reading.
 
@@ -338,7 +354,62 @@ the test count. The reviewer said it is ready to run with this fix.
 
 ## Amendments
 
-None.
+### Amendment 1 (2026-11-25 21:59 UTC): asynchronous control added (falsifier 7)
+
+**Reason and timing.**
+- **Why:** a user decision (relayed by the coordinator) to test falsifier 7.
+- **Synchronous data collection had already started.** W1 and W2 launched at about 21:22 and 21:28 UTC. Their base
+  runs are in progress and continue unchanged. No synchronous data had been read when this amendment was written.
+- **The asynchronous predictions were frozen before any asynchronous data:** Amendment 1 of
+  `theory/analyst_signrule.md` (commit f613f1b, frozen 21:52 UTC), with numbers in
+  `theory/checks/analyst_signrule_async_predictions.json`.
+
+**Schedule** (A1 of the theory amendment, implemented exactly in `AnalystSwarm` as `cfg.blocks = 16`):
+- Round 0 is synchronous.
+- In each round t ≥ 1, a permutation of the 256 analysts is drawn from the stored seed (order_seed(graph), t), shared
+  by the replicas, and cut by `np.array_split` into 16 blocks of 16.
+- The blocks update in turn. Each block decides in one engine batch over both replicas, draws its calls from
+  tanh(x − ĉ) with the stored uniforms, and writes its notes before the next block.
+- An analyst reads each colleague's latest call and note. Its own previous call and note are from round t − 1, and
+  its news is ξ_i(t).
+- The block index is stored with every record. A round is written only after its last block, so a stop never leaves
+  a partial round.
+
+**Tests** (`tests/test_analyst.py`):
+- the loop equals the amendment's `simulate_blocks` on the same permutations at B = 16, at B = 4 and at B = 1 (which
+  also equals the synchronous simulation);
+- at B = N it equals `analyst_lib.simulate(mode="async")`;
+- a crash on the second block of a round resumes to an uninterrupted run;
+- 70 analyst tests pass in all.
+
+`dryrun.py` adds the asynchronous runs. Under the mock law it gives D₁(async) = +0.037 (frozen +0.041), D₂(async) =
++0.011 (frozen +0.012), T₇ confirmed and the positive check passing.
+
+**Runs.** Following the amendment's sizing, which the user adopted so the comparison resolves:
+- 4 asynchronous mutual and 4 asynchronous one-way runs, at 2 replicas, each on its own new graph (g = 10–13, graph
+  seed (9090, world, g)), with the cell, ĉ, T = 20 and the statistics of the synchronous runs;
+- predicted 3.2 s.e. on falsifier 7 and 9.5 s.e. on the lag-1 check;
+- no asynchronous antagonistic run, since the amendment shows it adds nothing resolvable (1.2 to 1.6 s.e.).
+
+**Workers and commands.** W3 runs the 4 asynchronous mutual runs and W4 the 4 one-way ones, each after its own timing
+step:
+
+```bash
+set -euo pipefail; bash experiments/06-qwen-smoke/setup_vllm.sh
+set -euo pipefail; uv run --no-sync pytest -q tests/test_analyst.py tests/test_vllm_backend.py
+set -euo pipefail; uv run --no-sync python experiments/09-analyst-signrule/run.py asmoke --label W3 2>&1 | tee results/analyst-signrule-asmoke-W3.log
+set -euo pipefail; uv run --no-sync python experiments/09-analyst-signrule/run.py abase mutual:10 mutual:11 mutual:12 mutual:13 2>&1 | tee results/analyst-signrule-abase-W3.log
+```
+
+W4 runs the same, with `--label W4` and `abase oneway:10 oneway:11 oneway:12 oneway:13`.
+
+**Time and cost.** The block schedule is 16 batches of 32 prompts per round, against one batch of 512. It is timed
+by `asmoke` before the projection is sent. If a block round takes s seconds, a run takes about 21 s, and a worker
+with 4 runs takes about 84 s plus setup. Contingency (fixed): if an asynchronous round takes more than 300 s, each
+worker runs 3 runs instead of 4 (g = 10–12). That still gives 2.9 s.e. on falsifier 7, and it is reported as such.
+
+**Analysis and figure.** `analyze.f7` and `plot.asynchronous` (`paper/figures/analyst_signrule_async`), as described
+under "Fixed rules".
 
 ## Outcome
 

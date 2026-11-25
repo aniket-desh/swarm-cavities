@@ -444,3 +444,79 @@ def test_kick_slice_records_are_json(tmp_path):
     sw.run()
     for r in A.kick_slice(sw, mock, 0, 3, [1, 2], [3]):
         json.dumps(r, allow_nan=True)
+
+
+# ---------------------------------------------------------------- block-random asynchronous schedule (Amendment 1)
+
+class _StoredPerms:
+    """Feeds the theory simulators the loop's stored permutations: the k-th call returns round k's permutation."""
+
+    def __init__(self, order_seed):
+        self.order_seed, self.t = order_seed, 0
+
+    def permutation(self, n):
+        self.t += 1
+        return np.random.default_rng([self.order_seed, self.t]).permutation(n)
+
+
+@pytest.mark.parametrize("world,B", [("mutual", 16), ("antagonistic", 16), ("oneway", 4), ("mutual", 1)])
+def test_block_schedule_matches_amendment_simulator(tmp_path, world, B):
+    """The loop under the mock law equals theory/checks/analyst_signrule_async_check.simulate_blocks on the same
+    permutations (B = 1 is the synchronous loop), with the de-biased sampling of the design."""
+    from theory.checks import analyst_signrule_async_check as ac
+    N, K, T, chat = 64, 16, 6, -0.637
+    J = _graph(N, K, world, 3)
+    g = A.make_game(N, T, R=2, seed=11)
+    P = al.Agent(1.735, -0.146, nu=0.3, a0=0.09, c=-0.637, kappa=-0.095, K=K)
+    mock = A.MockAnalyst(P.a_plus, P.a_minus, P.nu, P.a0, P.c, P.kappa, K=K)
+    cfg = A.AnalystSwarmConfig("b", T, R=2, K=K, chat=chat, session=1, blocks=B, order_seed=77, results_root=tmp_path)
+    out = A.AnalystSwarm(J, g, cfg, mock).run()
+    sr, L = _sr_law(P, chat)
+    ref = ac.simulate_blocks(J, L, T, _sr_inputs(g), B, _StoredPerms(77))
+    np.testing.assert_allclose(out["x"], ref["X"], atol=1e-12)
+    assert np.array_equal(out["sig"], ref["sig"].astype(int))
+    recs = list(A.read_jsonl(tmp_path / "b" / "analyst_calls.jsonl"))
+    assert {r["block"] for r in recs if r["round_t"] > 0} == set(range(B))
+    if B == 1:
+        ref1 = sr.simulate(J, L, T, _sr_inputs(g))
+        assert np.array_equal(out["sig"], ref1["sig"].astype(int))
+
+
+def test_one_at_a_time_matches_analyst_lib_async(tmp_path):
+    """B = N is analyst_lib.simulate(mode="async") with the same permutations (calls-only law, c - chat)."""
+    N, K, T, chat = 32, 8, 5, -0.4
+    J = _graph(N, K, "mutual", 2)
+    g = A.make_game(N, T, R=2, seed=12)
+    P = al.Agent(1.5, 0.5, nu=0.3, a0=0.1, c=-0.4, kappa=-0.1, K=K)
+    mock = A.MockAnalyst(P.a_plus, P.a_minus, P.nu, P.a0, P.c, P.kappa, K=K)
+    cfg = A.AnalystSwarmConfig("a", T, R=2, K=K, chat=chat, session=0, blocks=N, order_seed=5, results_root=tmp_path)
+    out = A.AnalystSwarm(J, g, cfg, mock).run()
+    ref = al.simulate(al.couplings(J, P), al.replace(P, c=P.c - chat), T, dict(h0=g.h0, xi=g.xi[:, None, :], U=g.U),
+                      mode="async", rng=_StoredPerms(5))
+    assert np.array_equal(out["sig"], ref["sig"].astype(int))
+    np.testing.assert_allclose(np.tanh(out["x"] - chat), ref["s"], atol=1e-12)
+
+
+def test_block_schedule_resume(tmp_path):
+    """A crash inside a round (after some blocks) leaves no partial round; the resumed run equals an uninterrupted one."""
+    N, K, T = 32, 8, 4
+    J, g = _graph(N, K, "mutual", 5), A.make_game(N, T, R=2, seed=3)
+    mk = lambda: A.MockAnalyst(1.5, 0.3, 0.3, 0.1, -0.3, -0.1, K=K)
+    cfg = lambda e: A.AnalystSwarmConfig(e, T, R=2, K=K, chat=-0.3, session=0, blocks=4, order_seed=9, results_root=tmp_path)
+    full = A.AnalystSwarm(J, g, cfg("u"), mk()).run()
+
+    class Crash(A.MockAnalyst):
+        n = 0
+
+        def beliefs(self, ctxs, key=None):
+            Crash.n += 1
+            if key[1] == 2 and Crash.n == 7:                     # round 0: call 1; round 1: calls 2-5; round 2, block 2
+                raise RuntimeError("boom")
+            return super().beliefs(ctxs, key)
+
+    sw = A.AnalystSwarm(J, g, cfg("c"), Crash(1.5, 0.3, 0.3, 0.1, -0.3, -0.1, K=K))
+    with pytest.raises(RuntimeError):
+        sw.run()
+    assert {r["round_t"] for r in A.read_jsonl(tmp_path / "c" / "analyst_calls.jsonl")} == {0, 1}
+    out = sw.run()
+    assert np.array_equal(out["sig"], full["sig"]) and np.allclose(out["x"], full["x"])

@@ -9,6 +9,9 @@ One question per figure:
                               and M2 values as ticks)
   analyst_signrule_mean       Which law holds for the mean belief?  (m(t): gray runs, black world means; frozen M1
                               and M2 values as lines)
+  analyst_signrule_async      Does the echo move from lag 2 to lag 1 under asynchronous updates?  (mutual minus one-way
+                              contrasts D1, D2, synchronous and asynchronous: black estimates with s.e., gray ticks
+                              the frozen M1 values of the note and Amendment 1, dashed: half the synchronous D2)
   analyst_signrule_residuals  Where do the observations depart from the frozen predictions?  ((obs - pred) / s.e. per
                               statistic and world, against M1 (filled) and M2 (open); +-3 lines)
 
@@ -104,6 +107,33 @@ def mean(S):
     save(fig, "analyst_signrule_mean")
 
 
+APRED = json.loads((ROOT / "theory" / "checks" / "analyst_signrule_async_predictions.json").read_text())
+
+
+def asynchronous(S):
+    F = S.get("falsifiers", {}).get("F7", {})
+    if "D2_async" not in F:
+        return
+    W = S["worlds"]
+    D1s = {"diff": W["mutual"]["rho1"]["mean"] - W["oneway"]["rho1"]["mean"],
+           "se": float(np.hypot(W["mutual"]["rho1"]["se"], W["oneway"]["rho1"]["se"]))}
+    rows = [("D1 sync", D1s, PRED["predictions"]["mutual"]["M1"]["rho1"]["value"] - PRED["predictions"]["oneway"]["M1"]["rho1"]["value"]),
+            ("D2 sync", F["D2_sync"], PRED["predictions"]["mutual"]["M1"]["rho2"]["value"] - PRED["predictions"]["oneway"]["M1"]["rho2"]["value"]),
+            ("D1 async", F["D1_async"], APRED["predictions"]["M1"]["mutual"]["D1"]["value"]),
+            ("D2 async", F["D2_async"], APRED["predictions"]["M1"]["mutual"]["D2"]["value"])]
+    fig, ax = plt.subplots(figsize=(4.8, 3.0))
+    for k, (lab, v, pr) in enumerate(rows):
+        ax.plot([k - 0.3, k + 0.3], [pr, pr], color="0.5", lw=1.5, label="frozen M1" if k == 0 else None)
+        ax.errorbar(k, v["diff"], yerr=v["se"], fmt="o", color="k", ms=5, capsize=2, label="measured (s.e.)" if k == 0 else None)
+    ax.axhline(0.5 * F["D2_sync"]["diff"], xmin=0.5, xmax=1.0, ls="--", color="0.5", lw=0.8,
+               label=r"$D_2^{\rm sync}/2$ (falsifier 7)")
+    ax.axhline(0, color="0.8", lw=0.6)
+    ax.set_xticks(range(4), [r[0] for r in rows])
+    ax.set_ylabel("mutual minus one-way echo")
+    ax.legend(frameon=False, fontsize=7)
+    save(fig, "analyst_signrule_async")
+
+
 def residuals(S):
     keys = ("rho1", "rho2", "X2", "c2", "Xc2", "q", "m", "kick_E", "kick_E_kept", "kick_wA", "kick_wD")
     fig, ax = plt.subplots(figsize=(7.5, 3.0))
@@ -130,5 +160,6 @@ if __name__ == "__main__":
     echo(S)
     kick(S)
     mean(S)
+    asynchronous(S)
     residuals(S)
     print("figures in", FIG)

@@ -12,11 +12,17 @@ Kick twins (envs/analyst.kick_slice) on settled rounds t0 in {8, 12}, both repli
   mutual 100 kicks + 25 null twins over 8 slices; one-way 20 kicks over 20 slices (protocol check: E = 0 exactly);
   antagonistic 400 kicks + 25 null twins over 20 slices. Analysts per slice drawn without replacement (seeded).
 
+Asynchronous control (theory/analyst_signrule.md Amendment 1, added by amendment of EXPERIMENT.md): block-random
+schedule, B = 16 blocks of 16, permutation per (graph, round) from the stored seed (8080, world, g, t), shared by
+the replicas; 4 mutual and 4 one-way runs on new graphs g = 10..13, 2 replicas, everything else as above.
+
 Steps (run on the worker, one engine per command):
   smoke                       decision tokens, one rendered prompt, and a timing run (N = 256, R = 2, T = 1, mutual;
                               its own tag, not analysed)
   base RUN [RUN ...]          base runs, RUN = world:g, in the order given
   kicks RUN [RUN ...]         the twins of those runs' slices
+  asmoke                      timing of the block schedule: N = 256, R = 2, T = 2 (rounds 1 and 2 asynchronous)
+  abase RUN [RUN ...]         asynchronous runs, RUN = world:g with g in 10..13
 """
 
 import argparse
@@ -45,6 +51,8 @@ N, K, T, R, P_NEG = 256, 16, 20, 2, 0.5
 WORDING, VARIANT, NU_NOM, A0_NOM = "max", A.PromptVariant(), 0.5, 0.3
 WORLDS = {"mutual": 1.0, "oneway": 0.0, "antagonistic": -1.0}
 RUNS = [("mutual", 0), ("mutual", 1)] + [("oneway", g) for g in range(5)] + [("antagonistic", g) for g in range(5)]
+ASYNC_RUNS = [("mutual", g) for g in range(10, 14)] + [("oneway", g) for g in range(10, 14)]
+BLOCKS = 16
 T0S = (8, 12)
 # twins per slice, slices ordered (g, rep, t0) lexicographically
 KICKS = {"mutual": [13, 13, 13, 13, 12, 12, 12, 12], "oneway": [1] * 20, "antagonistic": [20] * 20}
@@ -68,13 +76,14 @@ def graph(world: str, g: int) -> np.ndarray:
     return fixed_indegree_signed_couplings(N, K, WORLDS[world], P_NEG, np.random.default_rng([9090, k, g]))
 
 
-def swarm(world: str, g: int, backend, T_=T, n=N, tag=None) -> A.AnalystSwarm:
+def swarm(world: str, g: int, backend, T_=T, n=N, tag=None, blocks=1) -> A.AnalystSwarm:
     k = list(WORLDS).index(world)
     J = graph(world, g) if n == N else fixed_indegree_signed_couplings(n, K, WORLDS[world], P_NEG,
                                                                           np.random.default_rng([9091, k, g]))
     game = A.make_game(n, T_, R=R, seed=9000 + 100 * k + g, nu_nom=NU_NOM, a0_nom=A0_NOM)
     cfg = A.AnalystSwarmConfig(tag or run_id(world, g), T=T_, R=R, seed=9000 + 100 * k + g, K=K, chat=CHAT,
-                               session=100 * k + g, results_root=RESULTS)
+                               session=100 * k + g, results_root=RESULTS, blocks=blocks,
+                               order_seed=int(np.random.SeedSequence([8080, k, g]).generate_state(1)[0]))
     return A.AnalystSwarm(J, game, cfg, backend)
 
 
@@ -138,6 +147,34 @@ def step_base(llm, runs):
                  f"{out['missing'].size}, mean sampling belief rounds 5-20 {s[5:].mean():+.3f}, q {(s[5:] ** 2).mean():.3f}")
 
 
+def async_id(world: str, g: int) -> str:
+    return f"{TAG}-async-{world}-g{g}"
+
+
+def step_asmoke(llm, label: str):
+    tag = f"{TAG}-asmoke-{label}"
+    sw = swarm("mutual", 98, backend(llm, tag), T_=2, tag=tag, blocks=BLOCKS)
+    t0 = time.time()
+    out = sw.run()
+    print(f"asmoke: rounds 0 (sync), 1, 2 (B = {BLOCKS}) x {R} replicas in {time.time() - t0:.0f} s; missing "
+          f"{int(out['missing'].sum())}/{out['missing'].size}", flush=True)
+    for t in read_jsonl(RESULTS / tag / "analyst_timings.jsonl"):
+        print("timing", t, flush=True)
+
+
+def step_abase(llm, runs):
+    for k, (w, g) in enumerate(runs):
+        t0 = time.time()
+        sw = swarm(w, g, backend(llm, async_id(w, g)), tag=async_id(w, g), blocks=BLOCKS)
+        sw.dir.mkdir(parents=True, exist_ok=True)
+        (sw.dir / "graph.json").write_text(json.dumps({k_: v for k_, v in spectral_log(sw.J, eigs=False).items()
+                                                       if k_ != "eigvals"}, default=float))
+        out = sw.run()
+        s = np.tanh(np.nan_to_num(out["x"]) - CHAT)
+        progress(f"abase {k + 1}/{len(runs)} {w}:{g}: {time.time() - t0:.0f} s, missing {int(out['missing'].sum())}/"
+                 f"{out['missing'].size}, mean sampling belief rounds 5-20 {s[5:].mean():+.3f}")
+
+
 def step_kicks(llm, runs):
     for k, (w, g) in enumerate(runs):
         sw = swarm(w, g, backend(llm, run_id(w, g)))
@@ -157,13 +194,14 @@ def step_kicks(llm, runs):
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("step", choices=["smoke", "base", "kicks"])
+    ap.add_argument("step", choices=["smoke", "base", "kicks", "asmoke", "abase"])
     ap.add_argument("runs", nargs="*", help="world:g")
     ap.add_argument("--label", default="W", help="worker label for the smoke tag")
     a = ap.parse_args()
     runs = [(r.split(":")[0], int(r.split(":")[1])) for r in a.runs]
-    assert all(r in RUNS for r in runs), runs
+    assert all(r in (ASYNC_RUNS if a.step == "abase" else RUNS) for r in runs), runs
     llm = vb.make_llm(max_num_seqs=256, max_logprobs=LOGPROBS)
     t = time.time()
-    {"smoke": lambda: step_smoke(llm, a.label), "base": lambda: step_base(llm, runs), "kicks": lambda: step_kicks(llm, runs)}[a.step]()
+    {"smoke": lambda: step_smoke(llm, a.label), "base": lambda: step_base(llm, runs), "kicks": lambda: step_kicks(llm, runs),
+     "asmoke": lambda: step_asmoke(llm, a.label), "abase": lambda: step_abase(llm, runs)}[a.step]()
     print(f"== step {a.step} done in {time.time() - t:.0f} s", flush=True)

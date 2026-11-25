@@ -43,7 +43,15 @@ Falsifiers (EXPERIMENT.md "Fixed rules"):
      + 3 se -> single-site reduction fails.
   F6 kick vs echo function: |E - dX2| > 3 se + 0.15 |dX2| in a world whose twins are powered -> falsified; unpowered
      twins: "unpowered".
-  F7 asynchronous control: not run.
+  F7 asynchronous control (theory/analyst_signrule.md Amendment 1, A5): asynchronous runs (block-random, B = 16),
+     4 mutual + 4 one-way. D_tau = rho_tau(mutual) - rho_tau(one-way), world means over runs. T7 = D2_sync / 2 -
+     D2_async, se(T7)^2 = se(D2_sync)^2 / 4 + sigma_m^2 / n_m + sigma_o^2 / n_o (sigma = the asynchronous run s.d. of
+     rho2 per world; D2_sync and its s.e. from this experiment's synchronous runs, pooled s.e. as above).
+     T7 > 3 se -> confirmed; T7 < -3 se -> falsified; otherwise not resolved (ratio D2_async / D2_sync reported).
+     Positive check: D1_async > 3 se -> passes; D1_async < -3 se, or |D1_async| < 3 se while D2_sync > 0.03 ->
+     falsified (the reaction term's account of where the echo goes). Secondary: D1 - D2 (asynchronous) > 0, from the
+     per-run rho1 - rho2. Reported: D1_async / D2_sync (predicted 0.71). If D2_sync < 0.04 the lag-1 check is the
+     main test (Amendment 1, A4).
 Recorded: m (M1 0.00 +- 0.04, M2 +0.35 +- 0.15), composition ratios E / (K r_A r_D) (antagonistic) and
 E / ((K/2)(r_A^2 + r_D^2)) (mutual), missing and refusal rates, residuals of every observable against the frozen
 M1 and M2 predictions.
@@ -70,6 +78,7 @@ from theory.checks import analyst_signrule_check as SR  # noqa: E402
 PRED = json.loads((ROOT / "theory" / "checks" / "analyst_signrule_predictions.json").read_text())
 CHAT = float(PRED["design"]["chat"])
 TAG = "analyst-signrule-20261125"
+A_RUNS = {"mutual": [], "oneway": []}       # asynchronous runs, filled by main()
 RES = ROOT / "results"
 OUT = RES / "analyst-signrule"
 W3 = ("mutual", "oneway", "antagonistic")
@@ -84,8 +93,8 @@ class _Chat:
     chat = CHAT
 
 
-def load_run(world: str, g: int):
-    d = RES / f"{TAG}-{world}-g{g}"
+def load_run(world: str, g: int, asynchronous: bool = False):
+    d = RES / (f"{TAG}-async-{world}-g{g}" if asynchronous else f"{TAG}-{world}-g{g}")
     if not (d / "analyst_calls.jsonl").exists():
         return None
     J = np.load(d / "inputs.npz")["J"].astype(int)
@@ -326,9 +335,50 @@ def falsifiers(W, KT, G) -> dict:
                    "consistent" if all(o == "consistent" for o in outs) else
                    "consistent where powered; " + ", ".join(f"{w} unpowered" for w, v in f6.items() if v["outcome"] == "unpowered")
                    if "consistent" in outs else "unpowered")
+    F["F7"] = f7(W, A_RUNS)
     F["verdict"] = verdict(F)
-    F["F7"] = dict(outcome="not run (no asynchronous control in this design)")
     return F
+
+
+def f7(W, A_runs) -> dict:
+    """Falsifier 7 of Amendment 1 (module docstring)."""
+    def arr(w, k):
+        return np.array([r["stats"][k] for r in A_runs[w]])
+    nm, no = len(A_runs["mutual"]), len(A_runs["oneway"])
+    if nm < 2 or no < 2:
+        return {"outcome": f"not run or incomplete ({nm} mutual, {no} one-way asynchronous runs)"}
+    D2s = comp(W["mutual"]["rho2"], W["oneway"]["rho2"])
+    out = {"n_mutual": nm, "n_oneway": no, "D2_sync": D2s}
+    for k, tau in (("D1", "rho1"), ("D2", "rho2")):
+        m, o = arr("mutual", tau), arr("oneway", tau)
+        out[f"{k}_async"] = {"diff": float(m.mean() - o.mean()),
+                             "se": float(np.sqrt(m.var(ddof=1) / nm + o.var(ddof=1) / no)),
+                             "sigma_m": float(m.std(ddof=1)), "sigma_o": float(o.std(ddof=1))}
+    r12m, r12o = arr("mutual", "rho1") - arr("mutual", "rho2"), arr("oneway", "rho1") - arr("oneway", "rho2")
+    out["D1_minus_D2_async"] = {"diff": float(r12m.mean() - r12o.mean()),
+                                "se": float(np.sqrt(r12m.var(ddof=1) / nm + r12o.var(ddof=1) / no))}
+    T7 = 0.5 * D2s["diff"] - out["D2_async"]["diff"]
+    se7 = float(np.sqrt(0.25 * D2s["se"] ** 2 + out["D2_async"]["se"] ** 2))
+    out["T7"] = {"est": float(T7), "se": se7}
+    out["ratio_D2"] = {"est": out["D2_async"]["diff"] / D2s["diff"] if D2s["diff"] else float("nan"), "pred_M1": 0.21}
+    out["ratio_D1_over_D2sync"] = {"est": out["D1_async"]["diff"] / D2s["diff"] if D2s["diff"] else float("nan"),
+                                   "pred_M1": 0.71}
+    out["T7_outcome"] = "confirmed" if T7 > 3 * se7 else "falsified" if T7 < -3 * se7 else "not resolved"
+    d1 = out["D1_async"]
+    if d1["diff"] > 3 * d1["se"]:
+        pc = "passes"
+    elif d1["diff"] < -3 * d1["se"] or D2s["diff"] > 0.03:
+        pc = "falsified"
+    else:
+        pc = "not resolved (D2_sync <= 0.03)"
+    out["positive_check"] = pc
+    x = out["D1_minus_D2_async"]
+    out["secondary"] = "positive at 3 se" if x["diff"] > 3 * x["se"] else "negative at 3 se" if x["diff"] < -3 * x["se"] \
+        else "not resolved"
+    out["lag1_is_main_test"] = bool(D2s["diff"] < 0.04)
+    out["outcome"] = (f"T7 {out['T7_outcome']}; positive check {pc}; secondary {out['secondary']}"
+                      + ("; D2_sync < 0.04, so the lag-1 check is the main test" if out["lag1_is_main_test"] else ""))
+    return out
 
 
 def verdict(F) -> dict:
@@ -337,6 +387,11 @@ def verdict(F) -> dict:
     falsified = [k for k in ("F1", "F3", "F4", "F6") if F[k]["outcome"].startswith("falsified")]
     if F["F3"]["notes_kept_outcome"] == "falsified":
         falsified.append("F3 (notes kept)")
+    f7d = F.get("F7", {})
+    if f7d.get("T7_outcome") == "falsified":
+        falsified.append("F7 (lag-2 echo survives asynchronous updating)")
+    if f7d.get("positive_check") == "falsified":
+        falsified.append("F7 positive check (no lag-1 echo under asynchronous updating)")
     if falsified:
         label, text = "not supported", "falsified: " + ", ".join(falsified)
     elif f1.startswith("unresolved"):
@@ -349,7 +404,8 @@ def verdict(F) -> dict:
         label, text = "inconclusive (antagonistic part)", ("reciprocity (mutual against one-way) and the ordering confirmed; "
                                                            "the antagonistic sign not resolved at 3 se")
     memory = "one-step memory holds" if F["F2"]["outcome"] == "consistent" else "one-step memory fails (F2)"
-    return {"label": label, "text": text, "memory": memory, "F6": f6, "F5": F["F5"]["outcome"]}
+    return {"label": label, "text": text, "memory": memory, "F6": f6, "F5": F["F5"]["outcome"],
+            "F7": f7d.get("outcome", "not run")}
 
 
 def residuals(W, KT):
@@ -383,7 +439,17 @@ def main():
                 runs[w].append(r)
                 meta[f"{w}:{g}"] = {k: r[k] for k in ("n_missing", "n_censored", "n_calls", "n_refusal", "n_notes",
                                                       "sec_per_round", "m_t", "q_t")} | {"stats": r["stats"]}
-    S = {"runs": meta, "chat": CHAT}
+    global A_RUNS
+    A_RUNS = {w: [] for w in ("mutual", "oneway")}
+    ameta = {}
+    for w in A_RUNS:
+        for g in range(10, 14):
+            r = load_run(w, g, asynchronous=True)
+            if r is not None:
+                A_RUNS[w].append(r)
+                ameta[f"{w}:{g}"] = {k: r[k] for k in ("n_missing", "n_censored", "n_calls", "n_refusal", "n_notes",
+                                                       "sec_per_round", "m_t", "q_t")} | {"stats": r["stats"]}
+    S = {"runs": meta, "async_runs": ameta, "chat": CHAT}
     W = world_table(runs)
     S["worlds"] = W
     for w in W3:

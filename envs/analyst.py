@@ -494,6 +494,10 @@ class AnalystSwarmConfig:
     chat: float = 0.0             # de-bias constant: the call is drawn from tanh(x - chat) (analyst_signrule.md (S1))
     session: int | None = None    # session tag shown to the model; None: the replica index. A fixed tag makes the
                                   # replicas' prompts identical whenever their states are (as in the law)
+    blocks: int = 1               # 1: synchronous rounds. B > 1: block-random schedule of analyst_signrule.md
+                                  # Amendment 1 (each round t >= 1 a permutation from the stored seed
+                                  # (order_seed, t), shared by the replicas, is cut into B blocks that update in turn)
+    order_seed: int = 0
 
 
 def inbox(J: np.ndarray, i: int, calls: np.ndarray, notes: list[str], rng: np.random.Generator):
@@ -553,40 +557,62 @@ class AnalystSwarm:
             t += 1
         return done
 
+    def block_order(self, t: int) -> list[np.ndarray]:
+        """The blocks of round t, in update order: one block of everyone for synchronous rounds and round 0, else the
+        permutation of the stored seed (order_seed, t), cut by np.array_split into cfg.blocks blocks (Amendment 1)."""
+        if self.cfg.blocks == 1 or t == 0:
+            return [np.arange(self.N)]
+        return np.array_split(np.random.default_rng([self.cfg.order_seed, t]).permutation(self.N), self.cfg.blocks)
+
     def _round(self, reps: list[int], t: int, state: dict) -> dict[int, list[dict]]:
-        """Round t for the given replicas in one engine batch. state[rep] = (calls, notes) of round t-1."""
+        """Round t for the given replicas. state[rep] = (calls, notes) of round t-1. Each block decides in one engine
+        batch over all replicas, draws its calls and writes its notes into the current state before the next block;
+        an analyst reads its colleagues' latest calls and notes and its own round-(t-1) ones. The round's records are
+        written only after its last block (a round is complete only when every block is)."""
         N = self.N
-        ctxs = [self.context(rep, t, i, *(state[rep] if t > 0 else (None, None))) for rep in reps for i in range(N)]
-        t0 = time.time()
-        bel = self.backend.beliefs(ctxs, key=(reps[0], t))
-        t1 = time.time()
-        new_calls, ok, ps = {}, [], {}
-        for k, rep in enumerate(reps):
-            u = self.game.U[t, rep]
-            nc = np.empty(N, int)
-            for i in range(N):
-                b = bel[k * N + i]
-                if b["ok"]:
-                    ps[(rep, i)] = sampling_p(b, self.cfg.chat)
-                    nc[i] = 1 if u[i] < ps[(rep, i)] else -1
-                    ok.append((k, rep, i))
-                else:
-                    nc[i] = (1 if u[i] < 0.5 else -1) if t == 0 else state[rep][0][i]
-            new_calls[rep] = nc
-        got = self.backend.notes([ctxs[k * N + i] for k, rep, i in ok], [CALLS[int(new_calls[rep][i])] for k, rep, i in ok],
-                                 key=(reps[0], t), keys=[(rep, t) for k, rep, i in ok])
-        t2 = time.time()
-        note_rec = {(rep, i): g for (k, rep, i), g in zip(ok, got)}
+        cur = {rep: (np.array(state[rep][0]).copy(), list(state[rep][1])) if t > 0 else (None, None) for rep in reps}
+        ctx_all, bel_all, note_rec, ps, new_calls, ok_set, blk_of = {}, {}, {}, {}, {}, set(), {}
+        tb = tn = 0.0
+        for nb, members in enumerate(self.block_order(t)):
+            members = [int(i) for i in members]
+            ctxs = [self.context(rep, t, i, *cur[rep]) for rep in reps for i in members]
+            t0 = time.time()
+            bel = self.backend.beliefs(ctxs, key=(reps[0], t))
+            t1 = time.time()
+            ok = []
+            for k, rep in enumerate(reps):
+                u = self.game.U[t, rep]
+                for m, i in enumerate(members):
+                    b = bel[k * len(members) + m]
+                    ctx_all[(rep, i)], bel_all[(rep, i)], blk_of[i] = ctxs[k * len(members) + m], b, nb
+                    if b["ok"]:
+                        ps[(rep, i)] = sampling_p(b, self.cfg.chat)
+                        new_calls[(rep, i)] = 1 if u[i] < ps[(rep, i)] else -1
+                        ok.append((rep, i))
+                    else:
+                        new_calls[(rep, i)] = (1 if u[i] < 0.5 else -1) if t == 0 else int(state[rep][0][i])
+            got = self.backend.notes([ctx_all[k] for k in ok], [CALLS[int(new_calls[k])] for k in ok],
+                                     key=(reps[0], t), keys=[(rep, t) for rep, i in ok])
+            t2 = time.time()
+            tb, tn = tb + t1 - t0, tn + t2 - t1
+            for k, g in zip(ok, got):
+                note_rec[k] = g
+            ok_set.update(ok)
+            if t > 0:                                            # later blocks read this block's calls and notes
+                for rep in reps:
+                    for i in members:
+                        cur[rep][0][i] = new_calls[(rep, i)]
+                        cur[rep][1][i] = note_rec[(rep, i)]["note"] if (rep, i) in note_rec else state[rep][1][i]
         out = {}
-        for k, rep in enumerate(reps):
+        for rep in reps:
             recs = []
             for i in range(N):
-                b, c = bel[k * N + i], ctxs[k * N + i]
+                b, c = bel_all[(rep, i)], ctx_all[(rep, i)]
                 nr = note_rec.get((rep, i), {"note": state[rep][1][i] if t > 0 else "(no note)", "note_status": "carried"})
                 rec = {"experiment_id": self.cfg.experiment_id, "replica": rep, "round_t": t, "agent_id": i,
                        "status": "ok" if b["ok"] else "missing", "p_buy": b["p_buy"] if b["ok"] else None,
-                       "x": b["x"] if b["ok"] else None, "call": int(new_calls[rep][i]), "u": float(self.game.U[t, rep, i]),
-                       "p_sample": ps.get((rep, i)), "chat": self.cfg.chat,
+                       "x": b["x"] if b["ok"] else None, "call": int(new_calls[(rep, i)]), "u": float(self.game.U[t, rep, i]),
+                       "p_sample": ps.get((rep, i)), "chat": self.cfg.chat, "block": blk_of[i],
                        **{kk: v for kk, v in b.items() if kk not in ("p_buy", "x", "ok")}, **nr,
                        "xi": float(self.game.xi[t, i]), "xi_real": float(self.game.xi_real[t, i]),
                        "p_buy_raw": b["p_buy"]}
@@ -601,8 +627,8 @@ class AnalystSwarm:
                 append_jsonl(self.ckpt, rec)
         append_jsonl(self.dir / "analyst_timings.jsonl",
                      {"experiment_id": self.cfg.experiment_id, "replicas": reps, "round_t": t, "N": N,
-                      "belief_s": t1 - t0, "note_s": t2 - t1, "total_s": t2 - t0,
-                      "n_missing": len(reps) * N - len(ok), "ts": time.time()})
+                      "blocks": len(self.block_order(t)), "belief_s": tb, "note_s": tn, "total_s": tb + tn,
+                      "n_missing": len(reps) * N - len(ok_set), "ts": time.time()})
         return out
 
     def _write_meta(self):
