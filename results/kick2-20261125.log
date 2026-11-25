@@ -1,0 +1,43 @@
+[budget] projection: 53760 calls x (in 400 + cache_read 1000 + cache_write 0, out 700) on claude-haiku-5-5 batch=False -> $21.50 ($0.00040/call); spent $59.20 of cap $1900.00
+[kick2-20261125-inverted-K2-pn0.5-g-0.5-N64-T10-sync-G4] done in 314s, missing 0/1408
+[kick2-20261125-inverted-K2-pn0.5-g-0.5-N64-T10-sync-G2] done in 319s, missing 0/1408
+[kick2-20261125-inverted-K2-pn0.5-g-0.5-N64-T10-sync-G1] done in 320s, missing 0/1408
+[kick2-20261125-inverted-K2-pn0.5-g-0.5-N64-T10-sync-G3] done in 325s, missing 0/1408
+[kick2-20261125-inverted-K2-pn0.5-g-0.5-N64-T10-sync-G0] done in 326s, missing 0/1408
+[kick2-20261125-inverted-K2-pn0.5-g-0.5-N64-T10-sync-G7] done in 326s, missing 0/1408
+[kick2-20261125-inverted-K2-pn0.5-g-0.5-N64-T10-sync-G5] done in 328s, missing 0/1408
+[kick2-20261125-inverted-K2-pn0.5-g-0.5-N64-T10-sync-G6] done in 332s, missing 0/1408
+[kick2-20261125-inverted-K2-pn0.5-g+0.5-N64-T10-sync-G1] done in 303s, missing 0/1408
+[kick2-20261125-inverted-K2-pn0.5-g+0.5-N64-T10-sync-G4] done in 306s, missing 0/1408
+[kick2-20261125-inverted-K2-pn0.5-g+0.5-N64-T10-sync-G2] done in 314s, missing 0/1408
+[kick2-20261125-inverted-K2-pn0.5-g+0.5-N64-T10-sync-G7] done in 303s, missing 0/1408
+[kick2-20261125-inverted-K2-pn0.5-g+0.5-N64-T10-sync-G3] done in 311s, missing 0/1408
+[kick2-20261125-inverted-K2-pn0.5-g+0.5-N64-T10-sync-G0] done in 324s, missing 0/1408
+[kick2-20261125-inverted-K2-pn0.5-g+0.5-N64-T10-sync-G5] done in 312s, missing 0/1408
+[kick2-20261125-inverted-K2-pn0.5-g+0.5-N64-T10-sync-G6] done in 321s, missing 0/1408
+[kick2-20261125-inverted-K4-pn0.5-g-1.0-N64-T10-sync-G1] done in 284s, missing 0/1408
+[kick2-20261125-inverted-K4-pn0.5-g-1.0-N64-T10-sync-G0] done in 296s, missing 0/1408
+[kick2-20261125-inverted-K4-pn0.5-g-1.0-N64-T10-sync-G4] done in 292s, missing 0/1408
+[kick2-20261125-inverted-K4-pn0.5-g-1.0-N64-T10-sync-G2] done in 299s, missing 0/1408
+[kick2-20261125-inverted-K4-pn0.5-g-1.0-N64-T10-sync-G3] done in 299s, missing 0/1408
+[kick2-20261125-inverted-K4-pn0.5-g-1.0-N64-T10-sync-G5] done in 297s, missing 0/1408
+[kick2-20261125-inverted-K4-pn0.5-g-1.0-N64-T10-sync-G7] done in 293s, missing 0/1408
+[kick2-20261125-inverted-K4-pn0.5-g-1.0-N64-T10-sync-G6] done in 303s, missing 0/1408
+[kick2-20261125-inverted-K4-pn0.5-g+0.0-N64-T10-sync-G1] done in 288s, missing 0/1408
+[kick2-20261125-inverted-K4-pn0.5-g+0.0-N64-T10-sync-G0] done in 305s, missing 0/1408
+[kick2-20261125-inverted-K4-pn0.5-g+0.0-N64-T10-sync-G2] done in 300s, missing 0/1408
+[kick2-20261125-inverted-K4-pn0.5-g+0.0-N64-T10-sync-G4] done in 294s, missing 0/1408
+[kick2-20261125-inverted-K4-pn0.5-g+0.0-N64-T10-sync-G3] done in 297s, missing 0/1408
+[kick2-20261125-inverted-K4-pn0.5-g+0.0-N64-T10-sync-G5] done in 295s, missing 0/1408
+[kick2-20261125-inverted-K4-pn0.5-g+0.0-N64-T10-sync-G7] done in 296s, missing 0/1408
+[kick2-20261125-inverted-K4-pn0.5-g+0.0-N64-T10-sync-G6] done in 304s, missing 0/1408
+[kick2-20261125-inverted-K4-pn0.5-g+1.0-N64-T10-sync-G0] done in 297s, missing 0/1408
+[kick2-20261125-inverted-K4-pn0.5-g+1.0-N64-T10-sync-G1] done in 292s, missing 0/1408
+[kick2-20261125-inverted-K4-pn0.5-g+1.0-N64-T10-sync-G4] done in 294s, missing 0/1408
+[kick2-20261125-inverted-K4-pn0.5-g+1.0-N64-T10-sync-G2] done in 296s, missing 0/1408
+[kick2-20261125-inverted-K4-pn0.5-g+1.0-N64-T10-sync-G5] done in 297s, missing 0/1408
+[kick2-20261125-inverted-K4-pn0.5-g+1.0-N64-T10-sync-G3] done in 302s, missing 0/1408
+[kick2-20261125-inverted-K4-pn0.5-g+1.0-N64-T10-sync-G7] done in 296s, missing 0/1408
+[kick2-20261125-inverted-K4-pn0.5-g+1.0-N64-T10-sync-G6] done in 304s, missing 0/1408
+spent $19.5800 on kick2-20261125; 40/40 cells done
+BASE2_EXIT 0

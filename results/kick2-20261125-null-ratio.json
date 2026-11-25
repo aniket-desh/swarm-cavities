@@ -1,0 +1,37 @@
+[
+ {
+  "wording": "inverted",
+  "K": 2,
+  "gamma": -0.5,
+  "n_agree_reader_terms": 1740,
+  "null_rA_ratio": 1.0267720038168315
+ },
+ {
+  "wording": "inverted",
+  "K": 2,
+  "gamma": 0.5,
+  "n_agree_reader_terms": 1809,
+  "null_rA_ratio": 1.1632645317199177
+ },
+ {
+  "wording": "inverted",
+  "K": 4,
+  "gamma": -1.0,
+  "n_agree_reader_terms": 3397,
+  "null_rA_ratio": 0.9982637918994219
+ },
+ {
+  "wording": "inverted",
+  "K": 4,
+  "gamma": 0.0,
+  "n_agree_reader_terms": 3522,
+  "null_rA_ratio": 1.0105030355936058
+ },
+ {
+  "wording": "inverted",
+  "K": 4,
+  "gamma": 1.0,
+  "n_agree_reader_terms": 3574,
+  "null_rA_ratio": 1.0905818677260724
+ }
+]
