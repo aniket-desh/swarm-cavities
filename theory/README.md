@@ -1,82 +1,116 @@
-# Theory for swarm-cavity: what holds, what changes, what to test
+# Theory for swarm-cavity: the current statement
 
-The six claims of `docs/spec.md` were derived, checked against direct simulation of a toy swarm, and red-teamed.
-Each note (`claim1.md` … `claim6.md`) opens with its verdict and names the script in `theory/checks/` that verifies
-each formula and what it printed; `solver_spec.md` specifies `theory/dmft_solver.py` with reference numbers. Two
-of the spec's claims are false as stated (2 and the early-warning part of 3), one has the sign of its main effect
-wrong (4), and the rest hold after corrections.
+Last updated 2026-11-25 (evening). This file is the one place to read for the state of the theory. The derivations
+live in the notes it links (`claim1.md` … `claim6.md`, `quiet_regime.md`), each of which opens with its verdict and
+names the scripts in `theory/checks/` that verify its formulas.
 
-## Verdicts
+**Where things stand.** The cavity reduction itself holds after three corrections, but the swarms we can afford to
+run don't sit where its striking predictions live. Haiku 5.5 agents in this game are weakly coupled once real
+messages are used (real messages couple 25–50% more weakly than the templates the first calibration used, and the
+inverted disagree channel nearly switches off), and they anchor on their own last answer whenever their inbox brings
+nothing new. Both push every Haiku cell into a quiet regime (Λ ≈ 0.45 at best) where the oscillation and
+amplification signatures of claims 2–3 can't be measured. What still isolates the cavity-specific structure is the
+reaction term itself, which a kick-and-echo experiment measures directly; its predictions are frozen and stage 1 is
+being set up. The open-weight track (Qwen3.5-9B) is the route to stronger coupling and large N: in the Physics of
+Agents data that model sits beyond the stability boundary at round 0, though with binary votes rather than stated
+probabilities.
 
-| claim | verdict | what replaces it |
+## 1. What the data have shown (Haiku 5.5)
+
+- **Peers act through a two-channel linear field, not the nominal one** (`experiments/03_calibration/RESULT.md`).
+  The nominal field fails (η²_comp = 0.48): sources labelled "you tend to disagree with" still attract at about 40%
+  of agree strength. Separate agree and disagree gains fit (held-out RMSE 0.058 against a 0.022 floor), and since the
+  two-channel field is linear in the peers' states, the DMFT applies with effective couplings W ≠ J. A wording that
+  tells agents disagree sources are miscalibrated makes the disagree gain repel. The Physics of Agents data say the
+  same for four other models (`results/poa/README.md`: two gains needed, b₋/b₊ between −0.43 and +0.18, averaging
+  slightly better than summing).
+- **The template calibration does not transfer to real messages** (transfer check, 600 paired probes per cell,
+  `results/transfer/summary.json`). With real swarm messages: inverted K=2 a₊ = 0.80 (0.03), a₋ = 0.15 (0.02);
+  inverted K=4 a₊ = 0.66 (0.05), a₋ = 0.22 (0.04); label K=2 a₊ = 0.54 (0.03), a₋ = −0.24 (0.02); label K=4
+  a₊ = 0.40 (0.03), a₋ = −0.21 (0.02). Templates gave 25–50% larger a₊ and 2–3× larger inverted a₋. Gains per unit
+  normalized field fall from K=2 to K=4: agents average their inbox.
+- **The swarm settles into anchored states** (pilot, inverted wording, K = 2 and 4, γ ∈ {−1, 0, +1}, N = 64, T = 10,
+  one graph each). Replica differences persist (c1 = 0.68–0.80 against 0.29–0.33 predicted), 22–39% of agents
+  repeat their answer exactly in late rounds, P_δ ≈ 1.7–2.4, and c2 shows no sign flip at γ = −1 (it rises with γ:
+  K=4 gives 0.33, 0.40, 0.61). The single-agent white probes, whose field changes every round, show little
+  persistence, so the anchoring is state-dependent.
+- **Physics of Agents data, zero cost** (`results/poa/README.md`): period-2 flicker on synchronous graphs is real and
+  disappears under asynchronous updates (period index 0.26–0.29 against 1.17–1.18, predicted 0.24–0.25 and
+  1.15–1.16 by the fitted two-channel agent); short odd cycles, not global bipartiteness, suppress it; and coupling
+  induces replica overlap (Δq > 0 in every model and task).
+
+## 2. The current single-agent law (`quiet_regime.md` section 1)
+
+The agent moves toward a two-channel tanh target τ by (1 − ρ(u))(τ − s), where u is the mean change of its K inbox
+messages since its last answer and ρ(u) = ρ∞ + (ρ0 − ρ∞) e^(−u/u0) falls from about 0.7 (inbox unchanged) to about
+0.2 (new inbox). It repeats exactly with a probability that falls with the size of its move, and its noise grows with
+the move. Fitted on the white probes alone it closes two thirds of the gap in c1; with three parameters and the gains
+taken from the pilot it reproduces ten pilot observables to an r.m.s. of 1.2–2.5 simulated s.d. (the old i.i.d.-noise
+surrogate: 2.4–99), which is in-sample. Two consequences: the transfer gains are one-shot gains, (1 − ρ∞) ≈ 0.81 times
+the target gains; and the gating scale u0 is barely identified (s.e. as large as the value). Code:
+`experiments/04_swarm_design/surrogate_v2.py`. It misses the γ dependence of c2 at K=4 (pilot +0.29 between γ = ±1,
+law +0.07 ± 0.07) and the heavy-tailed noise.
+
+## 3. Verdicts on the six claims, and what the data have tested
+
+| claim | verdict from the derivations | tested by data so far |
 |---|---|---|
-| 1. DMFT reduction | **Holds, with three corrections.** Noise covariance is the full $\langle ss\rangle$; the reaction term is $\sum_{t'<t}R_b(t,t')s_a(t')$ (a two-round echo, not three); the kernel is the neighbour population's. Corrected equations match an $N=4000$ simulation to 0.004; each spec error alone is off by 0.03–0.06. The solution is one causal forward pass, with no fixed-point loop. | Unknown for LLMs: whether peers act only through a scalar field. With text, $g\approx\beta_{\rm resp}\sqrt{\langle w^2\rangle/K}$, so order-one disorder needs few messages or steep conformity. |
-| 2. Sharp $\gamma_c$ into frozen polarization | **False as stated.** | Boundary $\Lambda=\max_\omega g^2\langle\lvert R_i(\omega)\rvert^2\rangle=1$; for homogeneous memoryless agents $d\,g(1+\lvert\gamma\rvert)=1$. Under synchronous rounds $\gamma<0$ destabilizes as much as $\gamma>0$ (period 4 against period 2). Beyond it, $0<\gamma<1$ gives slow chaos with period-2 flicker; exact freezing only at $\gamma=1$ (or $\gamma\gtrsim0.9$ at finite $N$ without noise), into 2-cycles, after hundreds of rounds. Nothing sharp in $\gamma$ is visible at $T=10$. |
-| 3. Two-site cavity and PR | **Theory holds; safety claim false.** Discrete-time two-site equations verified (PR/N to <1%). PR falls smoothly toward the bulk instability ($1-\Lambda^2$ at $\gamma=0$, more slowly with reciprocity). | Near a zealot saddle-node PR does not fall before the flip: among unflipped replicas it stays flat or rises, while $N_B\mathrm{Var}(m_B)$ rises 5–20×. PR is an ensemble statistic needing $R\approx256$ replicas at $N=32$ with the U-statistic estimator. |
-| 4. Zealot $\rho_c$ and hysteresis | **Threshold and hysteresis: already known** (De Marzo et al. 2026 is the $g=0$ limit), and only for steep conformity curves. **$\gamma$ dependence: sign wrong in the spec.** | $\gamma>0$ raises the forward threshold slightly ($+0.12$ to $+0.18\,g^2$ per unit $\gamma$) and lowers the backward one ($-0.4$ to $-0.5\,g^2$), widening the loop: 0.010 → 0.103 from $\gamma=-0.5$ to $1$ at $g=0.3$. Disorder with $\gamma\le0$ narrows the loop and can remove it. No effect on a broadcast board ($g=0$). |
-| 5. Sparse graphs | **Holds, in its near-tautological form.** Directed graphs are exactly solvable by population dynamics over trajectories; reciprocated edges need a closure; triangles give the leading loop correction, weighted by their sign. | At $N=32$, $k=3.5$ the graphs are not tree-like; simulate a surrogate on the actual graph. |
-| 6. Mechanistic bridge | **Not meaningful as written.** The monotone relation is guaranteed by a confidence confound, and the spec's contrast extracts a content direction whose steering is a bias, not a change of coupling. | A gain direction, tested on one agent first: slope changes, intercept does not, ablation removes the social response (`claim6.md`). |
+| 1. DMFT reduction (`claim1.md`) | **Holds with three corrections**: full ⟨ss⟩ noise covariance, a two-round reaction term ΣR(t,t′)s(t′), the neighbour population's kernel; matches an N = 4000 simulation to 0.004. | **Scalar-field premise tested and revised**: a two-channel field is needed (Haiku, Physics of Agents). The reaction term is **untested**; kick and echo (section 4) tests it. Zero-shot DMFT curves are no longer zero-shot, since the agent law was tuned on the pilot. |
+| 2. Sharp γ_c into frozen polarization (`claim2.md`) | **False as stated.** Boundary d·g(1+\|γ\|) = 1 for memoryless agents; γ < 0 destabilizes too (period 4); no freezing for γ < 1. | **Unmeasurable for Haiku.** Anchoring moves the γ = −1 boundary to d·g = ½√((1+ρ)/(1−ρ)) ≈ 1.19 at ρ ≈ 0.7 and leaves the static one in place (`quiet_regime.md` 2.2); real gains give d·g ≈ 0.4. P_δ = (1−c2)/(1−c1) for any stationary sequence and carries no period information. Period-2 flicker as a synchronous-update effect is **confirmed** in the Physics of Agents data. |
+| 3. Two-site cavity and PR (`claim3.md`) | **Theory holds; safety claim false**: PR doesn't fall before a zealot flip, N·Var(m_B) rises 5–20×. | **Untested.** Needs a model and setting with a tipping point (section 5). |
+| 4. Zealot threshold and hysteresis (`claim4.md`) | Threshold and hysteresis already known (De Marzo et al. 2026); **the spec's γ effect has the wrong sign**: γ > 0 widens the loop. | **Untested.** Hysteresis needs bistability (steep conformity); Haiku's response is not steep, so it likely has none in this game. |
+| 5. Sparse graphs (`claim5.md`) | Holds in its near-tautological form; at small K simulate on the actual graph. | **Consistent**: all current predictions are simulations on actual graphs at K = 2–4. On K = 2, γ = +1 graphs the largest eigenvalue of d·W is 0.73–0.84 with target gains, the one cell with slow modes. |
+| 6. Mechanistic bridge (`claim6.md`) | **Not meaningful as written** (confidence confound; the contrast extracts content, not coupling). | **Untested**; a single-agent gain-direction test on an open model comes first. |
 
-Derived and verified numerically: claim 1 equations; the stability boundary including quenched fields; the two-site
-system for linear dynamics at any $\gamma$ and for nonlinear agents at $\gamma=0$; the zealot fixed points and
-thresholds; the PR estimator. Derived but not verified: multi-channel fields, the multi-population forms of claims
-2–3, the two-site system for nonlinear agents with $\gamma\neq0$, reciprocity creating a threshold for voter-like
-agents. Numerical observation without derivation: the growth of the correlation time with $\gamma$. Conjecture: a
-genuine noiseless transition somewhere in $0.8<\gamma<1$.
+Derived and verified numerically: claim 1's equations; the stability boundary with quenched fields and its anchored
+form; the two-site system for linear dynamics at any γ and for nonlinear agents at γ = 0; the zealot thresholds; the
+PR estimator; the kick-and-echo formulas (K1)–(K5). Derived but not verified: the multi-population forms of claims
+2–3, the two-site system for nonlinear agents with γ ≠ 0, a single-site DMFT of the anchored law (it is a two-channel
+case of claim 1 eqs. (11)–(12), not worked out).
 
-## Update after the pilot swarm: the quiet, anchored regime (`quiet_regime.md`)
+## 4. Kick and echo: the frozen predictions (`quiet_regime.md` section 3)
 
-The Haiku 5.5 pilot swarm and the real-message transfer check put every cell in the quiet regime, and the agent
-keeps about 0.7 of its own last answer when its inbox has not changed. `quiet_regime.md` gives the revised
-single-agent law (`experiments/04_swarm_design/surrogate_v2.py`), shows that anchoring moves the period-4 boundary
-from $d\,g(1+|\gamma|)=1$ to $\sqrt{(1+\rho)/(1-\rho)}$ while leaving the static one in place, and replaces tests
-2 and 3 of the table below by a direct measurement of the reaction term: kick one agent's message once and read
-its own answer two rounds later. The echo is zero at $\gamma=0$ by construction, its sign follows $\gamma$ and the
-wording, and its size can be predicted from first-order responses measured in the same experiment. Frozen
-predictions are in section 3.8 of that note and in `checks/kick_predictions.json`.
+Kick one agent's outgoing message once (mirror it: p → 1 − p, HEADS ↔ TAILS) as its readers see it at round t0+1,
+leave its own history true, and compare its answer at t0+2 with an unperturbed twin; unaffected agents replay from
+the cache, identical and free. The echo is exactly zero without reciprocated ties (γ = 0), and otherwise it is the
+reaction term ΓR of claim 1:
 
-## Physics of Agents data: usable at zero cost, and two predictions already pass
+E = Σ_types (n_type/K²) a_ij a_ji ⟨d_i d_j⟩  →  positive through concordant ties in both wordings, negative through
+discordant ties when the disagree channel repels (inverted) and positive when it attracts (label).
 
-The release is a synchronous, symmetric ($\gamma=1$), memoryless swarm at $N=32$, $T=8$, with four replicas on each
-of ten graphs per question. It cannot test PR (four replicas), negative or partial reciprocity (all graphs are
-symmetric), memory, or ensemble cavity curves (graphs too small to be tree-like). It can test three things, and
-`theory/checks/check_poa_zero_cost.py` ran the first two on all 9,600 communities (`out_poa_zero_cost.txt`):
+Settled kicks (t0 ∈ {6, 8}), N = 64, p₋ = 0.5. "Linear" uses the real-message gains (±1 s.d.); "anchoring" simulates
+the law of section 2.
 
-1. **Period-2 flicker on bipartite graphs** (`claim2.md` §4, `claim5.md` §4). Prediction: one-round changes exceed
-   two-round changes, most on bipartite graphs, not on non-bipartite ones. Result, excess displacement ratio
-   $E_2/E_1$ over rounds 3–8 after removing vote-sampling noise: 0.18–0.66 on the all-positive bipartite lattices,
-   0.22–0.70 on the random signed graphs, and 0.88–1.31 on the all-positive non-bipartite lattices, for all four
-   models and both task types (differences $E_1-E_2$ are 4 to 12 standard errors on bipartite lattices and within
-   about 0.03 of zero on non-bipartite ones). Caveats: the two lattice types also differ in degree, and the paper
-   itself notes oscillation under synchronous updates; the asynchronous release is the control and has not been
-   analysed.
-2. **Coupling-induced replica overlap** (`claim2.md` §5). $\Delta q(0)=0.000\pm0.001$ as it must be, and
-   $\Delta q(t\ge1)>0$ for every model and task: 0.015–0.04 on objective tasks for the three small open models,
-   0.07–0.24 on subjective tasks for those models, and for GPT-4o-mini 0.07–0.13 (objective) and 0.25–0.55
-   (subjective), alternating between odd and even rounds, which is the same flicker seen across replicas.
-3. **Field sufficiency in counts** (`claim1.md` §4.1), not yet run: regress the five votes on agree- and
-   disagree-inbox counts with quadratic and interaction terms.
+| wording, K | γ = −1: E linear | E anchoring | γ = +1: E linear | E anchoring |
+|---|---|---|---|---|
+| inverted, 2 | −0.0285 ± 0.0051 | −0.0128 | +0.0581 ± 0.0067 | +0.0672 |
+| inverted, 4 | −0.0200 ± 0.0039 | −0.0063 | +0.0300 ± 0.0046 | +0.0132 |
+| label, 2 | +0.0329 ± 0.0065 | +0.0208 | +0.0388 ± 0.0075 | +0.0307 |
+| label, 4 | +0.0110 ± 0.0024 | +0.0030 | +0.0123 ± 0.0027 | +0.0047 |
 
-Recommendation: finish item 3 and the asynchronous control before any API spend. These are first-look analyses of
-the whole dataset with no tuning, not a fitted model comparison.
+Two relations need no gains at all: E(±0.5) = ½E(±1), and the factorization slope F (the echo regressed on the
+partners' measured first-order changes, weighted by slope factors, eq. (K5)) equals 1 if responses compose linearly,
+equals the open-path control F_open unless agents discount their own returning influence, and falls to about 0.75
+(K = 2) or 0.53 (K = 4) under anchoring. Status: the machinery is verified (exact zero at γ = 0 and the predicted
+sign on a mock; only downstream agents are paid), a 384-twin pilot on the pilot graphs passed every methods check,
+and stage 1 (both wordings, K = 2, γ ∈ {−1, 0, +1}, about 2,000 twins per cell, about $40) is defined in
+`experiments/07_kick/DESIGN.md`. **No echo has been compared with these predictions yet.**
 
-## Predictions worth testing on Claude swarms (about \$600 planned, inside \$1,500)
+## 5. What the open-weight track is for
 
-Costs assume roughly \$0.0003 per Haiku 5.5 agent call and \$0.006 per Sonnet 5.5 call (about 1.2k input and 400
-output tokens, no batch discount). These are estimates to be replaced by the smoke test's `response.usage`; the plan
-leaves a factor of two.
+Haiku can't reach the regimes where claims 2–4 make visible predictions, and the API budget caps Claude swarms near
+N = 64. Qwen3.5-9B on vLLM (`envs/vllm_backend.py`; beliefs from digit-token logprobs, so the stated number has no
+sampling noise) can run N = 256–1024. The question being measured (`experiments/06_qwen_*`) is whether any
+(K, wording) puts a Qwen swarm near the stability boundary (Λ ≳ 0.7) or makes it bistable (conformity slope > 1),
+using real-message calibration. If so, that is where the oscillation, zealot-hysteresis and Var(m_B) predictions get
+tested. **Not measured yet.**
 
-| # | prediction | measurement | expected effect | falsified if | cost |
-|---|---|---|---|---|---|
-| 1 | Peers act through a scalar field; the model's conformity slope and channel gains fix $g$, $\bar J$ | single-agent probes: equal field, six compositions; conformity curve; agree/disagree gains $b_\pm$ (`claim1.md` §4.1) | composition variance ratio $\eta^2_{\rm comp}<0.05$; $g=\beta_{\rm resp}\sqrt{\langle w^2\rangle/K}$ | a composition contrast above 20% of the response range at fixed field; then use the multi-channel form or stop | 3k–6k calls: \$2 Haiku, \$40 Sonnet |
-| 2 | Reciprocity selects the oscillation, with no sharp $\gamma_c$ | $N=64$, $T=10$, $\gamma\in\{-r_{\max},0,0.5,1\}$ at a gain below and one above the predicted boundary, 50 graphs × 2 replicas: period index $\mathcal P=A_2/A_1$, amplification $\mathcal A$, $\hat\Lambda$, $\Delta q$ (`claim2.md` §5); asynchronous control at one $\gamma<0$ | above the boundary $\mathcal P\approx1$ at $\gamma=0$, $\le0.3$ for $\gamma\ge0.5$, $>1.5$ for $\gamma<0$; $\mathcal A\approx1/(1-\Lambda)$ below, $\ge5$ above; toy values in `claim2.md` | $\mathcal P$ independent of $\gamma$ above the boundary; $\mathcal A$ off by more than 2× from the value implied by the measured kernel; oscillation at $\gamma<0$ surviving asynchronous updates | 8 cells × 64k calls: \$160 |
-| 3 | Zero-shot DMFT curves from single-agent calibration | $m(t)$, $C(t,t')$ of swarms at $N=32,64$, $\gamma\in\{0,1\}$, 20 graphs × 2 replicas, against the solver fed by test 1 | residual within 3 s.e. and shrinking with $N$; the reaction term shifts $C(t,t-2)$ in the direction of $\gamma$ | residual that does not shrink from $N=32$ to $64$, or the $\gamma=1$ swarm matching the no-reaction prediction better | 77k calls: \$25 Haiku; $N=32$ slice on Sonnet \$155 |
-| 4 | Reciprocity widens hysteresis and barely moves the forward threshold | zealot fraction sweep, 8 values × 40 runs at $N=32$ for broadcast ($g=0$), $\gamma=0$, $\gamma=1$; then partial zealot removal to three levels | forward 50%-flip point shifts by less than 0.02 between $\gamma=0$ and $1$; recovery after partial removal less frequent at $\gamma=1$; shifts scale as $g^2$ from test 1 | $\gamma=1$ lowering the forward threshold by more than 0.03 (the spec's claim), or recovery more frequent at $\gamma=1$ | 570k calls: \$170 |
-| 5 | PR does not warn before the flip; $\mathrm{Var}(m_B)$ does | three zealot fractions approaching the threshold, $R=256$ replicas, $N=32$, $T=8$; corrected PR and $N_B\mathrm{Var}(m_B)$ over unflipped replicas | PR/$N_B$ of unflipped replicas within 10% of baseline; $N_B\mathrm{Var}(m_B)$ up at least 3× | PR of unflipped replicas down more than 20% at a fraction where fewer than 5% of replicas have flipped | 200k calls: \$60 |
+## Files
 
-Order: the Physics of Agents analyses, then test 1 (it decides whether $g$ is large enough for tests 2–4 to show
-anything; if $\beta_{\rm resp}\sqrt{\langle w^2\rangle/K}\,(1+|\gamma|)$ stays well below 1 the swarm is in the quiet
-regime, and test 2 reduces to checking $\mathcal A=1/(1-\Lambda)$), then 2, 3, 4, 5. Test 2 is the highest-value
-swarm experiment: it is where the corrected theory and the spec disagree most visibly, and its main observable
-already shows the predicted pattern in the Physics of Agents data. The mechanistic bridge (claim 6) is not in this
-list; its single-agent version costs a few GPU-hours and should precede any steering of swarms.
+- `claim1.md` … `claim6.md`: the original derivations and red-team, with verdicts; `solver_spec.md` and
+  `dmft_solver.py`: the Gaussian DMFT solver (gate a, reference tests in `tests/test_solver.py`).
+- `quiet_regime.md`: the anchored agent law, what still discriminates, kick-and-echo derivation and predictions.
+- `checks/`: one script per verified formula with its printed output; `checks/kick_predictions.json` and
+  `checks/kick_surrogate_table.json` hold the frozen kick numbers.
+- Data behind section 1: `experiments/03_calibration/`, `experiments/05_swarm/` (pilot, transfer),
+  `results/poa/README.md`, and the status log in `HANDOFF.md`.
