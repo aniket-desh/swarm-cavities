@@ -6,7 +6,8 @@ computes every fitted number; this file only draws). One question per figure:
   analyst_calib_linearity  Are the log-odds linear in the ally / faded call counts?  (partial residuals of x against
                            the net count per group: gray probes, black bin means with s.e., line = the M1 slope)
   analyst_calib_gonogo     Does any wording reach the stability boundary?  (Lambda_mutual against abar: the theory's
-                           curve at the measured nu, a0, equal gains; black points = wordings with s.e.; 0.7 line)
+                           curves at the mild wording's nu, a0, equal gains, with c = 0 and with the measured BUY bias;
+                           black points = wordings at their own measured parameters, with s.e.; 0.7 line)
 
 Conventions (paper-writing figure rules): gray = individual realizations, black = means or estimates with s.e., lines
 = theory or fitted model. PDF and PNG in paper/figures/.
@@ -58,7 +59,7 @@ def gains(S):
 
 def linearity(S):
     design, recs = an.load_probes()
-    fig, axs = plt.subplots(2, len(WORDINGS), figsize=(10, 4.6), sharey="row")
+    fig, axs = plt.subplots(2, len(WORDINGS), figsize=(10, 5.4), sharey="row")
     for j, w in enumerate(WORDINGS):
         rows = an.rows_for(design, recs, w, "real", sorted(design))
         f = S["probes"][f"{w}|real"]
@@ -84,6 +85,7 @@ def linearity(S):
             if i == 0:
                 ax.set_title(w, fontsize=10)
     axs[0, 0].legend(frameon=False, fontsize=7)
+    fig.tight_layout()
     save(fig, "analyst_calib_linearity")
 
 
@@ -91,20 +93,23 @@ def gonogo(S):
     G = S["gonogo"]
     fig, ax = plt.subplots(figsize=(4.2, 3.2))
     mild = S["probes"]["mild|real"]
-    nu, a0 = abs(mild["nu_05"]["est"]), abs(mild["a0"]["est"])
-    ab = np.linspace(0.25, max(7.0, max(g["abar"] for g in G.values()) * 1.15), 30)
-    lam = [an.lam_mutual(a, a, nu, a0, 0.0, 0.0, M=2000, copies=48)["Lam"] for a in ab]
-    ax.plot(ab, lam, "-", color="k", lw=0.9, label=fr"theory, $a_+=a_-$, $\nu$={nu:.2f}, $a_0$={a0:.2f}")
-    for w, g in G.items():
+    nu, a0, c = abs(mild["nu_05"]["est"]), abs(mild["a0"]["est"]), mild["c"]["est"]
+    ab = np.linspace(0.25, 7.0, 28)
+    for cc, ls in ((0.0, "-"), (c, "--")):
+        lam = [an.lam_mutual(a, a, nu, a0, cc, 0.0, M=2000, copies=48)["Lam"] for a in ab]
+        ax.plot(ab, lam, ls, color="k", lw=0.9, label=fr"theory, $a_+=a_-$, $c$={cc:+.2f}")
+    for k, (w, g) in enumerate(sorted(G.items(), key=lambda kv: kv[1]["abar"])):
         ax.errorbar(g["abar"], g["Lam_mutual"], xerr=g["abar_se"], yerr=g["Lam_mutual_se"], fmt="o", color="k",
                     ms=4, capsize=2)
-        ax.annotate(w, (g["abar"], g["Lam_mutual"]), textcoords="offset points", xytext=(4, -10), fontsize=8)
+        ax.annotate(w, (g["abar"], g["Lam_mutual"]), textcoords="offset points", xytext=(-6, 12 + 11 * k),
+                    fontsize=7, arrowprops=dict(arrowstyle="-", lw=0.4, color="0.4"))
     ax.axhline(0.7, ls="--", color="0.5", lw=0.8)
     ax.text(ab[0], 0.72, "boundary-sweep threshold 0.7", fontsize=7, color="0.4")
     ax.set_xlabel(r"$\bar a=\sqrt{(a_+^2+a_-^2)/2}$")
     ax.set_ylabel(r"$\Lambda_{\rm mutual}$ (single-site solver)")
     ax.set_ylim(0, 1)
-    ax.legend(frameon=False, fontsize=7, loc="lower right")
+    ax.legend(frameon=False, fontsize=7, loc="center right")
+    ax.text(ab[-1], 0.02, "points: own a$_\\pm$, $\\nu$, $a_0$, $c$, $\\kappa$", fontsize=6, ha="right", color="0.3")
     save(fig, "analyst_calib_gonogo")
 
 

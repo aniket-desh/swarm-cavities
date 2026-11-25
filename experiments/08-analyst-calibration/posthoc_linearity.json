@@ -1,0 +1,82 @@
+{
+ "mild": {
+  "blocA_dev": [
+   -0.095,
+   0.073
+  ],
+  "blocD_dev": [
+   -0.0,
+   0.068
+  ],
+  "labels": {
+   "blocA": "inconclusive",
+   "blocD": "inconclusive",
+   "signA": "holds",
+   "signD": "inconclusive"
+  },
+  "M3_a_plus": 1.51,
+  "M3_fA3": -0.88,
+  "slope_f0": 1.51,
+  "slope_f05": 0.85
+ },
+ "moderate": {
+  "blocA_dev": [
+   -0.116,
+   0.068
+  ],
+  "blocD_dev": [
+   0.001,
+   0.068
+  ],
+  "labels": {
+   "blocA": "inconclusive",
+   "blocD": "inconclusive",
+   "signA": "holds",
+   "signD": "inconclusive"
+  },
+  "M3_a_plus": 1.75,
+  "M3_fA3": -1.08,
+  "slope_f0": 1.75,
+  "slope_f05": 0.94
+ },
+ "strong": {
+  "blocA_dev": [
+   -0.13,
+   0.061
+  ],
+  "blocD_dev": [
+   0.063,
+   0.059
+  ],
+  "labels": {
+   "blocA": "fails",
+   "blocD": "inconclusive",
+   "signA": "holds",
+   "signD": "inconclusive"
+  },
+  "M3_a_plus": 1.26,
+  "M3_fA3": -1.0,
+  "slope_f0": 1.26,
+  "slope_f05": 0.51
+ },
+ "max": {
+  "blocA_dev": [
+   -0.159,
+   0.072
+  ],
+  "blocD_dev": [
+   0.056,
+   0.076
+  ],
+  "labels": {
+   "blocA": "inconclusive",
+   "blocD": "inconclusive",
+   "signA": "holds",
+   "signD": "inconclusive"
+  },
+  "M3_a_plus": 2.04,
+  "M3_fA3": -1.24,
+  "slope_f0": 2.04,
+  "slope_f05": 1.11
+ }
+}

@@ -1,7 +1,7 @@
 ---
 name: 08-analyst-calibration
 title: Analyst scenario: Qwen3.5-9B pilot swarm (N=256, K=16) and single-agent calibration of the law (A1)-(A3) with real colleague notes
-status: approved
+status: done
 gpu: NVIDIA A40,NVIDIA RTX A6000,NVIDIA L40S
 count: 1
 min_gpu_gb: 40
@@ -11,6 +11,9 @@ disk_gb: 120
 data:
 secrets:
 approved_utc: 2026-11-25T17:33:11Z
+result: not-supported
+finished_utc: 2026-11-25T18:34:06Z
+writeup: experiments/08-analyst-calibration/RESULT.md
 ---
 
 # Analyst scenario: Qwen3.5-9B pilot swarm (N=256, K=16) and single-agent calibration of the law (A1)-(A3) with real colleague notes
@@ -224,4 +227,11 @@ None.
 
 ## Outcome
 
-Not run yet.
+- Run complete: pilot 0 of 8,448 missing; all 9 probe files 0 of 1,000 (or 100) missing, 0 censored.
+- Linear in the counts: inconclusive (mild, moderate), fails (strong, max) by the pre-registered rule; no majority step;
+  mild concavity. The strong/max "fails" comes from the faded-side test with a₋ ≈ 0 and the bloc s.e. (see RESULT.md).
+- Adding, not averaging: fails in every wording (group-mean coefficient 0.34 to 0.66, s.e. ≤ 0.09).
+- Call, not confidence: untestable (SELL tercile gap 0.36 < 0.4).
+- Overall: not supported (adding fails in both wordings with ā ≥ 1).
+- Go/no-go: three-world contrast no-go (a₋ < 0 in every wording); boundary sweep no-go (Λ_mutual ≤ 0.015, ā ≤ 1.24).
+- Cost ≈ $1.0 (L40S, 0.9 h) against a $1.5 projection and a $4 budget. Write-up: RESULT.md.
