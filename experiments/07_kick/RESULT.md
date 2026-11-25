@@ -88,9 +88,14 @@ the same on closed and open paths, so it belongs to the single agent, not to the
 Haiku under-reacts to news that agrees with its lean and reacts fully to news that contradicts it, as a stated-
 confidence ceiling would produce. It also explains why the inverted γ = −1 echo, the one cell whose returning change
 is confirming, is about half the naive composition of its first-order responses (−0.0146 against −0.033), while the
-other three cells, whose returning changes are disconfirming, compose almost exactly. This was not pre-registered and
-should be tested directly (single-agent probes with confirming against disconfirming single-message changes) before it
-is relied on.
+other three cells, whose returning changes are disconfirming, compose almost exactly. Part of any such asymmetry is
+plain tanh curvature (a finite confirming change pushes the agent toward saturation, where its slope is smaller), but
+tanh agents run through the same twin code and estimator give only confirming 0.87–0.96 against disconfirming
+0.96–1.03 (ratio ≈ 0.9), against Haiku's ≈ 0.55. The first-order responses point the same way without any second
+step: agree-tie readers whose lean the kick contradicts respond more than readers it confirms in all six cells
+(0.300 vs 0.196, 0.268 vs 0.216, 0.235 vs 0.207 in the inverted cells; 0.124 vs 0.103, 0.118 vs 0.109, 0.109 vs 0.093
+in the label cells, s.e. 0.005–0.025). This was not pre-registered and should be tested directly (single-agent probes
+with confirming against disconfirming single-message changes at matched size) before it is relied on.
 
 ## Figures
 
