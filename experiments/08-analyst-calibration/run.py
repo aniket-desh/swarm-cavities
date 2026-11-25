@@ -54,6 +54,7 @@ ARMS = ("real", "template")
 N_BASE, N_DUP, PROBE_SEED = 1000, 100, 8008
 NU_NOMS, A0_NOM = (0.5, 1.0), 0.3
 BATCH = 512
+LOGPROBS = 100          # top-k logprobs of the decision token: censoring of x needs P(other side) < ~1e-8
 PROGRESS = os.environ.get("ORCH_PROGRESS")
 
 
@@ -64,7 +65,7 @@ def progress(msg: str):
 
 
 def make_llm():
-    return vb.make_llm(max_num_seqs=256)
+    return vb.make_llm(max_num_seqs=256, max_logprobs=LOGPROBS)
 
 
 def pilot_graph(world: str) -> np.ndarray:
@@ -78,7 +79,7 @@ def step_tok(llm):
     import torch
     import vllm
     print("vllm", vllm.__version__, "torch", torch.__version__, "gpu", torch.cuda.get_device_name(0), flush=True)
-    be = A.AnalystVLLM(llm, "strong", "tok")
+    be = A.AnalystVLLM(llm, "strong", "tok", logprobs=LOGPROBS)
     g = A.make_game(1, 1, seed=0)
     ctx = A.AnalystContext(0, 1, 3, g.notes[0].text(), "UP", 68, own=("BUY", "Leaning up."),
                            allies=(("BUY", "Indicators up."),) * 8, faded=(("SELL", "Down."),) * 8)
@@ -98,7 +99,7 @@ def step_smoke(llm):
     rng = np.random.default_rng(1)
     g = A.make_game(6, 1, seed=1)
     for w in WORDINGS:
-        be = A.AnalystVLLM(llm, w, f"smoke-{w}")
+        be = A.AnalystVLLM(llm, w, f"smoke-{w}", logprobs=LOGPROBS)
         ctxs = []
         for i in range(6):
             if i < 2:
@@ -121,7 +122,7 @@ def step_smoke(llm):
     # a small swarm: N=64, K=16, one-way, mild, T=2
     J = fixed_indegree_signed_couplings(64, 16, 0.0, 0.5, np.random.default_rng(5))
     cfg = A.AnalystSwarmConfig("analyst-smoke-20261125", T=2, K=16, results_root=RESULTS)
-    out = A.AnalystSwarm(J, A.make_game(64, 2, seed=5), cfg, A.AnalystVLLM(llm, "mild", cfg.experiment_id)).run()
+    out = A.AnalystSwarm(J, A.make_game(64, 2, seed=5), cfg, A.AnalystVLLM(llm, "mild", cfg.experiment_id, logprobs=LOGPROBS)).run()
     recs = list(read_jsonl(RESULTS / cfg.experiment_id / "analyst_calls.jsonl"))
     for r in recs[::4]:
         print(f"t={r['round_t']} i={r['agent_id']} P {r['p_buy_raw']:.3f} call {r['call']:+d} [{r['note_status']}] {r['note']}")
@@ -145,7 +146,7 @@ def step_pilot(llm):
         t0 = time.time()
         exp = f"{PILOT_TAG}-{w}"
         cfg = A.AnalystSwarmConfig(exp, T=T_PILOT, R=1, seed=GAME_SEED, K=K, results_root=RESULTS)
-        out = A.AnalystSwarm(pilot_graph(w), game, cfg, A.AnalystVLLM(llm, PILOT_WORDING, exp, K=K)).run()
+        out = A.AnalystSwarm(pilot_graph(w), game, cfg, A.AnalystVLLM(llm, PILOT_WORDING, exp, K=K, logprobs=LOGPROBS)).run()
         progress(f"pilot world {k + 1}/3 {w}: {time.time() - t0:.0f}s, missing {int(out['missing'].sum())}/"
                  f"{out['missing'].size}, mean s by round {np.round(np.nanmean(out['s'], (1, 2)), 2).tolist()}")
 
@@ -168,6 +169,18 @@ def note_pool() -> dict:
         n3 = max(len(rc) // 3, 1)
         pool[c] = {"hes": rc[:n3], "conf": rc[-n3:], "all": rc}
     return pool
+
+
+def pool_stats(pool: dict) -> dict:
+    """sigma * s of the senders per call and tercile: the contrast that identifies the leak fraction (EXPERIMENT.md
+    fixed rule: leak untestable if the hesitant-confident gap in mean sigma * s is below 0.4)."""
+    out = {}
+    for c, d in pool.items():
+        for k in ("hes", "conf", "all"):
+            v = np.array([c * r[2] for r in d[k]])
+            out[f"{A.CALLS[c]}|{k}"] = {"n": len(v), "mean": float(v.mean()), "min": float(v.min()), "max": float(v.max())}
+        out[f"{A.CALLS[c]}|gap"] = out[f"{A.CALLS[c]}|conf"]["mean"] - out[f"{A.CALLS[c]}|hes"]["mean"]
+    return out
 
 
 def base_probes(pool: dict, n: int) -> list[dict]:
@@ -218,18 +231,20 @@ def design_row(bp: dict) -> dict:
                 nu_nom=bp["nu_nom"], round_t=bp["t"])
 
 
-def step_probes(llm):
+def step_probes(llm, n_base: int = N_BASE):
     pool = note_pool()
-    print({c: {k: len(v) for k, v in d.items()} for c, d in pool.items()}, flush=True)
-    bps = base_probes(pool, N_BASE)
     OUT.mkdir(parents=True, exist_ok=True)
+    ps = pool_stats(pool)
+    print(json.dumps(ps, indent=1), flush=True)
+    (OUT / "pool_stats.json").write_text(json.dumps(ps, indent=1))
+    bps = base_probes(pool, n_base)
     (OUT / "design.json").write_text(json.dumps([design_row(bp) for bp in bps]))
     jobs = [(w, arm) for w in WORDINGS for arm in ARMS] + [("mild", "dup")]
     for k, (w, arm) in enumerate(jobs):
         path = OUT / f"{w}_{arm}.jsonl"
         done = {r["b"] for r in read_jsonl(path)}
         todo = [bp for bp in (bps[:N_DUP][::-1] if arm == "dup" else bps) if bp["b"] not in done]
-        be = A.AnalystVLLM(llm, w, f"{PROBE_TAG}-{w}", K=K)
+        be = A.AnalystVLLM(llm, w, f"{PROBE_TAG}-{w}", K=K, logprobs=LOGPROBS)
         t0 = time.time()
         for s in range(0, len(todo), BATCH):
             chunk = todo[s:s + BATCH]
@@ -244,9 +259,13 @@ def step_probes(llm):
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("steps", nargs="+", choices=["tok", "smoke", "pilot", "probes"])
+    ap.add_argument("--n-base", type=int, default=N_BASE, help="base probes (EXPERIMENT.md fixed-rule contingency: 600)")
     args = ap.parse_args()
     llm = make_llm()
     for st in args.steps:
         t0 = time.time()
-        {"tok": step_tok, "smoke": step_smoke, "pilot": step_pilot, "probes": step_probes}[st](llm)
+        if st == "probes":
+            step_probes(llm, args.n_base)
+        else:
+            {"tok": step_tok, "smoke": step_smoke, "pilot": step_pilot}[st](llm)
         print(f"== step {st} done in {time.time() - t0:.0f}s", flush=True)

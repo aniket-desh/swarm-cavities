@@ -21,6 +21,15 @@ Censoring: a probe whose BUY or SELL token fell outside the top-20 logprobs has 
     than the truth); M1 uses the bound, and a robustness fit drops censored probes and fits tanh on s = 2P - 1.
 Uncertainty: bootstrap over base probes (B = 1000), resampled jointly for every wording and arm (paired).
 
+Premise labels (EXPERIMENT.md "Success and failure criteria"), per wording, real arm, each test three-way with a
+threshold tau on |est|:  holds iff |est| + 2 se < tau;  fails iff |est| > tau and |est| > 2 se;  else inconclusive.
+    linear:  |sign coefficient| < 0.25 a/2 for each group; |bloc - a/2| < 0.2 a/2 for each group, on all probes AND on
+             uncensored probes (if the two disagree the linearity label is inconclusive)
+    adding:  |g| < 0.25 a 8/16 for each group
+    call:    |lam| < 0.25 for each group; untestable if the pool's hesitant-confident gap in mean sigma s < 0.4
+A premise holds for a wording iff all its tests hold, fails iff any fails, else inconclusive. A (wording, arm) with
+>= 5% missing probes is labelled inconclusive throughout. The overall verdict rests on wordings with abar >= 1.
+
 Go/no-go (analyst_scenario.md section 7), per wording, from M1 on the real arm:
     abar = sqrt((a_+^2 + a_-^2) / 2), r = a_- / a_+, Jbar = (a_+ - a_-) / 2,
     Lambda_mutual = max_omega of analyst_lib.dmft(Agent(a_+, a_-, nu_.5, a0, c, kappa), "mutual") (solver,
@@ -232,6 +241,57 @@ def gonogo(est: dict, draws: list[dict], wordings) -> dict:
     return out
 
 
+# ---------------------------------------------------------------- premise labels
+
+def three_way(est: float, se: float, tau: float) -> str:
+    if abs(est) + 2 * se < tau:
+        return "holds"
+    if abs(est) > tau and abs(est) > 2 * se:
+        return "fails"
+    return "inconclusive"
+
+
+def combine(labels) -> str:
+    labels = list(labels)
+    if "fails" in labels:
+        return "fails"
+    return "holds" if all(lb == "holds" for lb in labels) else "inconclusive"
+
+
+def premises(table: dict, gng: dict, pool_stats: dict | None) -> dict:
+    out = {}
+    gap = None if pool_stats is None else min(pool_stats["BUY|gap"], pool_stats["SELL|gap"])
+    for w in WORDINGS:
+        t = table.get((w, "real"))
+        if t is None:
+            continue
+        ap, am = abs(t["a_plus"]["est"]), abs(t["a_minus"]["est"])
+        tests = {}
+
+        def lin(src):
+            return [three_way(src["signA"]["est"], src["signA"]["se"], 0.25 * ap / 2),
+                    three_way(src["signD"]["est"], src["signD"]["se"], 0.25 * am / 2),
+                    three_way(src["bloc_A"]["est"] - src["a_plus"]["est"] / 2, src["bloc_A"]["se"], 0.2 * ap / 2),
+                    three_way(src["bloc_D"]["est"] - src["a_minus"]["est"] / 2, src["bloc_D"]["se"], 0.2 * am / 2)]
+
+        m3 = {k: t[f"M3_{k}"] for k in ("a_plus", "a_minus", "signA", "signD", "bloc_A", "bloc_D")}
+        l_all = combine(lin(m3))
+        l_unc = combine(lin(t["M3_uncensored"])) if t.get("M3_uncensored") else l_all
+        tests["linear"] = {"label": l_all if l_all == l_unc else "inconclusive", "all_probes": l_all, "uncensored": l_unc}
+        tests["adding"] = {"label": combine([three_way(t["M4_g_A"]["est"], t["M4_g_A"]["se"], 0.25 * ap / 2),
+                                             three_way(t["M4_g_D"]["est"], t["M4_g_D"]["se"], 0.25 * am / 2)])}
+        if gap is not None and gap < 0.4:
+            tests["call"] = {"label": "untestable", "gap": gap}
+        else:
+            tests["call"] = {"label": combine([three_way(t["M2_lam_A"]["est"], t["M2_lam_A"]["se"], 0.25),
+                                               three_way(t["M2_lam_D"]["est"], t["M2_lam_D"]["se"], 0.25)]), "gap": gap}
+        if t["n_missing"] >= 0.05 * (t["n"] + t["n_missing"]):
+            tests = {k: {**v, "label": "inconclusive", "why": "missing >= 5%"} for k, v in tests.items()}
+        tests["in_verdict"] = bool(gng.get(w, {}).get("abar", 0) >= 1)
+        out[w] = tests
+    return out
+
+
 # ---------------------------------------------------------------- pilot (exploratory)
 
 def pilot_stats() -> dict:
@@ -318,6 +378,8 @@ def selftest():
         recs[("mild", "template")][b]["x"] = x
     e = probe_stats(build(design, recs))[("mild", "template")]
     assert abs(e["M4_g_A"] - 1.5) < 0.1 and abs(e["M4_a_plus"]) < 0.3, e
+    assert three_way(0.05, 0.02, 0.2) == "holds" and three_way(0.5, 0.1, 0.2) == "fails"
+    assert three_way(0.0, 0.5, 0.2) == "inconclusive" and three_way(0.3, 0.2, 0.2) == "inconclusive"
     L = lam_mutual(4, 4, 0.5, 0.3, 0, 0)
     assert abs(L["Lam"] - 0.60) < 0.05, L                               # analyst_scenario.md table 3.3, (4,4)
     print("selftest ok: M1-M4 recover the generating parameters; Lambda(4,4) =", round(L["Lam"], 3))
@@ -362,6 +424,22 @@ def main():
         table[key]["valid_mass_min"] = min(r["valid_mass"] for r in all_r)
         nc = rows_for(design, recs, *key, bs, drop_censored=True)
         table[key]["M1_uncensored"] = {k: float(v) for k, v in fit(nc, "M1").items()} if len(nc) > 20 else None
+        table[key]["M3_uncensored"] = None
+        if len(nc) > 20 and table[key]["n_censored"]:
+            Xn = np.array([_cols(r, "M3") for r in nc])
+            yn = np.array([r["x"] for r in nc])
+            dn = {b: i for i, b in enumerate(r["b"] for r in nc)}
+            est3 = {**fit_arrays(Xn, yn, "M3")}
+            est3.update(bloc(est3))
+            rng = np.random.default_rng(1)
+            bb = np.array([r["b"] for r in nc])
+            dr = []
+            for _ in range(B):
+                cnt = np.bincount(rng.choice(np.array(bs), len(bs)), minlength=max(bs) + 1)[bb].astype(float)
+                f3 = fit_arrays(Xn, yn, "M3", cnt)
+                dr.append({**f3, **bloc(f3)})
+            table[key]["M3_uncensored"] = {k: {"est": float(est3[k]), "se": float(np.std([d[k] for d in dr], ddof=1))}
+                                           for k in ("a_plus", "a_minus", "signA", "signD", "bloc_A", "bloc_D")}
         table[key]["M1_tanh"] = {k: float(v) for k, v in fit_tanh(rows_for(design, recs, *key, bs)).items()}
     # paired differences real - template, and between wordings
     diffs = {}
@@ -380,6 +458,11 @@ def main():
     summary["probes"] = table
     summary["diffs"] = diffs
     summary["gonogo"] = gonogo(est, draws, WORDINGS)
+    ps_path = PROBE_DIR / "pool_stats.json"
+    summary["pool_stats"] = json.loads(ps_path.read_text()) if ps_path.exists() else None
+    summary["premises"] = premises(table, summary["gonogo"], summary["pool_stats"])
+    for w, p in summary["premises"].items():
+        print("premises", w, {k: v["label"] for k, v in p.items() if isinstance(v, dict)}, "| in verdict:", p["in_verdict"])
     (OUT / "summary.json").write_text(json.dumps(_jsonable(summary), indent=1, default=float))
     for key, t in table.items():
         print(key, "n", t["n"], "missing", t["n_missing"], "censored", t["n_censored"], " ".join(

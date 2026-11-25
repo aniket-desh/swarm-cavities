@@ -1,7 +1,7 @@
 ---
 name: 08-analyst-calibration
 title: Analyst scenario: Qwen3.5-9B pilot swarm (N=256, K=16) and single-agent calibration of the law (A1)-(A3) with real colleague notes
-status: draft
+status: approved
 gpu: NVIDIA A40,NVIDIA RTX A6000,NVIDIA L40S
 count: 1
 min_gpu_gb: 40
@@ -10,6 +10,7 @@ budget_usd: 4
 disk_gb: 120
 data:
 secrets:
+approved_utc: 2026-11-25T17:33:11Z
 ---
 
 # Analyst scenario: Qwen3.5-9B pilot swarm (N=256, K=16) and single-agent calibration of the law (A1)-(A3) with real colleague notes
@@ -48,8 +49,8 @@ and the latest call and note of K = 16 colleagues in two groups, allies and fade
 (`envs/analyst.WORDINGS`: mild, moderate, strong, max; the strong one says "lean on their calls heavily" and "fade
 their calls firmly"). No prompt text describes anything as private, hidden or secret (tested). The assistant turn is
 forced to begin `{"call": "`; "BUY" and "SELL" are single tokens there (checked offline with the Qwen3.5 tokenizer
-and again in step `tok`). From one forward pass with top-20 logprobs: valid mass = P(BUY) + P(SELL), recorded
-missing below 0.95; P_buy = P(BUY)/valid mass; x = (log P(BUY) − log P(SELL))/2, censored at the top-20 bound if one
+and again in step `tok`). From one forward pass with top-100 logprobs (engine `max_logprobs` = 100): valid mass = P(BUY) + P(SELL), recorded
+missing below 0.95; P_buy = P(BUY)/valid mass; x = (log P(BUY) − log P(SELL))/2, censored at the top-100 bound if one
 token is absent (flagged). The call is BUY iff u < P_buy with a stored uniform per (replica, round, analyst); the note
 is then sampled at temperature 1 conditional on that call (prefix + call + `", "note": "`, regex: one quote-free
 line then `"}`, max 100 tokens, one retry, else the cut text is kept and flagged; the call stands).
@@ -65,15 +66,15 @@ line then `"}`, max 100 tokens, one retry, else the cut text is kept and flagged
    with probability (1+m)/2, so f_A, f_D span their range with every composition (n_allies ~ Bin(16, 1/2)); real arm:
    each slot carries a pilot note (rounds ≥ 1, complete) written after the same call, from the tercile of senders
    least ("hesitant") or most ("confident") sure of that call, one tercile per group with probability 1/2, sender
-   belief stored; template arm: the same calls with neutral template notes (`envs/analyst.template_note`); own
+   belief stored (`pool_stats.json` records the mean and range of σ·s per call and tercile); template arm: the same calls with neutral template notes (`envs/analyst.template_note`); own
    previous call ±1 with probability 1/2 and a pilot note written after it (same in both arms); h0 ~ N(0,1) at
    a0_nom = 0.3; ξ ~ N(0,1) at ν_nom ∈ {0.5, 1.0} with probability 1/2; round uniform in 1–9; one session tag per
    base probe shared by its arms and wordings.
 3. **Analysis** (`analyze.py`, coordinator; models fixed in its docstring before the probe data exist): OLS on x per
    wording and arm: M1 (the law; a₊, a₋, ν at both news amplitudes, a0, κ, c), M2 (M1 + leak regressors
    L = Σ_group(s_j − σ_j)/K; λ = coefficient/gain; placebo in the template arm), M3 (M1 + f³ and sign f per group;
-   full-bloc response vs a/2), M4 (M1 + group means Σσ/n_group: adding vs averaging). Robustness: M1 without censored
-   probes and M1 fitted as tanh on s. Bootstrap over base probes, B = 1,000, paired across arms and wordings. Go/no-go
+   full-bloc response vs a/2; refitted on uncensored probes), M4 (M1 + group means Σσ/n_group: adding vs averaging).
+   Robustness: M1 without censored probes and M1 fitted as tanh on s. Bootstrap over base probes, B = 1,000, paired across arms and wordings. Go/no-go
    per wording from M1 on the real arm: ā, r = a₋/a₊, J̄ = (a₊−a₋)/2, Λ_mutual = max over ω of
    `theory/checks/analyst_lib.dmft(Agent(a₊, a₋, ν_.5, a0, c, κ), "mutual")` (T = 40, 3,000 sites × 64 copies;
    s.e. from 100 bootstrap draws at 1,000 × 32), Λ at ν_1 as the news-amplitude knob, ρ₁ = κ(1 − q) with q from the
@@ -104,7 +105,7 @@ The third command is the timing step (a 3-round swarm at N = 64 and 24 single de
   round: P_buy, x, valid mass, censoring, top invalid tokens, call, uniform, note, note status, inbox fields),
   `analyst_timings.jsonl`, `beliefs.npz`, `inputs.npz`, `analyst_meta.json`; ~15 MB in all. Manifest in
   `results/analyst-pilot-20261125/manifest.json`.
-- `results/analyst-probes-20261125/`: `design.json` and `<wording>_<arm>.jsonl` (9 files, ~5 MB).
+- `results/analyst-probes-20261125/`: `design.json`, `pool_stats.json` and `<wording>_<arm>.jsonl` (9 files, ~5 MB).
 - `results/analyst-calib-*.log`; on the coordinator `results/analyst-calib/summary.json`, figures in
   `paper/figures/analyst_calib_*.{pdf,png}`, and `RESULT.md` in this folder.
 
@@ -127,14 +128,20 @@ Run-level:
   the pilot's missing rate is ≥ 5% (then the probes are not run; see "If something fails").
 - Complete: pilot done with missing < 5%, all 9 probe files with missing < 5% each.
 
-Law premises, per wording, real arm (M2–M4), judged on the bootstrap s.e.:
-- Linear in the counts: both sign (majority) coefficients below 0.25 × (a/2) in magnitude or within 2 s.e. of 0, and
-  the M3 full-bloc response within 20% of a/2 (or within 2 s.e.).
-- Adding, not averaging: each group-mean coefficient below 25% of the corresponding f-coefficient's contribution at
-  the typical group size (|g| < 0.25 × a × 8/16) or within 2 s.e. of 0.
-- Call, not confidence: λ_A, λ_D below 0.25 or within 2 s.e. of 0.
-- Supported: all three premises hold in every wording. Not supported: any premise fails in any wording (named).
-  Inconclusive: s.e. too large to decide (2 s.e. above the 25% thresholds).
+Law premises, per wording, real arm (M2–M4). Every test is three-way on the bootstrap s.e. with a threshold τ on the
+magnitude: **holds** iff |est| + 2 s.e. < τ; **fails** iff |est| > τ and |est| > 2 s.e.; **inconclusive** otherwise.
+- Linear in the counts: τ = 0.25 × a/2 for each group's sign (majority) coefficient, and τ = 0.2 × a/2 for each group's
+  full-bloc response minus a/2. Tested on all probes and on uncensored probes; if the two labels differ, linearity is
+  inconclusive.
+- Adding, not averaging: τ = 0.25 × a × 8/16 for each group-mean coefficient.
+- Call, not confidence: τ = 0.25 for λ_A and λ_D; **untestable** if the pool's gap in mean σ·s between the confident
+  and hesitant terciles is below 0.4 for either call (then λ is not identified).
+- A premise holds for a wording iff all its tests hold, fails iff any fails, otherwise inconclusive. Labels are
+  reported per wording. A (wording, arm) with ≥ 5% missing probes is reported with its missing rate and labelled
+  inconclusive throughout (missing probes are likely the conflicting inboxes, so the rest are a biased sample).
+- Overall label, resting only on wordings with ā ≥ 1 (decided now; weaker wordings have no coupling worth testing):
+  supported if every premise holds in each of them; not supported if any premise fails in any of them (named);
+  inconclusive otherwise, or if no wording has ā ≥ 1.
 
 The go/no-go (theory section 7) is a decision reported per wording with its numbers, not part of the label.
 
@@ -149,12 +156,16 @@ plus ~40 decoded tokens. Estimate per pilot round at N = 256: ~35 s decisions + 
 $0.83 on an A40 ($0.59/h). Cap 3 h (2× the estimate); budget $4 covers the L40S fallback ($1.09/h) at the cap. One
 process; weights 16.7 GiB, KV and linear-attention state ~20 GiB at utilization 0.90 on a 46–48 GB card; CPU light. If
 the timing step puts a pilot round above 105 s (1.5×), the pilot runs as defined (it fits the cap up to ~3 min per
-round) and N_BASE is cut to 600 before the probe step.
+round) and the probes run with `--n-base 600` (a fixed-rule contingency). The N = 256 round time is extrapolated
+from the smoke's N = 64 rounds as 4 × the seconds per round (prefill-bound, linear in the number of prompts; this
+overestimates, since larger batches run more efficiently).
 
 ## If something fails
 
 - `tok` raises because BUY or SELL is not a single token after the prefix: stop; fix the format in `envs/analyst.py`
   on the coordinator (amendment), push, rerun.
+- Any amendment that changes prompt text or decoding bumps the tag (`analyst-smoke-…-v2` etc.) or moves the affected
+  `results/` directories aside first, so resumed checkpoints never mix prompts.
 - Smoke shows decision valid mass < 0.95 in more than 1 of 24 probes: read `top_other`; if the mass goes to case
   variants or a leading space, amend the prompt's format sentence (amendment, committed first), push, rerun the smoke.
   The 0.95 rule is never loosened.
@@ -171,22 +182,39 @@ round) and N_BASE is cut to 600 before the probe step.
 
 - Missing rule: valid mass < 0.95 is missing; no belief is parsed from text.
 - Pilot excluded from confirmatory analysis.
-- Probe design (1,000 base probes, seed 8008, the distributions above) and the models M1–M4 with the premise
-  thresholds above are fixed before any probe data exist.
+- Probe design (1,000 base probes, seed 8008, the distributions above) and the models M1–M4 with the three-way premise
+  tests above are fixed before any probe data exist. One contingency only: 600 base probes (`--n-base 600`) if the
+  extrapolated pilot round time exceeds 105 s.
+- Leak premise untestable if the hesitant-confident gap in mean σ·s is below 0.4.
 - Go/no-go thresholds are the theory's (section 7); nothing here launches the swarm sweep.
 
 ## Questions asked before launch
 
 None needed: the user's brief (relayed by the main session) fixed the scenario, the pilot size (N = 256, K = 16, one
 graph per world, T = 10, mild wording), the calibration targets, the go/no-go rules, the GPU rule (cheapest card that
-fits a 9B model) and the spend reporting, and gave a standing go-ahead that covers approval. Choices made here: the
+fits a 9B model) and the spend reporting, and gave a standing go-ahead that covers approval (the approval below rests on it). Choices made here: the
 neutral wording "your own research note" from the start (allowed by the brief; avoids a refusal cycle), four wordings
 rather than three (the fourth, "max", costs only probes), and a second news amplitude in the probes (the theory names
 ν as the alternative control knob).
 
 ## Review
 
-<fill: reviewer findings>
+First pass (general-purpose agent following `agents/experiment-reviewer.md`, definition path only): needs revision.
+- P1, underpowered premise tests passed by default ("or within 2 s.e. of 0" overlapped the inconclusive rule; the
+  overall label depended on the weakest wording): fixed with three-way tests (holds / fails / inconclusive), labels
+  per wording, and an overall verdict resting only on wordings with ā ≥ 1 (decided before data).
+- P1, the leak test might have no contrast if the pilot is near-deterministic: `run.py` now writes `pool_stats.json`
+  (σ·s per call and tercile) and a fixed rule makes the leak premise untestable if the gap is below 0.4.
+- P2, censoring could fake saturation in M3: decision logprobs raised to top-100, and M3 is refitted on uncensored
+  probes, with linearity inconclusive when the two fits disagree.
+- P2, resuming after an amendment would mix prompts: amendments that change prompts or decoding bump the tag.
+- P2, the N_BASE cut contradicted a fixed rule: now a stated contingency with a CLI argument (`--n-base`) and a
+  stated extrapolation from N = 64 to 256.
+- P2, no rule for a probe file with ≥ 5% missing: reported with its missing rate, labelled inconclusive.
+- P2, `plot.py` missing: written before the run (three figures; tested on fake data).
+
+Re-check (same reviewer): approved, no P0 or P1. One P2 left as is: the full-bloc linearity test uses the s.e. of the
+bloc response rather than of (bloc − a/2), which leans toward inconclusive (conservative).
 
 ## Amendments
 
