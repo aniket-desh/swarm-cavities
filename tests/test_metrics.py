@@ -116,7 +116,8 @@ def test_overlap_field_only_and_excess():
     q = M.replica_overlap(s)
     assert q.shape == (1, T1)
     np.testing.assert_allclose(q[0], np.mean(np.tanh(h) ** 2), atol=0.03)
-    np.testing.assert_allclose(M.overlap_excess(s, ctrl)[0], 0.0, atol=0.04)
+    np.testing.assert_allclose(M.overlap_excess(s, ctrl, baseline_kind="control")[0], 0.0, atol=0.04)
+    np.testing.assert_allclose(M.overlap_excess(s, ctrl)[0], 0.0, atol=0.04)    # other-graph: same here
     np.testing.assert_allclose(M.overlap_excess(s, np.mean(np.tanh(h) ** 2))[0], 0.0, atol=0.03)
 
 
@@ -166,3 +167,28 @@ def test_flip_class_balanced_accuracy_hand_example():
     # groups: flip->+1 {4}: 0/1; flip->-1 {2}: 0/1; stay +1 {0,1,6}: 3/3; stay -1 {3,5}: 2/2; idx 7 undefined
     assert M.flip_class_balanced_accuracy(stay, s_next, s_prev) == pytest.approx(50.0)
     assert M.flip_class_balanced_accuracy(s_next, s_next, s_prev) == pytest.approx(100.0)
+
+
+def test_overlap_excess_other_graph_keeps_mean_field():
+    """Spins with a shared mean field m0 plus an agent-specific frozen part that depends on the graph.
+    Same-graph replicas share both; other-graph runs share only the mean field and the private field.
+    The other-graph baseline gives Delta q = Var(frozen part); the g = 0 control (no mean field, no
+    frozen part) also subtracts away the mean field and overstates the excess."""
+    rng = np.random.default_rng(11)
+    N, R, T1 = 400, 40, 2
+    hp = rng.normal(0, 0.5, N)
+    m0 = 0.8                                                   # mean-field push, Jbar != 0
+    frozen = lambda: rng.normal(0, 0.7, N)                     # graph-specific pinning field
+    def run(extra, R):
+        x = np.tanh(hp + extra)
+        return np.where(rng.random((R, T1, N)) < (1 + x) / 2, 1.0, -1.0)
+    zA, zB = frozen(), frozen()
+    sA, sB = run(m0 + zA, R), run(m0 + zB, R)
+    ctrl = run(0.0, R)
+    exact_same = np.mean(np.tanh(hp + m0 + zA) ** 2)
+    exact_cross = np.mean(np.tanh(hp + m0 + zA) * np.tanh(hp + m0 + zB))
+    dq = M.overlap_excess(sA, sB)[0]
+    np.testing.assert_allclose(dq, exact_same - exact_cross, atol=0.03)
+    dq_ctrl = M.overlap_excess(sA, ctrl, baseline_kind="control")[0]
+    assert np.all(dq_ctrl > dq + 0.1)                          # the control baseline removes the mean field too
+    np.testing.assert_allclose(M.overlap_excess(sA, [sB, sB])[0], dq)

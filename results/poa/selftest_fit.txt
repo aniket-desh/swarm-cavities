@@ -1,0 +1,8 @@
+Self-test of fit_logit_fe / cross-validation on synthetic M2 votes (gpt-4o-mini objective design)
+truth b+ = 1.5, m_d coef = -0.5;  fit [ 1.4994 -0.4976], 95% CI [ 1.493 -0.503] .. [ 1.503 -0.493]
+PoA two-stage: b+ = 1.4994, b- = 0.4976, beta_0 = 0.5365; loglik diff from M2 = 3.81e-04
+  M1   CE 0.35595  dCE vs M2 +53.227 (2.107) mnat/vote
+  M2   CE 0.30272  dCE vs M2 -0.000 (0.000) mnat/vote
+  M3   CE 0.30273  dCE vs M2 +0.002 (0.001) mnat/vote
+  M4   CE 0.30273  dCE vs M2 +0.009 (0.003) mnat/vote
+  M6   CE 0.30273  dCE vs M2 +0.010 (0.003) mnat/vote

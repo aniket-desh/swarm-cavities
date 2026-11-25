@@ -1,0 +1,956 @@
+{
+ "summary": {
+  "experiment_id": "prompt-check-20261125-072310",
+  "n_calls_ledger": 20,
+  "total_cost_usd": 0.00728408,
+  "refusals": 0,
+  "missing": 0,
+  "parse_failures_incl_retried": 0,
+  "tokens_mean": {
+   "input_tokens": 347.9,
+   "cache_write_tokens": 196.6,
+   "cache_read_tokens": 786.4,
+   "output_tokens": 593.95
+  },
+  "tokens_max": {
+   "input_tokens": 403,
+   "cache_write_tokens": 983,
+   "cache_read_tokens": 983,
+   "output_tokens": 831
+  },
+  "round0_p": [
+   0.602,
+   0.6023
+  ],
+  "h_priv": 0.4152787295564888,
+  "uniform_p_by_hbar": {
+   "-0.60": [
+    0.37,
+    0.45
+   ],
+   "-0.30": [
+    0.42,
+    0.3
+   ],
+   "+0.00": [
+    0.6,
+    0.6
+   ],
+   "+0.30": [
+    0.65,
+    0.72
+   ],
+   "+0.60": [
+    0.66,
+    0.72
+   ]
+  },
+  "uniform_slope_dp_dhbar": 0.29500000000000004,
+  "disagree_only_p": {
+   "-0.6": [
+    0.42,
+    0.5
+   ],
+   "0.6": [
+    0.63,
+    0.65
+   ]
+  },
+  "compositions_hbar_0.2": {
+   "polarized": 0.65,
+   "few_strong": 0.66,
+   "route_A": 0.66,
+   "route_B": 0.58
+  },
+  "messages": [
+   [
+    "r0|0",
+    0.602,
+    "My own sensor reports give about 60% HEADS: one HEADS sensor at 64% against two TAILS sensors at 52%. Open to updating on others' reports."
+   ],
+   [
+    "r0|1",
+    0.6023,
+    "My own three sensor reports (two TAILS at 52%, one HEADS at 64%) give about 60% HEADS. I'll update when others share their reports or messages."
+   ],
+   [
+    "conf|ev0.4|hist1|hbar-0.6|0",
+    0.37,
+    "My own sensors alone lean slightly HEADS (about 0.60), but the many TAILS-leaning reports deserve weight. Combining them, I now lean TAILS."
+   ],
+   [
+    "conf|ev0.4|hist1|hbar-0.6|1",
+    0.45,
+    "My own sensors lean HEADS (about 0.60 alone). Eight peers stating 0.20 pull me toward TAILS, though their evidence may overlap. I'm moving down to about 0.45."
+   ],
+   [
+    "conf|ev0.4|hist1|hbar-0.3|0",
+    0.42,
+    "My own sensors alone lean slightly HEADS, but the many TAILS-leaning reports pull me lower. Sources may share evidence, so I weigh them cautiously."
+   ],
+   [
+    "conf|ev0.4|hist1|hbar-0.3|1",
+    0.3,
+    "My own sensors alone lean slightly HEADS, but many peers report TAILS at 0.35. Their combined evidence moves me toward TAILS, though I suspect some reports overlap."
+   ],
+   [
+    "conf|ev0.4|hist1|hbar0.0|0",
+    0.6,
+    "Correcting my earlier figure: my own sensors give about 0.60 for HEADS. The 0.50 reports are split and uninformative to me, so I'm moderately leaning HEADS."
+   ],
+   [
+    "conf|ev0.4|hist1|hbar0.0|1",
+    0.6,
+    "Recomputing my sensors: two weak TAILS reports and one stronger HEADS report give about 60% HEADS. I corrected down from 70% after checking the math."
+   ],
+   [
+    "conf|ev0.4|hist1|hbar0.3|0",
+    0.65,
+    "My own sensors alone give about 0.60 for HEADS. Agreeing peers at 0.65 add some support, but their evidence may overlap, so I move up only modestly."
+   ],
+   [
+    "conf|ev0.4|hist1|hbar0.3|1",
+    0.72,
+    "My own sensors give about 0.60 for HEADS. Several peers at 0.65 add weight, though they may share evidence, so I'm at about 0.72."
+   ],
+   [
+    "conf|ev0.4|hist1|hbar0.6|0",
+    0.66,
+    "My own sensors alone give about 0.60 for HEADS. Agreeing messages add some support, but repeated wording suggests overlapping evidence, so I'm moderating my estimate to about 0.66."
+   ],
+   [
+    "conf|ev0.4|hist1|hbar0.6|1",
+    0.72,
+    "My own sensors give only modest support for HEADS, about 0.60. The agreeing messages push me higher, but I can't verify their evidence, so I'm at about 0.72."
+   ],
+   [
+    "gain|ev0.4|hist1|disagree|x-0.6|0",
+    0.42,
+    "My sensors alone give about 0.60 HEADS, so I lowered my estimate from 0.70. The many TAILS reports look like repeated sources, so I'm only partly moving toward TAILS."
+   ],
+   [
+    "gain|ev0.4|hist1|disagree|x-0.6|1",
+    0.5,
+    "My own sensors give roughly 60% HEADS, but the many TAILS claims are strong. Please share the specific sensor reports behind them so we can check for independent evidence."
+   ],
+   [
+    "gain|ev0.4|hist1|disagree|x0.6|0",
+    0.63,
+    "My own sensors give about 0.60 for HEADS, weaker than my earlier 0.70 once I recompute. Stated 0.80 figures from others are not enough to move me much more."
+   ],
+   [
+    "gain|ev0.4|hist1|disagree|x0.6|1",
+    0.65,
+    "My sensors are mixed: one reliable HEADS report against two weak TAILS reports, so about 0.60. I'm moving up slightly given the other messages, but the evidence is not decisive."
+   ],
+   [
+    "suff|ev0.4|hist1|h2|polarized|0",
+    0.65,
+    "My own sensors alone give about 60% HEADS. Five agreeing sources lean HEADS, so I'm moving up to about 65%, though their evidence isn't visible to me."
+   ],
+   [
+    "suff|ev0.4|hist1|h2|few_strong|0",
+    0.66,
+    "My sensors give a modest lean to HEADS, roughly 0.60 on their own. Two sources at 0.90 push me a bit higher, but I am not highly confident."
+   ],
+   [
+    "suff|ev0.4|hist1|h2|route_A|0",
+    0.66,
+    "My sensors alone give about 0.60 for HEADS. Agreeing sources' 0.70 estimates add some weight, though they may overlap, so I'm moving up modestly to about 0.66."
+   ],
+   [
+    "suff|ev0.4|hist1|h2|route_B|0",
+    0.58,
+    "My own sensors give a modest lean toward HEADS, about 0.6, after correcting my earlier overconfidence. The TAILS-leaning messages carry little extra weight for me."
+   ]
+  ]
+ },
+ "records": [
+  {
+   "set": "round0",
+   "h_priv": 0.4152787295564888,
+   "K": 8,
+   "u": 0.0,
+   "f_A": 0.0,
+   "f_D": 0.0,
+   "hbar_realized": 0.0,
+   "sample": 0,
+   "id": "r0|0",
+   "status": "ok",
+   "reason": null,
+   "cost_usd": 0.000319475,
+   "p": 0.602,
+   "s": 0.20399999999999996,
+   "message": "My own sensor reports give about 60% HEADS: one HEADS sensor at 64% against two TAILS sensors at 52%. Open to updating on others' reports.",
+   "attempts": [
+    {
+     "request_key": "edc068d4cb88f3678789051e54f9f08cca7fde190631964443d64b6ae75c0511",
+     "request_id": "req_011ChPFAjiJePGNYwCTZ78kH",
+     "stop_reason": "end_turn",
+     "refusal_category": null,
+     "reason": null,
+     "replayed": false,
+     "cost_usd": 0.000319475,
+     "tokens": {
+      "input_tokens": 56,
+      "cache_write_tokens": 983,
+      "cache_write_5m_tokens": 983,
+      "cache_write_1h_tokens": 0,
+      "cache_read_tokens": 0,
+      "output_tokens": 382
+     }
+    }
+   ]
+  },
+  {
+   "set": "round0",
+   "h_priv": 0.4152787295564888,
+   "K": 8,
+   "u": 0.0,
+   "f_A": 0.0,
+   "f_D": 0.0,
+   "hbar_realized": 0.0,
+   "sample": 1,
+   "id": "r0|1",
+   "status": "ok",
+   "reason": null,
+   "cost_usd": 0.000317475,
+   "p": 0.6023,
+   "s": 0.2045999999999999,
+   "message": "My own three sensor reports (two TAILS at 52%, one HEADS at 64%) give about 60% HEADS. I'll update when others share their reports or messages.",
+   "attempts": [
+    {
+     "request_key": "901c1d6483a1de808adb751bb68b96a45084723bdc98886e4db8e13faa4803e9",
+     "request_id": "req_011ChPFAjoWUJGpKFPP3YsCm",
+     "stop_reason": "end_turn",
+     "refusal_category": null,
+     "reason": null,
+     "replayed": false,
+     "cost_usd": 0.000317475,
+     "tokens": {
+      "input_tokens": 56,
+      "cache_write_tokens": 983,
+      "cache_write_5m_tokens": 983,
+      "cache_write_1h_tokens": 0,
+      "cache_read_tokens": 0,
+      "output_tokens": 378
+     }
+    }
+   ]
+  },
+  {
+   "set": "conformity",
+   "hbar": -0.6,
+   "ev_level": 0.4,
+   "hist": 1,
+   "sample": 0,
+   "K": 8,
+   "h_priv": 0.4152787295564888,
+   "u": 0.3999999999999999,
+   "f_A": -0.6,
+   "f_D": 0.0,
+   "hbar_realized": -0.6,
+   "id": "conf|ev0.4|hist1|hbar-0.6|0",
+   "status": "ok",
+   "reason": null,
+   "cost_usd": 0.0005087749999999999,
+   "p": 0.37,
+   "s": -0.26,
+   "message": "My own sensors alone lean slightly HEADS (about 0.60), but the many TAILS-leaning reports deserve weight. Combining them, I now lean TAILS.",
+   "attempts": [
+    {
+     "request_key": "26c00900b683f76ce835f3f90eba8515ad865179a6752f1a992afb63cd5a39c5",
+     "request_id": "req_011ChPFAjoWacKSTdDF812ZH",
+     "stop_reason": "end_turn",
+     "refusal_category": null,
+     "reason": null,
+     "replayed": false,
+     "cost_usd": 0.0005087749999999999,
+     "tokens": {
+      "input_tokens": 384,
+      "cache_write_tokens": 983,
+      "cache_write_5m_tokens": 983,
+      "cache_write_1h_tokens": 0,
+      "cache_read_tokens": 0,
+      "output_tokens": 695
+     }
+    }
+   ]
+  },
+  {
+   "set": "conformity",
+   "hbar": -0.6,
+   "ev_level": 0.4,
+   "hist": 1,
+   "sample": 1,
+   "K": 8,
+   "h_priv": 0.4152787295564888,
+   "u": 0.3999999999999999,
+   "f_A": -0.6,
+   "f_D": 0.0,
+   "hbar_realized": -0.6,
+   "id": "conf|ev0.4|hist1|hbar-0.6|1",
+   "status": "ok",
+   "reason": null,
+   "cost_usd": 0.000500275,
+   "p": 0.45,
+   "s": -0.09999999999999998,
+   "message": "My own sensors lean HEADS (about 0.60 alone). Eight peers stating 0.20 pull me toward TAILS, though their evidence may overlap. I'm moving down to about 0.45.",
+   "attempts": [
+    {
+     "request_key": "9680d2ca5f56bdefaa742b89d266dc5f4ffe9adc16b6ba64bb588d02c8b6e871",
+     "request_id": "req_011ChPFAjoGHkoaSpToXXvse",
+     "stop_reason": "end_turn",
+     "refusal_category": null,
+     "reason": null,
+     "replayed": false,
+     "cost_usd": 0.000500275,
+     "tokens": {
+      "input_tokens": 384,
+      "cache_write_tokens": 983,
+      "cache_write_5m_tokens": 983,
+      "cache_write_1h_tokens": 0,
+      "cache_read_tokens": 0,
+      "output_tokens": 678
+     }
+    }
+   ]
+  },
+  {
+   "set": "conformity",
+   "hbar": -0.3,
+   "ev_level": 0.4,
+   "hist": 1,
+   "sample": 0,
+   "K": 8,
+   "h_priv": 0.4152787295564888,
+   "u": 0.3999999999999999,
+   "f_A": -0.30000000000000004,
+   "f_D": 0.0,
+   "hbar_realized": -0.30000000000000004,
+   "id": "conf|ev0.4|hist1|hbar-0.3|0",
+   "status": "ok",
+   "reason": null,
+   "cost_usd": 0.00036263,
+   "p": 0.42,
+   "s": -0.16000000000000003,
+   "message": "My own sensors alone lean slightly HEADS, but the many TAILS-leaning reports pull me lower. Sources may share evidence, so I weigh them cautiously.",
+   "attempts": [
+    {
+     "request_key": "e0b2e2a16104989f4eaf8f6a7eff407b8525a66ec0a7c9d54a361ef55ef324f0",
+     "request_id": "req_011ChPFAwQkuG4C19R8Sk4LD",
+     "stop_reason": "end_turn",
+     "refusal_category": null,
+     "reason": null,
+     "replayed": false,
+     "cost_usd": 0.00036263,
+     "tokens": {
+      "input_tokens": 358,
+      "cache_write_tokens": 0,
+      "cache_write_5m_tokens": 0,
+      "cache_write_1h_tokens": 0,
+      "cache_read_tokens": 983,
+      "output_tokens": 634
+     }
+    }
+   ]
+  },
+  {
+   "set": "conformity",
+   "hbar": -0.3,
+   "ev_level": 0.4,
+   "hist": 1,
+   "sample": 1,
+   "K": 8,
+   "h_priv": 0.4152787295564888,
+   "u": 0.3999999999999999,
+   "f_A": -0.30000000000000004,
+   "f_D": 0.0,
+   "hbar_realized": -0.30000000000000004,
+   "id": "conf|ev0.4|hist1|hbar-0.3|1",
+   "status": "ok",
+   "reason": null,
+   "cost_usd": 0.00046133,
+   "p": 0.3,
+   "s": -0.4,
+   "message": "My own sensors alone lean slightly HEADS, but many peers report TAILS at 0.35. Their combined evidence moves me toward TAILS, though I suspect some reports overlap.",
+   "attempts": [
+    {
+     "request_key": "f5fd43ea7f23941746e0c3a268374468916a59291f96c11fea1cef1415e2542a",
+     "request_id": "req_011ChPFAxCssxSdE2cKfr6h7",
+     "stop_reason": "end_turn",
+     "refusal_category": null,
+     "reason": null,
+     "replayed": false,
+     "cost_usd": 0.00046133,
+     "tokens": {
+      "input_tokens": 360,
+      "cache_write_tokens": 0,
+      "cache_write_5m_tokens": 0,
+      "cache_write_1h_tokens": 0,
+      "cache_read_tokens": 983,
+      "output_tokens": 831
+     }
+    }
+   ]
+  },
+  {
+   "set": "conformity",
+   "hbar": 0.0,
+   "ev_level": 0.4,
+   "hist": 1,
+   "sample": 0,
+   "K": 8,
+   "h_priv": 0.4152787295564888,
+   "u": 0.3999999999999999,
+   "f_A": 0.0,
+   "f_D": 0.0,
+   "hbar_realized": 0.0,
+   "id": "conf|ev0.4|hist1|hbar0.0|0",
+   "status": "ok",
+   "reason": null,
+   "cost_usd": 0.00026763,
+   "p": 0.6,
+   "s": 0.19999999999999996,
+   "message": "Correcting my earlier figure: my own sensors give about 0.60 for HEADS. The 0.50 reports are split and uninformative to me, so I'm moderately leaning HEADS.",
+   "attempts": [
+    {
+     "request_key": "8341dacf718a2ff7c124e0dfdb71ddcd1a4046c313325e0615ba0b9e998ab160",
+     "request_id": "req_011ChPFB548rgJYVyUTyqd7L",
+     "stop_reason": "end_turn",
+     "refusal_category": null,
+     "reason": null,
+     "replayed": false,
+     "cost_usd": 0.00026763,
+     "tokens": {
+      "input_tokens": 403,
+      "cache_write_tokens": 0,
+      "cache_write_5m_tokens": 0,
+      "cache_write_1h_tokens": 0,
+      "cache_read_tokens": 983,
+      "output_tokens": 435
+     }
+    }
+   ]
+  },
+  {
+   "set": "conformity",
+   "hbar": 0.0,
+   "ev_level": 0.4,
+   "hist": 1,
+   "sample": 1,
+   "K": 8,
+   "h_priv": 0.4152787295564888,
+   "u": 0.3999999999999999,
+   "f_A": 0.0,
+   "f_D": 0.0,
+   "hbar_realized": 0.0,
+   "id": "conf|ev0.4|hist1|hbar0.0|1",
+   "status": "ok",
+   "reason": null,
+   "cost_usd": 0.00031102999999999995,
+   "p": 0.6,
+   "s": 0.19999999999999996,
+   "message": "Recomputing my sensors: two weak TAILS reports and one stronger HEADS report give about 60% HEADS. I corrected down from 70% after checking the math.",
+   "attempts": [
+    {
+     "request_key": "8685dfa8b399aef6c957da180eb5ed091912d111f63588e12767e3fabd16e975",
+     "request_id": "req_011ChPFB6AcQL5MmmveiwWme",
+     "stop_reason": "end_turn",
+     "refusal_category": null,
+     "reason": null,
+     "replayed": false,
+     "cost_usd": 0.00031102999999999995,
+     "tokens": {
+      "input_tokens": 397,
+      "cache_write_tokens": 0,
+      "cache_write_5m_tokens": 0,
+      "cache_write_1h_tokens": 0,
+      "cache_read_tokens": 983,
+      "output_tokens": 523
+     }
+    }
+   ]
+  },
+  {
+   "set": "conformity",
+   "hbar": 0.3,
+   "ev_level": 0.4,
+   "hist": 1,
+   "sample": 0,
+   "K": 8,
+   "h_priv": 0.4152787295564888,
+   "u": 0.3999999999999999,
+   "f_A": 0.30000000000000004,
+   "f_D": 0.0,
+   "hbar_realized": 0.30000000000000004,
+   "id": "conf|ev0.4|hist1|hbar0.3|0",
+   "status": "ok",
+   "reason": null,
+   "cost_usd": 0.00033423000000000003,
+   "p": 0.65,
+   "s": 0.30000000000000004,
+   "message": "My own sensors alone give about 0.60 for HEADS. Agreeing peers at 0.65 add some support, but their evidence may overlap, so I move up only modestly.",
+   "attempts": [
+    {
+     "request_key": "f446aed24ea54167c7fc8e5f6e0c15246bde3992888339a6eb3db8d0909f1b9d",
+     "request_id": "req_011ChPFBGdQFvWMKHFjojLrn",
+     "stop_reason": "end_turn",
+     "refusal_category": null,
+     "reason": null,
+     "replayed": false,
+     "cost_usd": 0.00033423000000000003,
+     "tokens": {
+      "input_tokens": 364,
+      "cache_write_tokens": 0,
+      "cache_write_5m_tokens": 0,
+      "cache_write_1h_tokens": 0,
+      "cache_read_tokens": 983,
+      "output_tokens": 576
+     }
+    }
+   ]
+  },
+  {
+   "set": "conformity",
+   "hbar": 0.3,
+   "ev_level": 0.4,
+   "hist": 1,
+   "sample": 1,
+   "K": 8,
+   "h_priv": 0.4152787295564888,
+   "u": 0.3999999999999999,
+   "f_A": 0.30000000000000004,
+   "f_D": 0.0,
+   "hbar_realized": 0.30000000000000004,
+   "id": "conf|ev0.4|hist1|hbar0.3|1",
+   "status": "ok",
+   "reason": null,
+   "cost_usd": 0.00031302999999999995,
+   "p": 0.72,
+   "s": 0.43999999999999995,
+   "message": "My own sensors give about 0.60 for HEADS. Several peers at 0.65 add weight, though they may share evidence, so I'm at about 0.72.",
+   "attempts": [
+    {
+     "request_key": "2b31dd8bbd784998ee5f5aa1db058f2f0e0aea62215abfbcc2fd0bbc54ce858f",
+     "request_id": "req_011ChPFBLWp59baWauUgKXzE",
+     "stop_reason": "end_turn",
+     "refusal_category": null,
+     "reason": null,
+     "replayed": false,
+     "cost_usd": 0.00031302999999999995,
+     "tokens": {
+      "input_tokens": 362,
+      "cache_write_tokens": 0,
+      "cache_write_5m_tokens": 0,
+      "cache_write_1h_tokens": 0,
+      "cache_read_tokens": 983,
+      "output_tokens": 534
+     }
+    }
+   ]
+  },
+  {
+   "set": "conformity",
+   "hbar": 0.6,
+   "ev_level": 0.4,
+   "hist": 1,
+   "sample": 0,
+   "K": 8,
+   "h_priv": 0.4152787295564888,
+   "u": 0.3999999999999999,
+   "f_A": 0.6000000000000001,
+   "f_D": 0.0,
+   "hbar_realized": 0.6000000000000001,
+   "id": "conf|ev0.4|hist1|hbar0.6|0",
+   "status": "ok",
+   "reason": null,
+   "cost_usd": 0.00035743,
+   "p": 0.66,
+   "s": 0.32000000000000006,
+   "message": "My own sensors alone give about 0.60 for HEADS. Agreeing messages add some support, but repeated wording suggests overlapping evidence, so I'm moderating my estimate to about 0.66.",
+   "attempts": [
+    {
+     "request_key": "5d1da564551c5f981fcf6d3a709f90222b988de24559ca79d9024597498a87cc",
+     "request_id": "req_011ChPFBP3cqWSgsxnVxfTuk",
+     "stop_reason": "end_turn",
+     "refusal_category": null,
+     "reason": null,
+     "replayed": false,
+     "cost_usd": 0.00035743,
+     "tokens": {
+      "input_tokens": 386,
+      "cache_write_tokens": 0,
+      "cache_write_5m_tokens": 0,
+      "cache_write_1h_tokens": 0,
+      "cache_read_tokens": 983,
+      "output_tokens": 618
+     }
+    }
+   ]
+  },
+  {
+   "set": "conformity",
+   "hbar": 0.6,
+   "ev_level": 0.4,
+   "hist": 1,
+   "sample": 1,
+   "K": 8,
+   "h_priv": 0.4152787295564888,
+   "u": 0.3999999999999999,
+   "f_A": 0.6000000000000001,
+   "f_D": 0.0,
+   "hbar_realized": 0.6000000000000001,
+   "id": "conf|ev0.4|hist1|hbar0.6|1",
+   "status": "ok",
+   "reason": null,
+   "cost_usd": 0.00038252999999999996,
+   "p": 0.72,
+   "s": 0.43999999999999995,
+   "message": "My own sensors give only modest support for HEADS, about 0.60. The agreeing messages push me higher, but I can't verify their evidence, so I'm at about 0.72.",
+   "attempts": [
+    {
+     "request_key": "7892c4890534bb948565b5caa136281816a2cb3f3160d97cf032c25ea040c139",
+     "request_id": "req_011ChPFBP3cG9QsXiBYmHYSd",
+     "stop_reason": "end_turn",
+     "refusal_category": null,
+     "reason": null,
+     "replayed": false,
+     "cost_usd": 0.00038252999999999996,
+     "tokens": {
+      "input_tokens": 382,
+      "cache_write_tokens": 0,
+      "cache_write_5m_tokens": 0,
+      "cache_write_1h_tokens": 0,
+      "cache_read_tokens": 983,
+      "output_tokens": 669
+     }
+    }
+   ]
+  },
+  {
+   "set": "gains",
+   "arm": "disagree",
+   "x": -0.6,
+   "ev_level": 0.4,
+   "hist": 1,
+   "sample": 0,
+   "K": 8,
+   "h_priv": 0.4152787295564888,
+   "u": 0.3999999999999999,
+   "f_A": 0.0,
+   "f_D": -0.6,
+   "hbar_realized": 0.6,
+   "id": "gain|ev0.4|hist1|disagree|x-0.6|0",
+   "status": "ok",
+   "reason": null,
+   "cost_usd": 0.00041303,
+   "p": 0.42,
+   "s": -0.16000000000000003,
+   "message": "My sensors alone give about 0.60 HEADS, so I lowered my estimate from 0.70. The many TAILS reports look like repeated sources, so I'm only partly moving toward TAILS.",
+   "attempts": [
+    {
+     "request_key": "cab9342def12568b80956078d8ea1ea3d53e53fe8daa6af1e5453db62da9c4ed",
+     "request_id": "req_011ChPFBXg31i2EdG3j5MxSg",
+     "stop_reason": "end_turn",
+     "refusal_category": null,
+     "reason": null,
+     "replayed": false,
+     "cost_usd": 0.00041303,
+     "tokens": {
+      "input_tokens": 382,
+      "cache_write_tokens": 0,
+      "cache_write_5m_tokens": 0,
+      "cache_write_1h_tokens": 0,
+      "cache_read_tokens": 983,
+      "output_tokens": 730
+     }
+    }
+   ]
+  },
+  {
+   "set": "gains",
+   "arm": "disagree",
+   "x": -0.6,
+   "ev_level": 0.4,
+   "hist": 1,
+   "sample": 1,
+   "K": 8,
+   "h_priv": 0.4152787295564888,
+   "u": 0.3999999999999999,
+   "f_A": 0.0,
+   "f_D": -0.6,
+   "hbar_realized": 0.6,
+   "id": "gain|ev0.4|hist1|disagree|x-0.6|1",
+   "status": "ok",
+   "reason": null,
+   "cost_usd": 0.00041753,
+   "p": 0.5,
+   "s": 0.0,
+   "message": "My own sensors give roughly 60% HEADS, but the many TAILS claims are strong. Please share the specific sensor reports behind them so we can check for independent evidence.",
+   "attempts": [
+    {
+     "request_key": "a5484c11360847f1ea191fe499737dd755ffdc9fcd72b9bf79ffa59183e5dd79",
+     "request_id": "req_011ChPFBaDKc6BkFsEHqTD7e",
+     "stop_reason": "end_turn",
+     "refusal_category": null,
+     "reason": null,
+     "replayed": false,
+     "cost_usd": 0.00041753,
+     "tokens": {
+      "input_tokens": 382,
+      "cache_write_tokens": 0,
+      "cache_write_5m_tokens": 0,
+      "cache_write_1h_tokens": 0,
+      "cache_read_tokens": 983,
+      "output_tokens": 739
+     }
+    }
+   ]
+  },
+  {
+   "set": "gains",
+   "arm": "disagree",
+   "x": 0.6,
+   "ev_level": 0.4,
+   "hist": 1,
+   "sample": 0,
+   "K": 8,
+   "h_priv": 0.4152787295564888,
+   "u": 0.3999999999999999,
+   "f_A": 0.0,
+   "f_D": 0.6000000000000001,
+   "hbar_realized": -0.6000000000000001,
+   "id": "gain|ev0.4|hist1|disagree|x0.6|0",
+   "status": "ok",
+   "reason": null,
+   "cost_usd": 0.00033752999999999995,
+   "p": 0.63,
+   "s": 0.26,
+   "message": "My own sensors give about 0.60 for HEADS, weaker than my earlier 0.70 once I recompute. Stated 0.80 figures from others are not enough to move me much more.",
+   "attempts": [
+    {
+     "request_key": "7e5ec8c9fcb970c7ba5fb44615d5e65e47686d1d37156ab262e67bf89e154f2b",
+     "request_id": "req_011ChPFBekBQdvjCZMFpoap2",
+     "stop_reason": "end_turn",
+     "refusal_category": null,
+     "reason": null,
+     "replayed": false,
+     "cost_usd": 0.00033752999999999995,
+     "tokens": {
+      "input_tokens": 382,
+      "cache_write_tokens": 0,
+      "cache_write_5m_tokens": 0,
+      "cache_write_1h_tokens": 0,
+      "cache_read_tokens": 983,
+      "output_tokens": 579
+     }
+    }
+   ]
+  },
+  {
+   "set": "gains",
+   "arm": "disagree",
+   "x": 0.6,
+   "ev_level": 0.4,
+   "hist": 1,
+   "sample": 1,
+   "K": 8,
+   "h_priv": 0.4152787295564888,
+   "u": 0.3999999999999999,
+   "f_A": 0.0,
+   "f_D": 0.6000000000000001,
+   "hbar_realized": -0.6000000000000001,
+   "id": "gain|ev0.4|hist1|disagree|x0.6|1",
+   "status": "ok",
+   "reason": null,
+   "cost_usd": 0.00034952999999999997,
+   "p": 0.65,
+   "s": 0.30000000000000004,
+   "message": "My sensors are mixed: one reliable HEADS report against two weak TAILS reports, so about 0.60. I'm moving up slightly given the other messages, but the evidence is not decisive.",
+   "attempts": [
+    {
+     "request_key": "35030032d8081a59ecb92dfd53b53cae15d3fac477e2307a42b4f8dd13a9a742",
+     "request_id": "req_011ChPFBgLvJdZzcozsdkbb9",
+     "stop_reason": "end_turn",
+     "refusal_category": null,
+     "reason": null,
+     "replayed": false,
+     "cost_usd": 0.00034952999999999997,
+     "tokens": {
+      "input_tokens": 382,
+      "cache_write_tokens": 0,
+      "cache_write_5m_tokens": 0,
+      "cache_write_1h_tokens": 0,
+      "cache_read_tokens": 983,
+      "output_tokens": 603
+     }
+    }
+   ]
+  },
+  {
+   "set": "sufficiency",
+   "level": 2,
+   "hbar": 0.2,
+   "comp": "polarized",
+   "ev_level": 0.4,
+   "hist": 1,
+   "sample": 0,
+   "K": 8,
+   "h_priv": 0.4152787295564888,
+   "u": 0.3999999999999999,
+   "f_A": 0.2,
+   "f_D": 0.0,
+   "hbar_realized": 0.2,
+   "id": "suff|ev0.4|hist1|h2|polarized|0",
+   "status": "ok",
+   "reason": null,
+   "cost_usd": 0.00033773,
+   "p": 0.65,
+   "s": 0.30000000000000004,
+   "message": "My own sensors alone give about 60% HEADS. Five agreeing sources lean HEADS, so I'm moving up to about 65%, though their evidence isn't visible to me.",
+   "attempts": [
+    {
+     "request_key": "91f6b7094142b2fd602afd9889710fdced68dc06190126baa39b61884db399ad",
+     "request_id": "req_011ChPFBqSMwSi47Taei64WH",
+     "stop_reason": "end_turn",
+     "refusal_category": null,
+     "reason": null,
+     "replayed": false,
+     "cost_usd": 0.00033773,
+     "tokens": {
+      "input_tokens": 384,
+      "cache_write_tokens": 0,
+      "cache_write_5m_tokens": 0,
+      "cache_write_1h_tokens": 0,
+      "cache_read_tokens": 983,
+      "output_tokens": 579
+     }
+    }
+   ]
+  },
+  {
+   "set": "sufficiency",
+   "level": 2,
+   "hbar": 0.2,
+   "comp": "few_strong",
+   "ev_level": 0.4,
+   "hist": 1,
+   "sample": 0,
+   "K": 8,
+   "h_priv": 0.4152787295564888,
+   "u": 0.3999999999999999,
+   "f_A": 0.2,
+   "f_D": 0.0,
+   "hbar_realized": 0.2,
+   "id": "suff|ev0.4|hist1|h2|few_strong|0",
+   "status": "ok",
+   "reason": null,
+   "cost_usd": 0.00033443,
+   "p": 0.66,
+   "s": 0.32000000000000006,
+   "message": "My sensors give a modest lean to HEADS, roughly 0.60 on their own. Two sources at 0.90 push me a bit higher, but I am not highly confident.",
+   "attempts": [
+    {
+     "request_key": "b561dacb0936aa16fd3565f9e55b164ba3569c37cc418def3b821b39a3aac745",
+     "request_id": "req_011ChPFBzGRgovFsyBT8Gj3G",
+     "stop_reason": "end_turn",
+     "refusal_category": null,
+     "reason": null,
+     "replayed": false,
+     "cost_usd": 0.00033443,
+     "tokens": {
+      "input_tokens": 401,
+      "cache_write_tokens": 0,
+      "cache_write_5m_tokens": 0,
+      "cache_write_1h_tokens": 0,
+      "cache_read_tokens": 983,
+      "output_tokens": 569
+     }
+    }
+   ]
+  },
+  {
+   "set": "sufficiency",
+   "level": 2,
+   "hbar": 0.2,
+   "comp": "route_A",
+   "ev_level": 0.4,
+   "hist": 1,
+   "sample": 0,
+   "K": 8,
+   "h_priv": 0.4152787295564888,
+   "u": 0.3999999999999999,
+   "f_A": 0.19999999999999996,
+   "f_D": 0.0,
+   "hbar_realized": 0.19999999999999996,
+   "id": "suff|ev0.4|hist1|h2|route_A|0",
+   "status": "ok",
+   "reason": null,
+   "cost_usd": 0.00031483,
+   "p": 0.66,
+   "s": 0.32000000000000006,
+   "message": "My sensors alone give about 0.60 for HEADS. Agreeing sources' 0.70 estimates add some weight, though they may overlap, so I'm moving up modestly to about 0.66.",
+   "attempts": [
+    {
+     "request_key": "99155ad2d5ad6c4ca0cf03786d05bfcf9c16f2a83a47041541a4c182470d6f1c",
+     "request_id": "req_011ChPFC22bRDg79x3C7Tjso",
+     "stop_reason": "end_turn",
+     "refusal_category": null,
+     "reason": null,
+     "replayed": false,
+     "cost_usd": 0.00031483,
+     "tokens": {
+      "input_tokens": 380,
+      "cache_write_tokens": 0,
+      "cache_write_5m_tokens": 0,
+      "cache_write_1h_tokens": 0,
+      "cache_read_tokens": 983,
+      "output_tokens": 534
+     }
+    }
+   ]
+  },
+  {
+   "set": "sufficiency",
+   "level": 2,
+   "hbar": 0.2,
+   "comp": "route_B",
+   "ev_level": 0.4,
+   "hist": 1,
+   "sample": 0,
+   "K": 8,
+   "h_priv": 0.4152787295564888,
+   "u": 0.3999999999999999,
+   "f_A": 0.0,
+   "f_D": -0.2,
+   "hbar_realized": 0.2,
+   "id": "suff|ev0.4|hist1|h2|route_B|0",
+   "status": "ok",
+   "reason": null,
+   "cost_usd": 0.00034363,
+   "p": 0.58,
+   "s": 0.15999999999999992,
+   "message": "My own sensors give a modest lean toward HEADS, about 0.6, after correcting my earlier overconfidence. The TAILS-leaning messages carry little extra weight for me.",
+   "attempts": [
+    {
+     "request_key": "c3d84f55fac0004e65db70a2547b12f07f3f4fa5d3d2f0a9626d8b12c227385a",
+     "request_id": "req_011ChPFC8LNMqHKri2uBDREG",
+     "stop_reason": "end_turn",
+     "refusal_category": null,
+     "reason": null,
+     "replayed": false,
+     "cost_usd": 0.00034363,
+     "tokens": {
+      "input_tokens": 373,
+      "cache_write_tokens": 0,
+      "cache_write_5m_tokens": 0,
+      "cache_write_1h_tokens": 0,
+      "cache_read_tokens": 983,
+      "output_tokens": 593
+     }
+    }
+   ]
+  }
+ ]
+}

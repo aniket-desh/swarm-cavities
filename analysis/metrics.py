@@ -181,18 +181,48 @@ def replica_overlap(s: np.ndarray, labels=None) -> np.ndarray:
     return np.stack([np.nanmean(q_i[:, lab == a], axis=1) for a in range(P)])
 
 
-def overlap_excess(s: np.ndarray, baseline, labels=None) -> np.ndarray:
-    """Freezing order parameter q(t) - q_field(t), returns (P, T+1).
+def cross_overlap(s: np.ndarray, s_other: np.ndarray, labels=None) -> np.ndarray:
+    """q_a^{other}(t) = mean_{i in a} mean_{alpha in s, beta in s_other} s_i^alpha(t) s_i^beta(t). Returns (P, T+1).
 
-    A quenched private field alone holds each agent near its own sign, so replicas agree (q > 0) even
-    with no coupling; that part says nothing about echo-chamber locking (docs/literature.md (d) Claim 2).
-    ``baseline`` is either the field-only overlap (scalar or array broadcastable to (P, T+1)) or an
-    uncoupled (g = 0) control belief array (R0, T+1, N) with the same fields, whose overlap is used.
+    For runs on independent graphs every pair (alpha, beta) is distinct, so the double mean factorizes
+    into the product of the two replica means per agent.
+    """
+    lab, P = _labels(s.shape[2], labels)
+    q_i = np.nanmean(s, axis=0) * np.nanmean(s_other, axis=0)        # (T+1, N)
+    return np.stack([np.nanmean(q_i[:, lab == a], axis=1) for a in range(P)])
+
+
+def overlap_excess(s: np.ndarray, baseline, labels=None, baseline_kind: str = "other_graph") -> np.ndarray:
+    """Overlap excess Delta q(t) = q_same graph(t) - q_baseline(t), returns (P, T+1)  (theory/claim2.md section 5).
+
+    ``s`` holds replicas that share the graph, the private evidence and the initial answers. The baseline
+    removes the overlap that is there without pair-specific couplings: each agent's own evidence holds it
+    near its own sign, and the mean field pushes all replicas the same way.
+
+    baseline_kind="other_graph" (default): ``baseline`` is a belief array (R', T+1, N) from runs on a
+        *different* graph drawn from the same ensemble, with the same private evidence (same agent i, same
+        h_priv_i). The baseline is the cross-overlap between replicas on the two graphs
+        (``cross_overlap``), i.e. claim1.md eq. (9) with independent couplings: it keeps the field-induced
+        and mean-field parts and drops only what the specific couplings pin. A list of such arrays (several
+        other graphs) is averaged.
+    baseline_kind="control": the previous behaviour. ``baseline`` is a g = 0 (uncoupled) control belief
+        array with the same fields, whose own replica overlap is subtracted. When Jbar != 0 this also
+        removes the mean field, so it overstates the excess; kept for comparison.
+    A scalar or an array broadcastable to (P, T+1) is subtracted directly in either mode.
     """
     q = replica_overlap(s, labels)
+    if isinstance(baseline, (list, tuple)) and len(baseline) and np.ndim(baseline[0]) == 3:
+        if baseline_kind != "other_graph":
+            raise ValueError("a list of baselines is only meaningful for baseline_kind='other_graph'")
+        return q - np.mean([cross_overlap(s, b, labels) for b in baseline], axis=0)
     b = np.asarray(baseline, dtype=float)
     if b.ndim == 3:
-        b = replica_overlap(b, labels)
+        if baseline_kind == "other_graph":
+            b = cross_overlap(s, b, labels)
+        elif baseline_kind == "control":
+            b = replica_overlap(b, labels)
+        else:
+            raise ValueError(f"baseline_kind must be 'other_graph' or 'control', got {baseline_kind!r}")
     return q - b
 
 

@@ -1,0 +1,12 @@
+
+== Llama-3.1-8B | objective: 358400 transitions, 1792000 votes
+  M0       CE 0.3552  dCE vs M1  +53.91 (8.40) mnat/vote
+  M1       CE 0.3013  dCE vs M1   -0.00 (0.00) mnat/vote
+  M2       CE 0.2115  dCE vs M1  -89.77 (9.89) mnat/vote
+  M2avg    CE 0.2087  dCE vs M1  -92.56 (10.29) mnat/vote
+  M3       CE 0.2112  dCE vs M1  -90.11 (9.90) mnat/vote
+  M4       CE 0.2015  dCE vs M1  -99.81 (10.55) mnat/vote
+  M5       CE 0.2012  dCE vs M1 -100.07 (10.56) mnat/vote
+  M6       CE 0.2012  dCE vs M1 -100.11 (10.55) mnat/vote
+  M2+s     CE 0.2113  dCE vs M1  -90.02 (9.90) mnat/vote
+  M2+s+s'  CE 0.2104  dCE vs M1  -90.85 (9.90) mnat/vote

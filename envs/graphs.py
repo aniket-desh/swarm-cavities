@@ -127,6 +127,87 @@ def sparse_signed_couplings(N: int, k: float, gamma: float, p_neg: float,
     return J
 
 
+def fixed_indegree_signed_couplings(N: int, K: int, gamma: float, p_neg: float,
+                                    rng: np.random.Generator, max_tries: int = 100) -> np.ndarray:
+    """Directed signed graph J in {-1, 0, +1} (int8, zero diagonal) with every in-degree exactly K
+    and exactly n_r = round(|gamma| K) reciprocated ties per agent: theory/claim1.md section 5, option B,
+    constraints (i)-(iii).
+
+    (i)   Fixed in-degree: row i has exactly K nonzeros (agent i reads K peers), so g_i^2 is the same
+          for every agent. Out-degrees are not fixed; ``spectral_log`` reports their spread.
+    (ii)  Reciprocity through the edge count at fixed sign agreement. The reciprocated ties form a
+          random n_r-regular undirected graph (needs N n_r even), so every agent has exactly n_r
+          partners it reads and is read by, and the per-agent reaction coefficient
+          Gamma_i ~ (1/K) sum_{j recip.} J_ij J_ji has zero spread across agents. Reciprocated ties
+          are concordant (J_ji = J_ij) for gamma >= 0 and discordant (J_ji = -J_ij) for gamma < 0.
+          The remaining K - n_r in-ties of each agent are single (non-reciprocated) edges, chosen
+          uniformly among senders that neither already send to i nor are read by i.
+    (iii) Signs: an exact global count round(p_neg * n) of negatives among the reciprocated pairs
+          (concordant: whole pairs) and among the single edges. For discordant pairs exactly half
+          the directed reciprocated edges are negative, so singles are negative with fraction
+          (p_neg - r/2) / (1 - r), r = n_r / K, keeping the overall negative fraction at p_neg
+          (feasible for r <= 2 min(p_neg, 1 - p_neg), as in ``sparse_signed_couplings``).
+
+    What gamma means. With unit couplings, edge density p = K/(N-1) and mean sign mu_s = 1 - 2 p_neg,
+    the Pearson correlation over ordered pairs is, for concordant ties,
+        Corr(J_ij, J_ji) = (r - p mu_s^2) / (1 - p mu_s^2) = r + O(K/N)        (claim1.md eq. (13)),
+    and -r + O(K/N) for discordant ties. With channel gains b_+ != b_- applied to the signs, the
+    discordant value is -r b_+ b_- / (p_+ b_+^2 + p_- b_-^2) instead; compute it with
+    ``spectral_log`` on the gained matrix. The realized value is never assumed, always logged.
+    """
+    if not (0 < K < N):
+        raise ValueError(f"need 0 < K < N, got K={K}, N={N}")
+    n_r = int(round(abs(gamma) * K))
+    r = n_r / K
+    concordant = gamma >= 0
+    if (N * n_r) % 2:
+        raise ValueError(f"N * round(|gamma| K) = {N} * {n_r} must be even for a regular reciprocity graph")
+    if not concordant and r > 2 * min(p_neg, 1 - p_neg) + 1e-12:
+        raise ValueError(f"discordant reciprocity r={r:.3f} needs r <= 2 min(p_neg, 1 - p_neg)")
+    import networkx as nx
+
+    for _ in range(max_tries):
+        A = np.zeros((N, N), dtype=bool)                   # A[i, j]: i reads j
+        Rg = nx.random_regular_graph(n_r, N, seed=int(rng.integers(2**31))) if n_r else nx.empty_graph(N)
+        pairs = np.array(Rg.edges(), dtype=int).reshape(-1, 2)
+        A[pairs[:, 0], pairs[:, 1]] = A[pairs[:, 1], pairs[:, 0]] = True
+        ok = True
+        for i in rng.permutation(N):                       # greedy fill of the single in-ties
+            allowed = ~A[i] & ~A[:, i]                     # not already read by i, and i not read by them
+            allowed[i] = False
+            cand = np.flatnonzero(allowed)
+            need = K - n_r
+            if cand.size < need:
+                ok = False
+                break
+            A[i, rng.choice(cand, need, replace=False)] = True
+        if ok:
+            break
+    else:
+        raise RuntimeError(f"could not build a fixed in-degree graph with N={N}, K={K}, n_r={n_r}")
+
+    def exact_signs(n, q):
+        s = np.ones(n, dtype=np.int8)
+        s[: int(round(q * n))] = -1
+        return rng.permutation(s)
+
+    J = np.zeros((N, N), dtype=np.int8)
+    recip = A & A.T
+    single = A & ~A.T
+    iu, ju = np.nonzero(np.triu(recip, 1))
+    if concordant:
+        s = exact_signs(iu.size, p_neg)
+        J[iu, ju] = J[ju, iu] = s
+        q_single = p_neg
+    else:
+        s = exact_signs(iu.size, 0.5)
+        J[iu, ju], J[ju, iu] = s, -s
+        q_single = (p_neg - r / 2) / (1 - r) if r < 1 else 0.5
+    si, sj = np.nonzero(single)
+    J[si, sj] = exact_signs(si.size, q_single)
+    return J
+
+
 def _pair_corr(x: np.ndarray, y: np.ndarray) -> float:
     """Pearson correlation of paired samples; nan if either side is constant."""
     sx, sy = x.std(), y.std()
@@ -146,7 +227,8 @@ def spectral_log(J: np.ndarray, labels=None, eigs: bool = True) -> dict:
       in_degree = mean number of nonzero J_ij per receiver i in a from senders in b
       frac_neg  = fraction of nonzero entries that are negative
       edge_reciprocity = P(J_ji != 0 | J_ij != 0), sign_agreement = P(sign J_ji = sign J_ij | both != 0)
-    plus the eigenvalues, spectral radius and largest real part of J (which set linear stability).
+    plus, over all agents, the min/max in-degree, the out-degree spread and the min/max number of
+    reciprocated ties per agent, and the eigenvalues, spectral radius and largest real part of J (which set linear stability).
     Values are Python floats / nested lists except ``eigvals`` (complex ndarray). ``eigs=False``
     skips the O(N^3) eigendecomposition.
     """
@@ -175,10 +257,16 @@ def spectral_log(J: np.ndarray, labels=None, eigs: bool = True) -> dict:
                     out["sign_agreement"][a, b] = (np.sign(x[both]) == np.sign(y[both])).mean()
     ii, jj = np.nonzero(off)
     log = {k: v.tolist() for k, v in out.items()}
+    A = (J != 0) & off
+    k_in, k_out, n_rec = A.sum(1), A.sum(0), (A & A.T).sum(1)
     log.update(
         N=N, P=P, sizes=np.bincount(lab, minlength=P).tolist(),
         gamma_all=_pair_corr(J[ii, jj], J[jj, ii]),
         mean_in_degree=float((J[off] != 0).sum() / N),
+        # per-agent spread: in-degree sets g_i^2, reciprocated ties set the reaction coefficient Gamma_i
+        in_degree_min=int(k_in.min()), in_degree_max=int(k_in.max()),
+        out_degree_std=float(k_out.std()),
+        recip_per_agent_min=int(n_rec.min()), recip_per_agent_max=int(n_rec.max()),
     )
     if eigs:
         ev = np.linalg.eigvalsh(J).astype(complex) if np.array_equal(J, J.T) else np.linalg.eigvals(J)
