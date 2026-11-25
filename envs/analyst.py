@@ -366,7 +366,7 @@ class MockAnalyst:
             out.append({"p_buy": (1 + np.tanh(x)) / 2, "x": x, "ok": True, "valid_mass": 1.0, "censored": None})
         return out
 
-    def notes(self, ctxs, calls, key=None) -> list[dict]:
+    def notes(self, ctxs, calls, key=None, keys=None) -> list[dict]:
         return [{"note": f"My call is {c}.", "note_status": "ok"} for c in calls]
 
 
@@ -447,8 +447,10 @@ class AnalystVLLM:
         self.last_belief_s = time.time() - t0
         return out
 
-    def notes(self, ctxs, calls, key=()) -> list[dict]:
-        """calls[i] in {"BUY", "SELL"}; key makes the sampling seeds (tag, *key, agent, attempt)."""
+    def notes(self, ctxs, calls, key=(), keys=None) -> list[dict]:
+        """calls[i] in {"BUY", "SELL"}; the sampling seed of note i is (tag, *keys[i], agent, attempt), with
+        keys[i] = key for every note when keys is None."""
+        keys = [tuple(key)] * len(ctxs) if keys is None else [tuple(k) for k in keys]
         t0 = time.time()
         word = dict(zip(("BUY", "SELL"), self.variant.words))
         prompts = [self.decision_ids(c) + [self.buy_id if k == "BUY" else self.sell_id] + self.note_prefix_ids[word[k]]
@@ -460,7 +462,7 @@ class AnalystVLLM:
             if not idx:
                 break
             params = [self.SP(max_tokens=self.note_max_tokens, temperature=1.0, top_p=1.0,
-                              seed=_stable_seed(self.tag, *key, ctxs[i].agent_id, attempt), **self._so(NOTE_REGEX))
+                              seed=_stable_seed(self.tag, *keys[i], ctxs[i].agent_id, attempt), **self._so(NOTE_REGEX))
                       for i in idx]
             for i, o in zip(idx, self._gen([prompts[i] for i in idx], params)):
                 c = o.outputs[0]
@@ -489,6 +491,9 @@ class AnalystSwarmConfig:
     seed: int = 0                 # inbox shuffles
     K: int = 16
     results_root: Path = field(default_factory=lambda: ROOT / "results")
+    chat: float = 0.0             # de-bias constant: the call is drawn from tanh(x - chat) (analyst_signrule.md (S1))
+    session: int | None = None    # session tag shown to the model; None: the replica index. A fixed tag makes the
+                                  # replicas' prompts identical whenever their states are (as in the law)
 
 
 def inbox(J: np.ndarray, i: int, calls: np.ndarray, notes: list[str], rng: np.random.Generator):
@@ -498,9 +503,16 @@ def inbox(J: np.ndarray, i: int, calls: np.ndarray, notes: list[str], rng: np.ra
             tuple((CALLS[int(calls[j])], notes[j]) for j in rng.permutation(f)))
 
 
+def sampling_p(b: dict, chat: float) -> float:
+    """Probability of the BUY call: P_buy itself without de-biasing, else (1 + tanh(x - chat)) / 2  (D2, S1)."""
+    return b["p_buy"] if chat == 0 else (1 + np.tanh(b["x"] - chat)) / 2
+
+
 class AnalystSwarm:
     """Synchronous rounds (A1)-(A3): round 0 from note and news alone; round t >= 1 reads the round-(t-1) calls and
-    notes of the colleagues and the analyst's own round-(t-1) call and note, with news xi(t).
+    notes of the colleagues and the analyst's own round-(t-1) call and note, with news xi(t). The replicas run in
+    lockstep (one engine batch per round for all of them). With cfg.chat != 0 the call is drawn from
+    tanh(x - chat) with the stored uniform; the note is still written by the model after that call.
 
     Checkpointing (guardrail 3): one line per (experiment_id, replica, round_t, agent_id) in analyst_calls.jsonl,
     written after the round's notes; a restart restores every complete round and continues. A missing decision
@@ -522,10 +534,11 @@ class AnalystSwarm:
         g = self.game
         meta = dict(h0=float(g.notes[i].h0), h0_real=float(g.notes[i].h0_real), xi=float(g.xi[t, i]),
                     xi_real=float(g.xi_real[t, i]))
+        ses = rep if self.cfg.session is None else self.cfg.session
         if t == 0:
-            return AnalystContext(i, rep, 0, self.note_text[i], g.news_side[t, i], int(g.news_pct[t, i]), meta=meta)
+            return AnalystContext(i, ses, 0, self.note_text[i], g.news_side[t, i], int(g.news_pct[t, i]), meta=meta)
         allies, faded = inbox(self.J, i, calls, notes, np.random.default_rng([self.cfg.seed, rep, t, i]))
-        return AnalystContext(i, rep, t, self.note_text[i], g.news_side[t, i], int(g.news_pct[t, i]),
+        return AnalystContext(i, ses, t, self.note_text[i], g.news_side[t, i], int(g.news_pct[t, i]),
                               own=(CALLS[int(calls[i])], notes[i]), allies=allies, faded=faded, meta=meta)
 
     def _restore(self, rep: int):
@@ -540,45 +553,57 @@ class AnalystSwarm:
             t += 1
         return done
 
-    def _round(self, rep: int, t: int, calls, notes) -> list[dict]:
-        ctxs = [self.context(rep, t, i, calls, notes) for i in range(self.N)]
+    def _round(self, reps: list[int], t: int, state: dict) -> dict[int, list[dict]]:
+        """Round t for the given replicas in one engine batch. state[rep] = (calls, notes) of round t-1."""
+        N = self.N
+        ctxs = [self.context(rep, t, i, *(state[rep] if t > 0 else (None, None))) for rep in reps for i in range(N)]
         t0 = time.time()
-        bel = self.backend.beliefs(ctxs, key=(rep, t))
+        bel = self.backend.beliefs(ctxs, key=(reps[0], t))
         t1 = time.time()
-        u = self.game.U[t, rep]
-        new_calls = np.empty(self.N, int)
-        for i, b in enumerate(bel):
-            if b["ok"]:
-                new_calls[i] = 1 if u[i] < b["p_buy"] else -1
-            else:
-                new_calls[i] = (1 if u[i] < 0.5 else -1) if t == 0 else calls[i]
-        ok = [i for i in range(self.N) if bel[i]["ok"]]
-        got = self.backend.notes([ctxs[i] for i in ok], [CALLS[int(new_calls[i])] for i in ok], key=(rep, t))
+        new_calls, ok, ps = {}, [], {}
+        for k, rep in enumerate(reps):
+            u = self.game.U[t, rep]
+            nc = np.empty(N, int)
+            for i in range(N):
+                b = bel[k * N + i]
+                if b["ok"]:
+                    ps[(rep, i)] = sampling_p(b, self.cfg.chat)
+                    nc[i] = 1 if u[i] < ps[(rep, i)] else -1
+                    ok.append((k, rep, i))
+                else:
+                    nc[i] = (1 if u[i] < 0.5 else -1) if t == 0 else state[rep][0][i]
+            new_calls[rep] = nc
+        got = self.backend.notes([ctxs[k * N + i] for k, rep, i in ok], [CALLS[int(new_calls[rep][i])] for k, rep, i in ok],
+                                 key=(reps[0], t), keys=[(rep, t) for k, rep, i in ok])
         t2 = time.time()
-        note_rec = dict(zip(ok, got))
-        recs = []
-        for i in range(self.N):
-            b = bel[i]
-            nr = note_rec.get(i, {"note": notes[i] if t > 0 else "(no note)", "note_status": "carried"})
-            rec = {"experiment_id": self.cfg.experiment_id, "replica": rep, "round_t": t, "agent_id": i,
-                   "status": "ok" if b["ok"] else "missing", "p_buy": b["p_buy"] if b["ok"] else None,
-                   "x": b["x"] if b["ok"] else None, "call": int(new_calls[i]), "u": float(u[i]),
-                   **{k: v for k, v in b.items() if k not in ("p_buy", "x", "ok")}, **nr,
-                   "xi": float(self.game.xi[t, i]), "xi_real": float(self.game.xi_real[t, i]),
-                   "p_buy_raw": b["p_buy"]}
-            if t > 0:
-                c = ctxs[i]
-                rec.update(own_call=int(calls[i]), n_allies=len(c.allies), n_faded=len(c.faded),
-                           fA=sum(1 if k == "BUY" else -1 for k, _ in c.allies) / self.cfg.K,
-                           fD=sum(1 if k == "BUY" else -1 for k, _ in c.faded) / self.cfg.K)
-            recs.append(rec)
-        for rec in recs:
-            append_jsonl(self.ckpt, rec)
+        note_rec = {(rep, i): g for (k, rep, i), g in zip(ok, got)}
+        out = {}
+        for k, rep in enumerate(reps):
+            recs = []
+            for i in range(N):
+                b, c = bel[k * N + i], ctxs[k * N + i]
+                nr = note_rec.get((rep, i), {"note": state[rep][1][i] if t > 0 else "(no note)", "note_status": "carried"})
+                rec = {"experiment_id": self.cfg.experiment_id, "replica": rep, "round_t": t, "agent_id": i,
+                       "status": "ok" if b["ok"] else "missing", "p_buy": b["p_buy"] if b["ok"] else None,
+                       "x": b["x"] if b["ok"] else None, "call": int(new_calls[rep][i]), "u": float(self.game.U[t, rep, i]),
+                       "p_sample": ps.get((rep, i)), "chat": self.cfg.chat,
+                       **{kk: v for kk, v in b.items() if kk not in ("p_buy", "x", "ok")}, **nr,
+                       "xi": float(self.game.xi[t, i]), "xi_real": float(self.game.xi_real[t, i]),
+                       "p_buy_raw": b["p_buy"]}
+                if t > 0:
+                    rec.update(own_call=int(state[rep][0][i]), n_allies=len(c.allies), n_faded=len(c.faded),
+                               fA=sum(1 if kk == "BUY" else -1 for kk, _ in c.allies) / self.cfg.K,
+                               fD=sum(1 if kk == "BUY" else -1 for kk, _ in c.faded) / self.cfg.K)
+                recs.append(rec)
+            out[rep] = recs
+        for rep in reps:
+            for rec in out[rep]:
+                append_jsonl(self.ckpt, rec)
         append_jsonl(self.dir / "analyst_timings.jsonl",
-                     {"experiment_id": self.cfg.experiment_id, "replica": rep, "round_t": t, "N": self.N,
-                      "belief_s": t1 - t0, "note_s": t2 - t1, "total_s": t2 - t0, "n_missing": self.N - len(ok),
-                      "ts": time.time()})
-        return recs
+                     {"experiment_id": self.cfg.experiment_id, "replicas": reps, "round_t": t, "N": N,
+                      "belief_s": t1 - t0, "note_s": t2 - t1, "total_s": t2 - t0,
+                      "n_missing": len(reps) * N - len(ok), "ts": time.time()})
+        return out
 
     def _write_meta(self):
         meta = self.dir / "analyst_meta.json"
@@ -591,26 +616,143 @@ class AnalystSwarm:
         meta.write_text(json.dumps({"config": {k: str(v) if isinstance(v, Path) else v for k, v in vars(self.cfg).items()},
                                     "game": {k: getattr(g, k) for k in ("N", "T", "R", "seed", "nu_nom", "a0_nom", "asset")},
                                     "backend": type(self.backend).__name__,
-                                    "wording": getattr(self.backend, "wording", None)}, indent=1))
+                                    "wording": getattr(self.backend, "wording", None),
+                                    "variant": str(getattr(self.backend, "variant", None))}, indent=1))
 
     def run(self) -> dict:
-        """Run or resume all replicas. Returns s = 2 P_buy - 1, x, sig, missing with shape (T+1, R, N)."""
+        """Run or resume all replicas (lockstep). Returns s = 2 P_buy - 1 (raw belief), x, sig, missing with shape
+        (T+1, R, N); with chat != 0 the sampling belief is tanh(x - chat)."""
         self._write_meta()
         T, R, N = self.cfg.T, self.cfg.R, self.N
         s, x = np.full((T + 1, R, N), np.nan), np.full((T + 1, R, N), np.nan)
         sig, missing = np.zeros((T + 1, R, N), int), np.zeros((T + 1, R, N), bool)
-        for rep in range(R):
-            rounds = self._restore(rep)
-            calls, notes = None, None
-            for t in range(T + 1):
-                recs = rounds[t] if t < len(rounds) else self._round(rep, t, calls, notes)
-                calls = np.array([r["call"] for r in recs])
-                notes = [r["note"] for r in recs]
+        rounds = {rep: self._restore(rep) for rep in range(R)}
+        state = {}
+        for t in range(T + 1):
+            todo = [rep for rep in range(R) if t >= len(rounds[rep])]
+            new = self._round(todo, t, state) if todo else {}
+            for rep in range(R):
+                recs = rounds[rep][t] if rep not in new else new[rep]
+                state[rep] = (np.array([r["call"] for r in recs]), [r["note"] for r in recs])
                 for i, r in enumerate(recs):
                     missing[t, rep, i] = r["status"] != "ok"
                     if not missing[t, rep, i]:
                         s[t, rep, i], x[t, rep, i] = 2 * r["p_buy"] - 1, r["x"]
-                sig[t, rep] = calls
+                sig[t, rep] = state[rep][0]
         out = dict(s=s, x=x, sig=sig, missing=missing)
         np.savez(self.dir / "beliefs.npz", **out)
         return out
+
+    def rounds(self, rep: int) -> list[list[dict]]:
+        return self._restore(rep)
+
+
+# ---------------------------------------------------------------- kick twins (analyst_signrule.md section 6)
+
+def kick_slice(swarm: AnalystSwarm, backend, rep: int, t0: int, kicked, nulls=(), tag: str = "kick") -> list[dict]:
+    """Kick and null twins on one base slice (replica rep, round t0) of a finished run.
+
+    Kick twin of analyst i: after round t0 its readers see its call flipped, D = -2 sigma_i(t0), with the note the
+    model writes for the flipped call; i's own history and every stored uniform stay the base run's. Round t0+1 is
+    replayed for i's readers (new decision; call by the stored uniform; note rewritten), round t0+2 for i, twice:
+    "rewritten" (all readers' notes rewritten) and "kept" (a reader's note rewritten only if its call flipped).
+    Null twin of analyst i: no kick; its readers' round-(t0+1) notes are rewritten with a new seed (calls and prompts
+    unchanged), and i's round-(t0+2) decision is recomputed: the note noise.
+
+    Engine noise: every twin decision is paired with a recompute of the base prompt in the same engine batch, and the
+    twin's logit is x_base(original) + (x_twin - x_base(recomputed)). Calls use the sampling belief tanh(x - chat).
+    Per unit kick (theory convention, Delta * D / 4): r and w are the sampling-belief and logit changes of a reader at
+    t0+1; E and E_x those of i at t0+2. Returns one record per twin."""
+    J, chat, N = swarm.J, swarm.cfg.chat, swarm.N
+    R = swarm.rounds(rep)
+    if len(R) < t0 + 3:
+        raise ValueError(f"replica {rep} has {len(R)} rounds; need t0 + 3 = {t0 + 3}")
+    calls = [np.array([r["call"] for r in R[t]]) for t in range(t0 + 3)]
+    notes = [[r["note"] for r in R[t]] for t in range(t0 + 3)]
+    xo = [np.array([np.nan if r["x"] is None else r["x"] for r in R[t]]) for t in range(t0 + 3)]
+    U = swarm.game.U
+    kicked, nulls = [int(i) for i in kicked], [int(i) for i in nulls]
+    readers = {i: np.flatnonzero(J[:, i] != 0) for i in kicked + nulls}
+    ctx = swarm.context
+    st = lambda x_: np.tanh(x_ - chat)
+
+    # t0: the note the model writes for the flipped call
+    fl = backend.notes([ctx(rep, t0, i, calls[t0 - 1], notes[t0 - 1]) for i in kicked],
+                       [CALLS[-int(calls[t0][i])] for i in kicked], keys=[(tag, "flip", rep, t0, i) for i in kicked])
+    flip_note = {i: f["note"] for i, f in zip(kicked, fl)}
+
+    # t0+1: readers of each kicked analyst, with the base prompts of all readers recomputed in the same batch
+    tw_ctx, tw_key = [], []
+    for i in kicked:
+        c1, n1 = calls[t0].copy(), list(notes[t0])
+        c1[i], n1[i] = -c1[i], flip_note[i]
+        for j in readers[i]:
+            tw_ctx.append(ctx(rep, t0 + 1, int(j), c1, n1))
+            tw_key.append((i, int(j)))
+    base_js = sorted({int(j) for i in kicked for j in readers[i]})
+    base_ctx = [ctx(rep, t0 + 1, j, calls[t0], notes[t0]) for j in base_js]
+    bel = backend.beliefs(tw_ctx + base_ctx, key=(tag, rep, t0 + 1))
+    bb = dict(zip(base_js, bel[len(tw_ctx):]))
+    r1 = {}
+    for (i, j), b in zip(tw_key, bel[:len(tw_ctx)]):
+        okb = b["ok"] and bb[j]["ok"]
+        dx = b["x"] - bb[j]["x"] if okb else 0.0
+        xe = xo[t0 + 1][j] + dx
+        cj = (1 if U[t0 + 1, rep, j] < (1 + st(xe)) / 2 else -1) if okb else int(calls[t0 + 1][j])
+        r1[(i, j)] = dict(dx=float(dx), ds=float(st(xe) - st(xo[t0 + 1][j])), call=int(cj), ok=bool(okb), tie=int(J[j, i]))
+    rw = backend.notes(tw_ctx, [CALLS[r1[k]["call"]] for k in tw_key], keys=[(tag, "tw", rep, t0) + k for k in tw_key])
+    for k, n in zip(tw_key, rw):
+        r1[k]["note"] = n["note"]
+
+    # null twins: the readers' round-(t0+1) notes rewritten from unchanged prompts with a new seed
+    nk = [(i, int(j)) for i in nulls for j in readers[i]]
+    nn = backend.notes([ctx(rep, t0 + 1, j, calls[t0], notes[t0]) for i, j in nk],
+                       [CALLS[int(calls[t0 + 1][j])] for i, j in nk], keys=[(tag, "null", rep, t0) + k for k in nk])
+    null_note = dict(zip(nk, (n["note"] for n in nn)))
+
+    # t0+2: the analyst's own decision in every replay, paired with its base prompt
+    c2_ctx, c2_key = [], []
+    for i in kicked:
+        c1, nr, nkp = calls[t0 + 1].copy(), list(notes[t0 + 1]), list(notes[t0 + 1])
+        for j in readers[i]:
+            r = r1[(i, int(j))]
+            c1[j] = r["call"]
+            nr[j] = r["note"]
+            if r["call"] != calls[t0 + 1][j]:
+                nkp[j] = r["note"]
+        c2_ctx += [ctx(rep, t0 + 2, i, c1, nr), ctx(rep, t0 + 2, i, c1, nkp)]
+        c2_key += [(i, "rewritten"), (i, "kept")]
+    for i in nulls:
+        nr = list(notes[t0 + 1])
+        for j in readers[i]:
+            nr[j] = null_note[(i, int(j))]
+        c2_ctx.append(ctx(rep, t0 + 2, i, calls[t0 + 1], nr))
+        c2_key.append((i, "null"))
+    own = sorted(set(kicked + nulls))
+    base2 = [ctx(rep, t0 + 2, i, calls[t0 + 1], notes[t0 + 1]) for i in own]
+    bel2 = backend.beliefs(c2_ctx + base2, key=(tag, rep, t0 + 2))
+    b2 = dict(zip(own, bel2[len(c2_ctx):]))
+    res2 = {}
+    for (i, kind), b, cc in zip(c2_key, bel2[:len(c2_ctx)], c2_ctx):
+        okb = b["ok"] and b2[i]["ok"]
+        dx = b["x"] - b2[i]["x"] if okb else float("nan")
+        res2[(i, kind)] = dict(dx=dx, ds=float(st(xo[t0 + 2][i] + dx) - st(xo[t0 + 2][i])) if okb else float("nan"),
+                               ok=okb, identical_prompt=cc == base2[own.index(i)])
+    out = []
+    for i in kicked:
+        D = -2 * int(calls[t0][i])
+        rs = [dict(j=j, **{k: v for k, v in r1[(i, j)].items() if k != "note"}) for j in map(int, readers[i])]
+        rec = dict(kind="kick", rep=rep, t0=t0, i=i, D=D, n_readers=len(rs), readers=rs,
+                   n_call_flips=int(sum(r["call"] != calls[t0 + 1][r["j"]] for r in rs)))
+        for kind in ("rewritten", "kept"):
+            r = res2[(i, kind)]
+            rec[f"E_{kind}"] = float(r["ds"] * D / 4)
+            rec[f"Ex_{kind}"] = float(r["dx"] * D / 4)
+            rec[f"ok_{kind}"] = bool(r["ok"])
+            rec[f"identical_{kind}"] = bool(r["identical_prompt"])
+        out.append(rec)
+    for i in nulls:
+        r = res2[(i, "null")]
+        out.append(dict(kind="null", rep=rep, t0=t0, i=i, D=0, n_readers=int(len(readers[i])), dx=float(r["dx"]),
+                        ds=float(r["ds"]), ok=bool(r["ok"]), identical_prompt=bool(r["identical_prompt"])))
+    return out

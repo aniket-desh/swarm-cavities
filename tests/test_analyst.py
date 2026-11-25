@@ -358,3 +358,89 @@ def test_yesno_down_maps_no_to_buy():
     b = be.beliefs([_ctx(1)])[0]
     assert be.buy_id == NO and be.sell_id == YES
     assert b["p_buy"] == pytest.approx(0.79 / 0.99) and b["x"] == pytest.approx(0.5 * np.log(0.79 / 0.2))
+
+
+# ---------------------------------------------------------------- de-biased sampling and kick twins (09-analyst-signrule)
+
+def _sr_law(P, chat):
+    from theory.checks import analyst_signrule_check as sr
+    return sr, sr.Law(uA=P.a_plus, uD=-P.a_minus, nu=P.nu, a0=P.a0, kappa=P.kappa, c=P.c, chat=chat)
+
+
+def _sr_inputs(g):
+    z = np.zeros((g.T + 1, 1, g.N))
+    return dict(h0=g.h0, xi=g.xi[:, None, :], U=g.U, e_sh=z, e_own=np.zeros_like(g.U))
+
+
+@pytest.mark.parametrize("world", ["mutual", "oneway", "antagonistic"])
+def test_debiased_loop_matches_signrule_simulation(tmp_path, world):
+    """Calls drawn from tanh(x - chat) (analyst_signrule.md (S1)-(S3), calls-only law): the loop with the mock law
+    gives the same calls and logits as theory/checks/analyst_signrule_check.simulate, and as analyst_lib.simulate
+    with bias c - chat (the exact equivalence of section 2)."""
+    N, K, T, chat = 64, 16, 6, -0.637
+    J = _graph(N, K, world, 4)
+    g = A.make_game(N, T, R=2, seed=8)
+    P = al.Agent(1.735, -0.146, nu=0.3, a0=0.09, c=-0.637, kappa=-0.095, K=K)
+    mock = A.MockAnalyst(P.a_plus, P.a_minus, P.nu, P.a0, P.c, P.kappa, K=K)
+    out = A.AnalystSwarm(J, g, A.AnalystSwarmConfig("db", T, R=2, K=K, chat=chat, session=3, results_root=tmp_path),
+                         mock).run()
+    sr, L = _sr_law(P, chat)
+    ref = sr.simulate(J, L, T, _sr_inputs(g))
+    np.testing.assert_allclose(out["x"], ref["X"], atol=1e-12)
+    assert np.array_equal(out["sig"], ref["sig"].astype(int))
+    ref2 = al.simulate(al.couplings(J, P), al.replace(P, c=P.c - chat), T, dict(h0=g.h0, xi=g.xi[:, None, :], U=g.U))
+    assert np.array_equal(out["sig"], ref2["sig"].astype(int))
+    recs = list(A.read_jsonl(tmp_path / "db" / "analyst_calls.jsonl"))
+    assert all(r["p_sample"] == pytest.approx((1 + np.tanh(r["x"] - chat)) / 2) for r in recs)
+
+
+def test_fixed_session_gives_identical_replica_prompts(tmp_path):
+    g = A.make_game(20, 2, R=2, seed=1)
+    sw = A.AnalystSwarm(_graph(20, 4, "mutual"), g, A.AnalystSwarmConfig("s", 2, R=2, K=4, session=7, results_root=tmp_path),
+                        A.MockAnalyst(1, 1, K=4))
+    a, b = sw.context(0, 0, 3, None, None), sw.context(1, 0, 3, None, None)
+    assert a == b and a.session == 7
+
+
+@pytest.mark.parametrize("world", ["mutual", "oneway", "antagonistic"])
+def test_kick_slice_matches_signrule_kick_twins(tmp_path, world):
+    """kick_slice with the mock law reproduces analyst_signrule_check.kick_twins: the logit change of every reader at
+    t0+1 and of the kicked analyst at t0+2 (both replays, equal under the calls-only law), and E = 0 with identical
+    prompts in the one-way world. Null twins move nothing under the mock (its notes are templates)."""
+    N, K, T, chat, t0, rep = 64, 16, 8, -0.637, 4, 1
+    J = _graph(N, K, world, 6)
+    g = A.make_game(N, T, R=2, seed=9)
+    P = al.Agent(1.735, -0.146, nu=0.3, a0=0.09, c=-0.637, kappa=-0.095, K=K)
+    mock = A.MockAnalyst(P.a_plus, P.a_minus, P.nu, P.a0, P.c, P.kappa, K=K)
+    sw = A.AnalystSwarm(J, g, A.AnalystSwarmConfig("k", T, R=2, K=K, chat=chat, session=0, results_root=tmp_path), mock)
+    sw.run()
+    kicked, nulls = [0, 5, 17, 33], [2, 40]
+    recs = A.kick_slice(sw, mock, rep, t0, kicked, nulls)
+    sr, L = _sr_law(P, chat)
+    inp = _sr_inputs(g)
+    base = sr.simulate(J, L, T, inp)
+    tw = sr.kick_twins(J, L, base, inp, rep, t0, kicked)
+    for b, r in enumerate([r for r in recs if r["kind"] == "kick"]):
+        assert r["i"] == kicked[b] and r["D"] == tw["D"][b]
+        for rd in r["readers"]:
+            assert rd["dx"] == pytest.approx(tw["dX1"][b, rd["j"]], abs=1e-12)
+            assert rd["tie"] == J[rd["j"], r["i"]]
+        E_ref = (np.tanh(base["X"][t0 + 2, rep, r["i"]] + tw["dX2"][b, r["i"]] - chat) - base["s"][t0 + 2, rep, r["i"]]) * r["D"] / 4
+        assert r["E_rewritten"] == pytest.approx(E_ref, abs=1e-12) and r["E_kept"] == pytest.approx(E_ref, abs=1e-12)
+        assert r["Ex_rewritten"] == pytest.approx(tw["dX2"][b, r["i"]] * r["D"] / 4, abs=1e-12)
+        if world == "oneway":
+            assert r["identical_rewritten"] and r["E_rewritten"] == 0
+    for r in [r for r in recs if r["kind"] == "null"]:
+        assert r["dx"] == 0 and r["n_readers"] == (J[:, r["i"]] != 0).sum()
+
+
+def test_kick_slice_records_are_json(tmp_path):
+    import json
+    N, K, T = 48, 16, 6
+    g = A.make_game(N, T, R=2, seed=2)
+    mock = A.MockAnalyst(1.7, -0.15, 0.3, 0.09, -0.6, -0.1, K=K)
+    sw = A.AnalystSwarm(_graph(N, K, "antagonistic", 1), g, A.AnalystSwarmConfig("j", T, R=2, K=K, chat=-0.6,
+                        session=0, results_root=tmp_path), mock)
+    sw.run()
+    for r in A.kick_slice(sw, mock, 0, 3, [1, 2], [3]):
+        json.dumps(r, allow_nan=True)
