@@ -1,6 +1,6 @@
 # Theory for swarm-cavity: the current statement
 
-Last updated 2026-11-25 (evening; analyst-scenario predictions added). This file is the one place to read for the state of the theory. The derivations
+Last updated 2026-11-25 (evening; analyst calibration no-go added). This file is the one place to read for the state of the theory. The derivations
 live in the notes it links (`claim1.md` … `claim6.md`, `quiet_regime.md`), each of which opens with its verdict and
 names the scripts in `theory/checks/` that verify its formulas.
 
@@ -127,7 +127,14 @@ inbox and whose call is sampled from its belief:
 - **The Gaussian closure holds at K = 16**: the K = ∞ solver matches graph simulations to 0.002 in ⟨s²⟩ and 1–4% in the
   echo at every N tried, so going from 256 to 1,024 should halve the errors and change nothing else.
 - **Go/no-go**: the three-world contrast needs ā ≥ 1 and a₋/a₊ > 0.3 (faded colleagues must repel); reaching the
-  boundary needs a wording with ā ≳ 4.6. **Not measured yet**: the Qwen calibration for this game comes next.
+  boundary needs a wording with ā ≳ 4.6.
+- **Calibration result (`experiments/08-analyst-calibration/RESULT.md`): no-go at K = 16.** Qwen3.5-9B analysts couple
+  weakly (ā = 0.72–1.24 over four trust wordings; Λ_mutual = 0.010–0.015) and follow their faded colleagues instead
+  of fading them (a₋ = −0.12 to −0.27 in every wording), with a SELL bias of c ≈ −0.65 that saturates beliefs. The
+  law's premise (A1) is not supported as written: readers partly average within the ally group instead of adding,
+  so ā doesn't grow with K. The pilot (N = 256) shows no echo in any world, consistent with the weak coupling. A
+  second calibration (polarity counterbalancing, experimenter-inverted fading, gains at K = 4 and 2) is running; a
+  small-K variant would leave the Gaussian-closure regime and need re-frozen predictions.
 
 ## Files
 

@@ -188,7 +188,12 @@ in total, leaving room for Sonnet slices and reruns. Test 1 decides whether the 
   ±0.26 at ā = 4. Step 2 (Opus agent, `experiments/08_analyst_calibration/`): analyst env, Qwen pilot for real
   notes, calibration and go/no-go.
   Worker log for this scenario: `aniket-sc-08-analyst-calibration` (L40S, $1.09/h), launched ~17:30 UTC, projected
-  ~1.4 h ≈ $1.5, worst case $3.27. Scenario spend so far: ≈ $0.05.
+  ~1.4 h ≈ $1.5, worst case $3.27; ran 0.9 h, ≈ $1.0, deleted. **Result: no-go at K = 16**
+  (`experiments/08-analyst-calibration/RESULT.md`): ā = 0.72–1.24 (boundary needs ≈ 4.6), Λ_mutual ≤ 0.015, faded
+  colleagues attract (a₋ < 0 in all four wordings), SELL bias c ≈ −0.65; pilot (N = 256, 0 missing, 50 s/round on an
+  L40S) shows no echo. Relayed to the editor session with a question for the user about a small-K variant. Second
+  calibration (counterbalanced polarity, experimenter-inverted fading, K = 4 and 2) launched with the same agent,
+  budget ≈ $5. Scenario spend so far: ≈ $1.0.
 
 ## Next
 
