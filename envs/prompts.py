@@ -31,9 +31,22 @@ from engine.agent import AgentRequest
 FORBIDDEN_WORDS = ("private", "hidden", "secret")  # guardrail 4; checked in tests
 
 
-def rules(H: int) -> str:
-    """Shared rules. H = number of the agent's own past answers shown (0 = memoryless)."""
+DISAGREE_STYLES = {
+    # PoA's label only. Prompt check: Haiku 5.5 is still pulled toward these sources (b_- <= 0).
+    "label": "",
+    # A stated reason to invert these sources, so the disagree channel can carry a negative coupling
+    # (theory/claim1.md section 5: gamma < 0 and Jbar ~ 0 need b_- ~ b_+ > 0). Inside the game this is a
+    # stipulation, not a fact about the other participants' evidence.
+    "inverted": ("- Sources you tend to disagree with have miscalibrated sensors: their reports are right less "
+                 "than half the time, so what they state tends to point the wrong way.\n"),
+}
+
+
+def rules(H: int, disagree: str = "label") -> str:
+    """Shared rules. H = number of the agent's own past answers shown (0 = memoryless). ``disagree`` picks
+    the wording for the disagree group (DISAGREE_STYLES)."""
     memory = ("- You also see your own answers from recent rounds.\n" if H > 0 else "")
+    memory += DISAGREE_STYLES[disagree]
     return (
         "You are taking part in a group estimation game with several other participants.\n\n"
         "The setup\n"
@@ -116,6 +129,6 @@ def dynamic(ctx: AgentContext, H: int) -> str:
     return "\n\n".join(parts)
 
 
-def make_request(ctx: AgentContext, H: int) -> AgentRequest:
-    return AgentRequest(agent_id=ctx.agent_id, system_rules=rules(H), evidence=ctx.evidence,
+def make_request(ctx: AgentContext, H: int, disagree: str = "label") -> AgentRequest:
+    return AgentRequest(agent_id=ctx.agent_id, system_rules=rules(H, disagree), evidence=ctx.evidence,
                         dynamic=dynamic(ctx, H))

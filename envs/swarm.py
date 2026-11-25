@@ -105,11 +105,11 @@ class LLMBackend:
     """Renders contexts with envs/prompts.py and runs them through engine.Runner. ``seed`` and ``round_t``
     become the Runner checkpoint key together with each context's agent_id."""
 
-    def __init__(self, runner, batch: bool = False, poll_s: float = 15.0):
-        self.runner, self.batch, self.poll_s = runner, batch, poll_s
+    def __init__(self, runner, batch: bool = False, poll_s: float = 15.0, disagree: str = "label"):
+        self.runner, self.batch, self.poll_s, self.disagree = runner, batch, poll_s, disagree
 
     async def respond(self, seed, round_t: int, contexts: list[AgentContext], H: int) -> list[Response]:
-        reqs = [make_request(c, H) for c in contexts]
+        reqs = [make_request(c, H, self.disagree) for c in contexts]
         if self.batch:
             recs = await self.runner.run_round_batch(seed, round_t, reqs, poll_s=self.poll_s)
         else:
