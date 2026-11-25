@@ -1,0 +1,83 @@
+[budget] projection: 8192 calls x (in 400 + cache_read 1000 + cache_write 0, out 700) on claude-haiku-5-5 batch=False -> $3.28 ($0.00040/call); spent $33.00 of cap $1900.00
+[kick1k-20261125-inverted-K2-pn0.5-g+0.0-N64-T10-sync-G0] 50 twins, 382 calls sent; spent so far $0.181
+[kick1k-20261125-inverted-K2-pn0.5-g+0.0-N64-T10-sync-G1] 55 twins, 452 calls sent; spent so far $0.362
+[kick1k-20261125-inverted-K2-pn0.5-g+0.0-N64-T10-sync-G2] 55 twins, 423 calls sent; spent so far $0.520
+[kick1k-20261125-inverted-K2-pn0.5-g+0.0-N64-T10-sync-G3] 59 twins, 441 calls sent; spent so far $0.689
+[kick1k-20261125-inverted-K2-pn0.5-g+0.0-N64-T10-sync-G4] 58 twins, 458 calls sent; spent so far $0.877
+[kick1k-20261125-inverted-K2-pn0.5-g+0.0-N64-T10-sync-G5] 57 twins, 435 calls sent; spent so far $1.026
+[kick1k-20261125-inverted-K2-pn0.5-g+0.0-N64-T10-sync-G6] 53 twins, 412 calls sent; spent so far $1.194
+[kick1k-20261125-inverted-K2-pn0.5-g+0.0-N64-T10-sync-G7] 59 twins, 472 calls sent; spent so far $1.365
+[kick1k-20261125-label-K2-pn0.5-g+0.0-N64-T10-sync-G0] 51 twins, 406 calls sent; spent so far $1.502
+[kick1k-20261125-label-K2-pn0.5-g+0.0-N64-T10-sync-G1] 58 twins, 461 calls sent; spent so far $1.657
+[kick1k-20261125-label-K2-pn0.5-g+0.0-N64-T10-sync-G2] 47 twins, 391 calls sent; spent so far $1.789
+[kick1k-20261125-label-K2-pn0.5-g+0.0-N64-T10-sync-G3] 56 twins, 462 calls sent; spent so far $1.942
+[kick1k-20261125-label-K2-pn0.5-g+0.0-N64-T10-sync-G4] 54 twins, 422 calls sent; spent so far $2.078
+[kick1k-20261125-label-K2-pn0.5-g+0.0-N64-T10-sync-G5] 53 twins, 413 calls sent; spent so far $2.218
+[kick1k-20261125-label-K2-pn0.5-g+0.0-N64-T10-sync-G6] 56 twins, 440 calls sent; spent so far $2.370
+[kick1k-20261125-label-K2-pn0.5-g+0.0-N64-T10-sync-G7] 57 twins, 457 calls sent; spent so far $2.483
+done: 6927 calls sent in 1255s; spent $2.483 on kick1k-20261125
+G0_EXIT 0
+[budget] projection: 65536 calls x (in 400 + cache_read 1000 + cache_write 0, out 700) on claude-haiku-5-5 batch=False -> $26.21 ($0.00040/call); spent $35.69 of cap $1900.00
+[kick1k-20261125-inverted-K2-pn0.5-g-1.0-N64-T10-sync-G0] 257 twins, 1798 calls sent; spent so far $3.200
+[kick1k-20261125-inverted-K2-pn0.5-g-1.0-N64-T10-sync-G1] 266 twins, 1836 calls sent; spent so far $3.910
+[kick1k-20261125-inverted-K2-pn0.5-g-1.0-N64-T10-sync-G2] 237 twins, 1630 calls sent; spent so far $4.540
+[kick1k-20261125-inverted-K2-pn0.5-g-1.0-N64-T10-sync-G3] 253 twins, 1727 calls sent; spent so far $5.219
+[kick1k-20261125-inverted-K2-pn0.5-g-1.0-N64-T10-sync-G4] 260 twins, 1820 calls sent; spent so far $5.915
+[budget] projection: 65536 calls x (in 400 + cache_read 1000 + cache_write 0, out 700) on claude-haiku-5-5 batch=False -> $26.21 ($0.00040/call); spent $40.09 of cap $1900.00
+[kick1k-20261125-inverted-K2-pn0.5-g-1.0-N64-T10-sync-G0] 0 twins, 0 calls sent; spent so far $6.417
+[kick1k-20261125-inverted-K2-pn0.5-g-1.0-N64-T10-sync-G1] 0 twins, 0 calls sent; spent so far $6.417
+[kick1k-20261125-inverted-K2-pn0.5-g-1.0-N64-T10-sync-G2] 0 twins, 0 calls sent; spent so far $6.417
+[kick1k-20261125-inverted-K2-pn0.5-g-1.0-N64-T10-sync-G3] 0 twins, 0 calls sent; spent so far $6.417
+[kick1k-20261125-inverted-K2-pn0.5-g-1.0-N64-T10-sync-G4] 0 twins, 0 calls sent; spent so far $6.417
+[kick1k-20261125-inverted-K2-pn0.5-g-1.0-N64-T10-sync-G5] 47 twins, 329 calls sent; spent so far $6.616
+[budget] projection: 65536 calls x (in 400 + cache_read 1000 + cache_write 0, out 700) on claude-haiku-5-5 batch=False -> $26.21 ($0.00040/call); spent $41.15 of cap $1900.00
+[kick1k-20261125-inverted-K2-pn0.5-g-1.0-N64-T10-sync-G0] 0 twins, 0 calls sent; spent so far $7.278
+[kick1k-20261125-inverted-K2-pn0.5-g-1.0-N64-T10-sync-G1] 0 twins, 0 calls sent; spent so far $7.278
+[kick1k-20261125-inverted-K2-pn0.5-g-1.0-N64-T10-sync-G2] 0 twins, 0 calls sent; spent so far $7.278
+[kick1k-20261125-inverted-K2-pn0.5-g-1.0-N64-T10-sync-G3] 0 twins, 0 calls sent; spent so far $7.278
+[kick1k-20261125-inverted-K2-pn0.5-g-1.0-N64-T10-sync-G4] 0 twins, 0 calls sent; spent so far $7.278
+[kick1k-20261125-inverted-K2-pn0.5-g-1.0-N64-T10-sync-G5] 0 twins, 0 calls sent; spent so far $7.278
+[kick1k-20261125-inverted-K2-pn0.5-g-1.0-N64-T10-sync-G6] 3 twins, 21 calls sent; spent so far $7.286
+[budget] projection: 65536 calls x (in 400 + cache_read 1000 + cache_write 0, out 700) on claude-haiku-5-5 batch=False -> $26.21 ($0.00040/call); spent $41.55 of cap $1900.00
+[kick1k-20261125-inverted-K2-pn0.5-g-1.0-N64-T10-sync-G0] 0 twins, 0 calls sent; spent so far $7.584
+[kick1k-20261125-inverted-K2-pn0.5-g-1.0-N64-T10-sync-G1] 0 twins, 0 calls sent; spent so far $7.584
+[kick1k-20261125-inverted-K2-pn0.5-g-1.0-N64-T10-sync-G2] 0 twins, 0 calls sent; spent so far $7.584
+[kick1k-20261125-inverted-K2-pn0.5-g-1.0-N64-T10-sync-G3] 0 twins, 0 calls sent; spent so far $7.584
+[kick1k-20261125-inverted-K2-pn0.5-g-1.0-N64-T10-sync-G4] 0 twins, 0 calls sent; spent so far $7.584
+[kick1k-20261125-inverted-K2-pn0.5-g-1.0-N64-T10-sync-G5] 0 twins, 0 calls sent; spent so far $7.584
+[kick1k-20261125-inverted-K2-pn0.5-g-1.0-N64-T10-sync-G6] 0 twins, 0 calls sent; spent so far $7.584
+[budget] projection: 65536 calls x (in 400 + cache_read 1000 + cache_write 0, out 700) on claude-haiku-5-5 batch=False -> $26.21 ($0.00040/call); spent $42.11 of cap $1900.00
+[kick1k-20261125-inverted-K2-pn0.5-g-1.0-N64-T10-sync-G0] 0 twins, 0 calls sent; spent so far $8.051
+[kick1k-20261125-inverted-K2-pn0.5-g-1.0-N64-T10-sync-G1] 0 twins, 0 calls sent; spent so far $8.051
+[kick1k-20261125-inverted-K2-pn0.5-g-1.0-N64-T10-sync-G2] 0 twins, 0 calls sent; spent so far $8.051
+[kick1k-20261125-inverted-K2-pn0.5-g-1.0-N64-T10-sync-G3] 0 twins, 0 calls sent; spent so far $8.051
+[kick1k-20261125-inverted-K2-pn0.5-g-1.0-N64-T10-sync-G4] 0 twins, 0 calls sent; spent so far $8.051
+[kick1k-20261125-inverted-K2-pn0.5-g-1.0-N64-T10-sync-G5] 0 twins, 0 calls sent; spent so far $8.051
+[kick1k-20261125-inverted-K2-pn0.5-g-1.0-N64-T10-sync-G6] 0 twins, 0 calls sent; spent so far $8.051
+[kick1k-20261125-inverted-K2-pn0.5-g-1.0-N64-T10-sync-G7] 32 twins, 222 calls sent; spent so far $8.175
+[kick1k-20261125-inverted-K2-pn0.5-g+1.0-N64-T10-sync-G0] 195 twins, 1354 calls sent; spent so far $8.800
+[kick1k-20261125-inverted-K2-pn0.5-g+1.0-N64-T10-sync-G1] 269 twins, 1880 calls sent; spent so far $9.537
+[kick1k-20261125-inverted-K2-pn0.5-g+1.0-N64-T10-sync-G2] 242 twins, 1671 calls sent; spent so far $10.172
+[kick1k-20261125-inverted-K2-pn0.5-g+1.0-N64-T10-sync-G3] 260 twins, 1812 calls sent; spent so far $10.885
+[kick1k-20261125-inverted-K2-pn0.5-g+1.0-N64-T10-sync-G4] 262 twins, 1809 calls sent; spent so far $11.572
+[kick1k-20261125-inverted-K2-pn0.5-g+1.0-N64-T10-sync-G5] 261 twins, 1786 calls sent; spent so far $12.270
+[kick1k-20261125-inverted-K2-pn0.5-g+1.0-N64-T10-sync-G6] 268 twins, 1872 calls sent; spent so far $12.977
+[kick1k-20261125-inverted-K2-pn0.5-g+1.0-N64-T10-sync-G7] 272 twins, 1868 calls sent; spent so far $13.687
+[kick1k-20261125-label-K2-pn0.5-g-1.0-N64-T10-sync-G0] 268 twins, 1874 calls sent; spent so far $14.318
+[kick1k-20261125-label-K2-pn0.5-g-1.0-N64-T10-sync-G1] 274 twins, 1886 calls sent; spent so far $14.921
+[kick1k-20261125-label-K2-pn0.5-g-1.0-N64-T10-sync-G2] 258 twins, 1775 calls sent; spent so far $15.526
+[kick1k-20261125-label-K2-pn0.5-g-1.0-N64-T10-sync-G3] 258 twins, 1757 calls sent; spent so far $16.111
+[kick1k-20261125-label-K2-pn0.5-g-1.0-N64-T10-sync-G4] 256 twins, 1790 calls sent; spent so far $16.698
+[kick1k-20261125-label-K2-pn0.5-g-1.0-N64-T10-sync-G5] 240 twins, 1674 calls sent; spent so far $17.264
+[kick1k-20261125-label-K2-pn0.5-g-1.0-N64-T10-sync-G6] 255 twins, 1766 calls sent; spent so far $17.862
+[kick1k-20261125-label-K2-pn0.5-g-1.0-N64-T10-sync-G7] 252 twins, 1738 calls sent; spent so far $18.440
+[kick1k-20261125-label-K2-pn0.5-g+1.0-N64-T10-sync-G0] 252 twins, 1746 calls sent; spent so far $19.030
+[kick1k-20261125-label-K2-pn0.5-g+1.0-N64-T10-sync-G1] 261 twins, 1823 calls sent; spent so far $19.618
+[kick1k-20261125-label-K2-pn0.5-g+1.0-N64-T10-sync-G2] 245 twins, 1692 calls sent; spent so far $20.193
+[kick1k-20261125-label-K2-pn0.5-g+1.0-N64-T10-sync-G3] 251 twins, 1756 calls sent; spent so far $20.784
+[kick1k-20261125-label-K2-pn0.5-g+1.0-N64-T10-sync-G4] 255 twins, 1754 calls sent; spent so far $21.369
+[kick1k-20261125-label-K2-pn0.5-g+1.0-N64-T10-sync-G5] 232 twins, 1587 calls sent; spent so far $21.908
+[kick1k-20261125-label-K2-pn0.5-g+1.0-N64-T10-sync-G6] 240 twins, 1679 calls sent; spent so far $22.470
+[kick1k-20261125-label-K2-pn0.5-g+1.0-N64-T10-sync-G7] 257 twins, 1779 calls sent; spent so far $22.885
+done: 42350 calls sent in 6524s; spent $22.885 on kick1k-20261125
+G1_EXIT5 0

@@ -1,0 +1,23 @@
+inv K=2 g=-1.0 | twins 1765 sham 256 sent 13995 missing 0 | self-changed@t0+1 0 non-readers-sent@t0+1 0
+    used 1765 | rA +0.2809(0.0160) rD -0.0699(0.0098) | E -0.0146(0.0030) | F +0.5812(0.0585) [conf +0.5766(0.0577) disc +0.7250(0.2718)] | F_open +0.9823(0.0817) [conf +0.5888(0.0530) disc +1.1541(0.1153)] F-F_open,matched -0.0075(0.0743) | rA small/large +0.5818(0.0595) | rA same/opp lean +0.3003(0.0198)/+0.1963(0.0051) | zero-echo 0.25 | bootstrap over 8 graphs
+    sham (256): rA +0.0025(0.0149) rD -0.0063(0.0046) E +0.0001(0.0027)
+/root/venvs/swarm-cavity/lib/python3.12/site-packages/numpy/lib/_nanfunctions_impl.py:1998: RuntimeWarning: Degrees of freedom <= 0 for slice.
+  var = nanvar(a, axis=axis, dtype=dtype, out=out, ddof=ddof,
+inv K=2 g=+0.0 | twins 446 sham 0 sent 3475 missing 0 | self-changed@t0+1 0 non-readers-sent@t0+1 0
+    used 446 | rA +0.2611(0.0214) rD -0.0599(0.0068) | E +0.0000(0.0000) | F +nan(nan) [conf +nan(nan) disc +nan(nan)] | F_open +0.8597(0.0699) [conf +0.6714(0.1103) disc +0.9310(0.0632)] F-F_open,matched +nan(nan) | rA small/large +0.5857(0.0775) | rA same/opp lean +0.2683(0.0243)/+0.2156(0.0204) | zero-echo 1.00 | bootstrap over 8 graphs
+inv K=2 g=+1.0 | twins 1839 sham 256 sent 14511 missing 0 | self-changed@t0+1 0 non-readers-sent@t0+1 0
+    used 1839 | rA +0.2336(0.0127) rD -0.0661(0.0039) | E +0.0567(0.0054) | F +1.0485(0.0928) [conf +0.7667(0.4958) disc +1.0491(0.0927)] | F_open +0.7805(0.0480) [conf +0.5484(0.0572) disc +0.8690(0.0665)] F-F_open,matched +0.1795(0.0820) | rA small/large +0.5943(0.0348) | rA same/opp lean +0.2351(0.0128)/+0.2074(0.0225) | zero-echo 0.20 | bootstrap over 8 graphs
+    sham (256): rA +0.0003(0.0016) rD +0.0032(0.0030) E -0.0008(0.0054)
+lab K=2 g=-1.0 | twins 1805 sham 256 sent 14260 missing 0 | self-changed@t0+1 0 non-readers-sent@t0+1 0
+    used 1805 | rA +0.1207(0.0098) rD +0.0492(0.0074) | E +0.0137(0.0018) | F +1.2901(0.1656) [conf +1.7595(0.7933) disc +1.2738(0.1533)] | F_open +1.6010(0.1782) [conf +0.9623(0.1502) disc +1.8073(0.2194)] F-F_open,matched -0.5172(0.2119) | rA small/large +0.7167(0.1252) | rA same/opp lean +0.1239(0.0118)/+0.1026(0.0115) | zero-echo 0.30 | bootstrap over 8 graphs
+    sham (256): rA -0.0022(0.0065) rD +0.0018(0.0047) E +0.0015(0.0040)
+lab K=2 g=+0.0 | twins 432 sham 0 sent 3452 missing 0 | self-changed@t0+1 0 non-readers-sent@t0+1 0
+    used 432 | rA +0.1159(0.0061) rD +0.0528(0.0070) | E +0.0000(0.0000) | F +nan(nan) [conf +nan(nan) disc +nan(nan)] | F_open +1.1112(0.2077) [conf +1.0135(0.3319) disc +1.1526(0.2001)] F-F_open,matched +nan(nan) | rA small/large +0.7935(0.1257) | rA same/opp lean +0.1178(0.0092)/+0.1085(0.0139) | zero-echo 1.00 | bootstrap over 8 graphs
+lab K=2 g=+1.0 | twins 1737 sham 256 sent 13816 missing 0 | self-changed@t0+1 0 non-readers-sent@t0+1 0
+    used 1737 | rA +0.1075(0.0089) rD +0.0455(0.0033) | E +0.0151(0.0020) | F +1.1952(0.0875) [conf +1.0219(0.4745) disc +1.1995(0.0828)] | F_open +1.1007(0.1787) [conf +1.1857(0.2150) disc +1.0783(0.1879)] F-F_open,matched +0.1169(0.1399) | rA small/large +0.7083(0.1146) | rA same/opp lean +0.1094(0.0093)/+0.0929(0.0078) | zero-echo 0.31 | bootstrap over 8 graphs
+    sham (256): rA +0.0009(0.0033) rD -0.0057(0.0043) E -0.0060(0.0044)
+pooled over |gamma|=1 cells (joint graph bootstrap): {'F': (0.8597, 0.0583), 'F_open': (0.8827, 0.0366), 'F_open_matched': (0.7512, 0.051), 'F_minus_open_matched': (0.049, 0.0534), 'F_confirm': (0.5915, 0.0646), 'F_open_confirm': (0.6123, 0.0338), 'F_disconfirm': (1.1342, 0.0814), 'F_open_disconfirm': (1.0026, 0.057), 'rA_ratio': (0.6047, 0.0367), 'sham_r_agree': (0.0003, 0.001), 'sham_r_disagree': (-0.0006, 0.0016), 'sham_echo': (-0.0008, 0.0024)}
+  sham r_agree: +0.0003 (0.0010) -> PASS; minimum detectable offset (3 s.e.) 0.0031
+  sham r_disagree: -0.0006 (0.0016) -> PASS; minimum detectable offset (3 s.e.) 0.0048
+  sham echo: -0.0008 (0.0024) -> PASS; minimum detectable offset (3 s.e.) 0.0072
+ANALYSIS_EXIT 0
