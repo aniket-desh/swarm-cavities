@@ -183,7 +183,12 @@ in total, leaving room for Sonnet slices and reruns. Test 1 decides whether the 
   predictions (`theory/analyst_scenario.md`, `theory/checks/analyst_predictions.json`) for N = 256–1,024 Qwen analysts
   at K = 16 in mutual / one-way / antagonistic trust worlds. Spend tracking for this scenario: projection before every
   launch, worker spend logged here, a message to the editor session at each $50 crossed, stop if a worker exceeds
-  1.5× its projection. Scenario spend so far: $0.
+  1.5× its projection. Predictions frozen (commit cad1d12; summary relayed to the editor session): the boundary exists
+  only in the reciprocal worlds (one-way stays below Λ = 2/π), mutual needs ā ≈ 5–5.9, echoes ±0.12 at ā = 2 and
+  ±0.26 at ā = 4. Step 2 (Opus agent, `experiments/08_analyst_calibration/`): analyst env, Qwen pilot for real
+  notes, calibration and go/no-go.
+  Worker log for this scenario: `aniket-sc-08-analyst-calibration` (L40S, $1.09/h), launched ~17:30 UTC, projected
+  ~1.4 h ≈ $1.5, worst case $3.27. Scenario spend so far: ≈ $0.05.
 
 ## Next
 
