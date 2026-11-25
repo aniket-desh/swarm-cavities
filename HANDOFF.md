@@ -1,6 +1,6 @@
 # HANDOFF: swarm-cavity
 
-Last updated: 2026-11-25 16:30 UTC. Working copy: `/workspace/swarm-cavity` again (the volume is now 1 TB; the
+Last updated: 2026-11-25 20:00 UTC. Working copy: `/workspace/swarm-cavity` again (the volume is now 1 TB; the
 `/workspace-global` clone is stale). The overnight session died at about 08:25 UTC when its OAuth token was revoked;
 this afternoon's session resumed the plan at 14:20 and lost its editor connection at 14:42 (nothing was lost; see
 "Afternoon session").
@@ -9,9 +9,9 @@ this afternoon's session resumed the plan at 14:20 and lost its editor connectio
 
 | | so far |
 |---|---|
-| Anthropic API (experiment code, `budget/ledger.jsonl`) | $10.1 (running; see `sc-spend`) |
-| Runpod pods (`orch spend`) | ≈ $0.80 (one A40 worker running) |
-| **total** | **≈ $11** |
+| Anthropic API (experiment code, `budget/ledger.jsonl`) | $54.81 (151,345 calls) |
+| Runpod pods (`orch spend`, estimated) | $4.33 (06 worker still running) |
+| **total** | **≈ $59** |
 
 ## Afternoon session (14:20–15:00 UTC): pilot and transfer check
 
@@ -177,8 +177,17 @@ in total, leaving room for Sonnet slices and reruns. Test 1 decides whether the 
   8 GB memory limit after 1,534 calls ($0.37; checkpointed, nothing lost) because every Runner held its own copy of
   the 180 MB replay cache. Fixed in `engine/runner.py` (one shared cache per process, slim entries, incremental
   reads; commit after 9056751) and relaunched with 16 concurrent runs (process RSS ≈ 380 MB) in tmux `sc-kick1base`.
-- **GPU track** (Opus agent): worker `aniket-sc-06-qwen-calibration` running on an A40 at $0.59/h (8 h cap); pod
-  spend so far ≈ $0.80 (orch estimate).
+- **Kick stage 1 result** (`experiments/07_kick/RESULT.md`, $45.9 total): the reaction term is present with the
+  predicted sign structure. All four |γ|=1 echoes have the predicted sign at 4.9–10.5 s.e.; on identical graphs the
+  wording flips the γ=−1 echo (inverted −0.0146 ± 0.0030, label +0.0137 ± 0.0018); γ=0 echoes are exactly zero; sham
+  slopes are zero. Composition matched (F − F_open,matched = +0.05 ± 0.05, predicted +0.06); linear response over
+  anchoring at the edge (pooled F 0.86 ± 0.06, F_open 0.88 ± 0.04). Inverted magnitudes match the linear prediction;
+  label ones are half, because label first-order responses are half the transfer gains. Unplanned: confirming inputs
+  move agents about 0.6 as much as disconfirming ones, on closed and open paths alike. Operational fixes along the
+  way (all in `engine/runner.py`): shared slim replay cache, slim in-memory checkpoint records, no checkpoint lines for
+  pure replays in twins; base runs need ≤ 8 concurrent runs to stay under the 2M output-tokens/min API limit.
+- **GPU track** (Opus agent): worker `aniket-sc-06-qwen-calibration` still running on an A40 at $0.59/h (8 h cap,
+  ~4.3 h in, ≈ $2.5 so far); its agent hasn't reported yet.
 - **Analyst scenario** (new request from the user, relayed by the editor session): a Fable agent is writing frozen
   predictions (`theory/analyst_scenario.md`, `theory/checks/analyst_predictions.json`) for N = 256–1,024 Qwen analysts
   at K = 16 in mutual / one-way / antagonistic trust worlds. Spend tracking for this scenario: projection before every
