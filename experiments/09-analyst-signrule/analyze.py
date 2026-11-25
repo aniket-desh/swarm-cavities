@@ -7,10 +7,14 @@ Per run (theory/checks/analyst_signrule_check.run_stats, rounds 5..20, all on th
   (counted and reported; the swarm itself carried the previous call).
 Per world: mean over runs; s.e. = pooled within-world run-to-run s.d. / sqrt(n_runs) (pooled over the three worlds,
   9 degrees of freedom); a comparison's s.e. = sqrt(se1^2 + se2^2).
-Kick twins (envs/analyst.kick_slice): per unit kick (Delta * D / 4) on the sampling belief; r_A, r_D, w_A, w_D from
-  the readers at t0+1 by tie type (J[reader, kicked] = +1 ally, -1 faded); E (rewritten and notes-kept replays) and
-  E_x of the kicked analyst at t0+2. s.e. by cluster bootstrap over slices (B = 2,000). Null twins: mean and s.d. of
-  the kicked analyst's logit change (note noise).
+Kick twins (envs/analyst.kick_slice; results/<TAG>/kicks_<world>_g<g>.jsonl, one line per slice): per unit kick
+  (Delta * D / 4) on the sampling belief; r_A, r_D, w_A, w_D from the readers at t0+1 by tie type (J[reader, kicked]
+  = +1 ally, -1 faded); E (rewritten and notes-kept replays) and E_x of the kicked analyst at t0+2. s.e. by cluster
+  bootstrap (B = 2,000) over slices and over (run, replica); the larger of the two is used in every decision. Null
+  twins: mean and s.d. of the kicked analyst's logit change (note noise).
+Gaussian-cavity flags (guardrail 5): per world, excess kurtosis and Sarle's bimodality coefficient
+  (skew^2 + 1) / (kurt + 3) of the de-biased logit x - chat (rounds 5..20) conditional on the analyst's previous call
+  (analyst_scenario.md 2.4); flags: one-way conditional excess kurtosis < -0.3, or bimodality coefficient > 0.555.
 In-swarm regression (analyst_signrule_check.inswarm_fit, pooled over a world's runs and replicas): the de-biased
   logit x(t+1) - chat on f_A, -f_D, own call, 1, with and without the leak terms L = sum_group (s^r_j - sigma_j)/K;
   s.e. by cluster bootstrap over analysts (B = 500).
@@ -26,18 +30,24 @@ decided on the echo function alone.
 Falsifiers (EXPERIMENT.md "Fixed rules"):
   F1 mutual echo: X2(mut) - X2(one-way) > 3 se AND (E_mut > 3 se or twins unpowered) -> consistent; either negative by
      > 3 se -> falsified; otherwise (not resolved while G_M d > 0.03) -> falsified ("not positive").
-  F2 one-way echo: |X2(one-way)| > 3 se -> falsified.
+  F2 one-way echo (the one-step memory premise): |X2(one-way)| > 3 se -> falsified. X2 = 0 in the one-way world holds
+     only if the own memory is one step in the call; a path through the analyst's own notes would show here, and the
+     kick echo (own history held at the base run's) excludes it. So F5, F6 and the G d check use X2(world) - X2(one-way).
   F3 antagonistic sign vs sign(G_A) from the swarm: |G_A d| < 0.004 -> no sign predicted (second null); else the echo
      (X2(ant) - X2(one-way), and E_ant rewritten) opposite to sign(G_A) by > 3 se -> falsified. Notes-kept: E_kept
      opposite in sign to r_A r_D by > 3 se -> falsified.
   F4 ordering: X2(mut) - X2(ant) < 3 se, or (both worlds' twins powered and E_mut - E_ant < 3 se) -> falsified.
-  F5 magnitudes: mutual X2 outside [0.03, 0.07] or antagonistic X2 outside [0.005, 0.021] by > 3 se -> calibration did
-     not transfer; then X2 against G d per world: |X2 - G d| > 0.25 |G d| + 3 se -> single-site reduction fails.
-  F6 kick vs echo function: |E - X2| > 3 se + 0.15 |X2| in the mutual or antagonistic world -> falsified.
+  F5 magnitudes, on dX2 = X2(world) - X2(one-way): mutual dX2 outside [0.03, 0.07] or antagonistic dX2 outside
+     [0.005, 0.021] by > 3 se -> calibration did not transfer; then dX2 against G d per world: |dX2 - G d| > 0.25 |G d|
+     + 3 se -> single-site reduction fails.
+  F6 kick vs echo function: |E - dX2| > 3 se + 0.15 |dX2| in a world whose twins are powered -> falsified; unpowered
+     twins: "unpowered".
   F7 asynchronous control: not run.
 Recorded: m (M1 0.00 +- 0.04, M2 +0.35 +- 0.15), composition ratios E / (K r_A r_D) (antagonistic) and
 E / ((K/2)(r_A^2 + r_D^2)) (mutual), missing and refusal rates, residuals of every observable against the frozen
 M1 and M2 predictions.
+
+Verdict (EXPERIMENT.md "Fixed rules", the mapping table): verdict() below.
 
 Usage: uv run python experiments/09-analyst-signrule/analyze.py
 """
@@ -153,17 +163,14 @@ def inswarm(runs_w, leak: bool, nb=500, seed=0):
 
 
 def kick_table(world: str, nb=2000, seed=0):
-    path = RES / TAG / f"kicks_{world}.jsonl"
-    if not path.exists():
+    lines = [ln for f in sorted((RES / TAG).glob(f"kicks_{world}_g*.jsonl")) for ln in read_jsonl(f)]
+    if not lines:
         return None
-    recs = list(read_jsonl(path))
+    recs = [dict(r, g=ln["g"], slice=ln["slice"]) for ln in lines for r in ln["twins"]]
     kicks = [r for r in recs if r["kind"] == "kick"]
     nulls = [r for r in recs if r["kind"] == "null"]
-    sl = sorted({(r["g"], r["slice"]) for r in recs})
-    by = {s: [r for r in kicks if (r["g"], r["slice"]) == s] for s in sl}
 
-    def stats(slices):
-        ks = [r for s in slices for r in by[s]]
+    def stats(ks):
         rd = [(rr, r["D"]) for r in ks for rr in r["readers"] if rr["ok"]]
         f = lambda tie, key: float(np.mean([rr[key] * D / 4 for rr, D in rd if rr["tie"] == tie])) if any(
             rr["tie"] == tie for rr, _ in rd) else float("nan")
@@ -171,11 +178,19 @@ def kick_table(world: str, nb=2000, seed=0):
         return dict(rA=f(1, "ds"), rD=f(-1, "ds"), wA=f(1, "dx"), wD=f(-1, "dx"), E=e("E_rewritten"),
                     E_kept=e("E_kept"), E_x=e("Ex_rewritten"), E_x_kept=e("Ex_kept"))
 
-    est = stats(sl)
+    est = stats(kicks)
     rng = np.random.default_rng(seed)
-    draws = [stats([sl[k] for k in rng.integers(0, len(sl), len(sl))]) for _ in range(nb)]
-    out = {k: {"est": v, "se": float(np.nanstd([d[k] for d in draws], ddof=1))} for k, v in est.items()}
-    out.update(n_kicks=len(kicks), n_nulls=len(nulls), n_slices=len(sl),
+    se = {}
+    for name, keyf in (("slice", lambda r: (r["g"], r["slice"])), ("run_rep", lambda r: (r["g"], r["rep"]))):
+        cl = sorted({keyf(r) for r in kicks})
+        by = {c: [r for r in kicks if keyf(r) == c] for c in cl}
+        draws = [stats([r for k in rng.integers(0, len(cl), len(cl)) for r in by[cl[k]]]) for _ in range(nb)]
+        se[name] = {k: float(np.nanstd([d[k] for d in draws], ddof=1)) for k in est}
+        se[name]["n_clusters"] = len(cl)
+    out = {k: {"est": v, "se": max(se["slice"][k], se["run_rep"][k]), "se_slice": se["slice"][k],
+               "se_run_rep": se["run_rep"][k]} for k, v in est.items()}
+    out.update(n_kicks=len(kicks), n_nulls=len(nulls), n_slices=len(lines),
+               n_clusters={k: v["n_clusters"] for k, v in se.items()},
                n_missing=sum(not (r["ok_rewritten"] and r["ok_kept"]) for r in kicks),
                n_reader_missing=sum(not rr["ok"] for r in kicks for rr in r["readers"]),
                frac_identical_prompt=float(np.mean([r["identical_rewritten"] for r in kicks])) if kicks else None,
@@ -186,6 +201,18 @@ def kick_table(world: str, nb=2000, seed=0):
         dx = np.array([r["dx"] for r in nulls if r["ok"]])
         out["null"] = {"n": int(len(dx)), "mean_dx": float(dx.mean()), "sd_dx": float(dx.std(ddof=1)),
                        "se_mean": float(dx.std(ddof=1) / np.sqrt(len(dx)))}
+    return out
+
+
+def gauss_flags(runs_w):
+    """Excess kurtosis and bimodality coefficient of x - chat (rounds 5..20) conditional on the previous call."""
+    out = {}
+    for prev in (+1, -1):
+        v = np.concatenate([(r["o"]["X"][BURN + 1:] - CHAT)[r["o"]["sig"][BURN:-1] == prev] for r in runs_w])
+        z = (v - v.mean()) / v.std()
+        sk, ku = float((z**3).mean()), float((z**4).mean() - 3)
+        out[f"prev{prev:+d}"] = {"n": int(len(v)), "skew": sk, "excess_kurtosis": ku,
+                                 "bimodality_coef": (sk**2 + 1) / (ku + 3)}
     return out
 
 
@@ -266,17 +293,18 @@ def falsifiers(W, KT, G) -> dict:
     F["F4"] = dict(X2_mut_minus_ant=m_a, E_mut_minus_ant=e_ma, kick_part_counts=both,
                    outcome="falsified" if (m_a["diff"] < 3 * m_a["se"] or (both and e_ma["diff"] < 3 * e_ma["se"]))
                    else "consistent")
-    # F5
+    # F5 (on dX2 = X2(world) - X2(one-way))
     f5 = {}
     for w, (lo, hi) in INTERVAL.items():
-        x = W[w]["X2"]
+        dd = comp(W[w]["X2"], W["oneway"]["X2"])
+        x = {"mean": dd["diff"], "se": dd["se"]}
         out_by = max(lo - x["mean"], x["mean"] - hi, 0.0)
         transfer = out_by <= 3 * x["se"]
         gd = G[w]["Gd_M" if w == "mutual" else "Gd_A"]
         gse = G[w]["Gd_M_se" if w == "mutual" else "Gd_A_se"]
         se_tot = float(np.hypot(x["se"], gse))
         red_fail = abs(x["mean"] - gd) > 0.25 * abs(gd) + 3 * se_tot
-        f5[w] = dict(X2=x, interval=[lo, hi], calibration_transfers=bool(transfer), Gd=gd, Gd_se=gse,
+        f5[w] = dict(dX2=x, interval=[lo, hi], calibration_transfers=bool(transfer), Gd=gd, Gd_se=gse,
                      single_site_fails=bool(red_fail))
     F["F5"] = dict(per_world=f5, outcome="; ".join(
         f"{w}: " + ("in interval" if v["calibration_transfers"] else "calibration did not transfer") +
@@ -284,12 +312,41 @@ def falsifiers(W, KT, G) -> dict:
     # F6
     f6 = {}
     for w in ("mutual", "antagonistic"):
-        x, e = W[w]["X2"], KT[w]["E"]
-        se = float(np.hypot(x["se"], e["se"]))
-        f6[w] = dict(E=e, X2=x, falsified=bool(abs(e["est"] - x["mean"]) > 3 * se + 0.15 * abs(x["mean"])))
-    F["F6"] = dict(per_world=f6, outcome="falsified" if any(v["falsified"] for v in f6.values()) else "consistent")
+        dd = comp(W[w]["X2"], W["oneway"]["X2"])
+        e = KT[w]["E"]
+        se = float(np.hypot(dd["se"], e["se"]))
+        bad = abs(e["est"] - dd["diff"]) > 3 * se + 0.15 * abs(dd["diff"])
+        f6[w] = dict(E=e, dX2=dd, powered=F["powered"][w],
+                     outcome="falsified" if (bad and F["powered"][w]) else "consistent" if F["powered"][w] else "unpowered")
+    outs = [v["outcome"] for v in f6.values()]
+    F["F6"] = dict(per_world=f6, outcome="falsified" if "falsified" in outs else
+                   "consistent" if all(o == "consistent" for o in outs) else
+                   "consistent where powered; " + ", ".join(f"{w} unpowered" for w, v in f6.items() if v["outcome"] == "unpowered")
+                   if "consistent" in outs else "unpowered")
+    F["verdict"] = verdict(F)
     F["F7"] = dict(outcome="not run (no asynchronous control in this design)")
     return F
+
+
+def verdict(F) -> dict:
+    """The mapping table of EXPERIMENT.md "Fixed rules" from falsifier outcomes to the label."""
+    f1, f3, f4, f6 = F["F1"]["outcome"], F["F3"]["outcome"], F["F4"]["outcome"], F["F6"]["outcome"]
+    falsified = [k for k in ("F1", "F3", "F4", "F6") if F[k]["outcome"].startswith("falsified")]
+    if F["F3"]["notes_kept_outcome"] == "falsified":
+        falsified.append("F3 (notes kept)")
+    if falsified:
+        label, text = "not supported", "falsified: " + ", ".join(falsified)
+    elif f1.startswith("unresolved"):
+        label, text = "inconclusive", "mutual echo unresolved and not predicted above 0.03"
+    elif f3 == "consistent (sign resolved)":
+        label, text = "supported", "reciprocity, ordering and the antagonistic sign confirmed"
+    elif f3.startswith("no sign predicted") and "but an echo is resolved" not in f3:
+        label, text = "supported", "reciprocity and ordering confirmed; antagonistic world a second null as predicted"
+    else:
+        label, text = "inconclusive (antagonistic part)", ("reciprocity (mutual against one-way) and the ordering confirmed; "
+                                                           "the antagonistic sign not resolved at 3 se")
+    memory = "one-step memory holds" if F["F2"]["outcome"] == "consistent" else "one-step memory fails (F2)"
+    return {"label": label, "text": text, "memory": memory, "F6": f6, "F5": F["F5"]["outcome"]}
 
 
 def residuals(W, KT):
@@ -332,6 +389,12 @@ def main():
     for w, f in S["inswarm"].items():
         print(f"in-swarm {w}: calls-only " + " ".join(f"{k} {v['est']:+.3f}({v['se']:.3f})" for k, v in f["calls_only"].items())
               + " | leak " + " ".join(f"{k} {v['est']:+.3f}({v['se']:.3f})" for k, v in f["leak"].items()))
+    S["gauss"] = {w: gauss_flags(runs[w]) for w in W3 if runs[w]}
+    if "oneway" in S["gauss"]:
+        g = S["gauss"]
+        S["gauss_flags"] = {"oneway_conditional_kurtosis_below_-0.3": any(v["excess_kurtosis"] < -0.3 for v in g["oneway"].values()),
+                            "bimodal_any_world": any(v["bimodality_coef"] > 0.555 for w in g for v in g[w].values())}
+        print("Gaussian-cavity flags:", S["gauss_flags"], {w: {k: round(v["excess_kurtosis"], 2) for k, v in g[w].items()} for w in g})
     KT = {w: kick_table(w) for w in W3}
     S["kicks"] = KT
     for w, k in KT.items():
@@ -349,12 +412,13 @@ def main():
         S["falsifiers"] = falsifiers(W, KT, G)
         print("twins powered (frozen E_pred >= 3 observed se):", S["falsifiers"]["powered"])
         for k, v in S["falsifiers"].items():
-            if k.startswith("F"):
+            if k.startswith("F") and k[1:].isdigit():
                 print(k, v["outcome"], v.get("notes_kept_outcome", ""))
         S["composition"] = {
             "antagonistic_E_over_KrArD": KT["antagonistic"]["E"]["est"] / (K * KT["antagonistic"]["rA"]["est"] * KT["antagonistic"]["rD"]["est"]),
             "mutual_E_over_halfK_r2": KT["mutual"]["E"]["est"] / (K / 2 * (KT["mutual"]["rA"]["est"] ** 2 + KT["mutual"]["rD"]["est"] ** 2))}
         print("composition", S["composition"])
+        print("VERDICT", S["falsifiers"]["verdict"])
     S["residuals"] = residuals(W, KT)
     S["mean_belief_law"] = {w: {"m": W[w]["m"], "M1": PRED["predictions"][w]["M1"]["m"], "M2": PRED["predictions"][w]["M2"]["m"]}
                             for w in W3 if runs[w]}

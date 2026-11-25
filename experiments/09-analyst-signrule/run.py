@@ -101,20 +101,21 @@ def slices(world: str, g: int):
 
 # ---------------------------------------------------------------- steps
 
-def step_smoke(llm):
+def step_smoke(llm, label: str):
     import torch
     import vllm
     print("vllm", vllm.__version__, "torch", torch.__version__, "gpu", torch.cuda.get_device_name(0), flush=True)
-    sw = swarm("mutual", 99, backend(llm, f"{TAG}-smoke"), T_=1, tag=f"{TAG}-smoke")
+    tag = f"{TAG}-smoke-{label}"
+    sw = swarm("mutual", 99, backend(llm, tag), T_=1, tag=tag)
     ids = sw.backend.decision_ids(sw.context(0, 0, 0, None, None))
     print("BUY/SELL ids", sw.backend.buy_id, sw.backend.sell_id, "round-0 prompt tokens", len(ids), flush=True)
     t0 = time.time()
     out = sw.run()
     print(f"smoke: 2 lockstep rounds x {R} replicas x {N} analysts in {time.time() - t0:.0f} s; missing "
           f"{int(out['missing'].sum())}/{out['missing'].size}", flush=True)
-    for t in read_jsonl(RESULTS / f"{TAG}-smoke" / "analyst_timings.jsonl"):
+    for t in read_jsonl(RESULTS / tag / "analyst_timings.jsonl"):
         print("timing", t, flush=True)
-    recs = list(read_jsonl(RESULTS / f"{TAG}-smoke" / "analyst_calls.jsonl"))
+    recs = list(read_jsonl(RESULTS / tag / "analyst_calls.jsonl"))
     for r in recs[::64]:
         print(f"t={r['round_t']} rep={r['replica']} i={r['agent_id']} x {r['x']:+.2f} p_sample {r['p_sample']:.3f} "
               f"call {r['call']:+d} [{r['note_status']}] {r['note']}", flush=True)
@@ -140,16 +141,16 @@ def step_base(llm, runs):
 def step_kicks(llm, runs):
     for k, (w, g) in enumerate(runs):
         sw = swarm(w, g, backend(llm, run_id(w, g)))
-        path = RESULTS / TAG / f"kicks_{w}.jsonl"
-        done = {(r["g"], r["slice"]) for r in read_jsonl(path)}
+        path = RESULTS / TAG / f"kicks_{w}_g{g}.jsonl"          # one file per run: the two workers never collide
+        done = {r["slice"] for r in read_jsonl(path)}
         t0 = time.time()
         n = 0
         for idx, rep, t0_, kicked, nulls in slices(w, g):
-            if (g, idx) in done:
+            if idx in done:
                 continue
             recs = A.kick_slice(sw, sw.backend, rep, t0_, kicked, nulls, tag=f"kick-{w}-g{g}")
-            for r in recs:
-                append_jsonl(path, {"world": w, "g": g, "slice": idx, **r})
+            # one line per slice (a single append), so a stop never leaves a partial slice behind
+            append_jsonl(path, {"world": w, "g": g, "slice": idx, "rep": rep, "t0": t0_, "twins": recs})
             n += len(recs)
         progress(f"kicks {k + 1}/{len(runs)} {w}:{g}: {n} twins in {time.time() - t0:.0f} s")
 
@@ -158,10 +159,11 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("step", choices=["smoke", "base", "kicks"])
     ap.add_argument("runs", nargs="*", help="world:g")
+    ap.add_argument("--label", default="W", help="worker label for the smoke tag")
     a = ap.parse_args()
     runs = [(r.split(":")[0], int(r.split(":")[1])) for r in a.runs]
     assert all(r in RUNS for r in runs), runs
     llm = vb.make_llm(max_num_seqs=256, max_logprobs=LOGPROBS)
     t = time.time()
-    {"smoke": lambda: step_smoke(llm), "base": lambda: step_base(llm, runs), "kicks": lambda: step_kicks(llm, runs)}[a.step]()
+    {"smoke": lambda: step_smoke(llm, a.label), "base": lambda: step_base(llm, runs), "kicks": lambda: step_kicks(llm, runs)}[a.step]()
     print(f"== step {a.step} done in {time.time() - t:.0f} s", flush=True)

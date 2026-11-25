@@ -24,6 +24,16 @@ couplings, and not at all without reciprocity? This is the reaction term's sign 
 froze its predictions on 2026-11-25 (commit 1799988; numbers in `theory/checks/analyst_signrule_predictions.json`)
 before any de-biased swarm data existed.
 
+Because faded colleagues attract, the product of the couplings is positive in both reciprocated worlds. So this design
+establishes three things, each with its own verdict part:
+1. reciprocity is necessary (mutual against one-way);
+2. the echo magnitude is ordered as predicted (mutual > antagonistic);
+3. the antagonistic echo is positive, the sign of −a₊a₋, but only if it is resolved at 3 s.e. Otherwise that part is
+   inconclusive.
+
+A sign-blind reciprocity effect would predict the same signs. Telling it apart needs a cell with a₋ > 0, which no
+wording produced.
+
 The test is posed given the couplings Qwen3.5-9B actually has. Faded colleagues attract (a₋ = −0.146, s.e. 0.037),
 so the predicted echoes are large in the mutual world, exactly zero in the one-way world, and small and positive in
 the "antagonistic" world. The pattern is large, zero, small, not plus, zero, minus. This tests the sign rule given the
@@ -99,11 +109,13 @@ readers by tie type, and E and E_x from i, in both replays. There is no asynchro
 **Analysis** (`analyze.py`, fixed before data; its docstring states every estimator):
 - Per run, the note's own `analyst_signrule_check.run_stats` on the sampling belief: ρ₁–₄, X₂, c₁, c₂, X^c₂, q, m.
 - Per world, the mean, with s.e. = pooled within-world run s.d. / √n_runs (9 d.f.).
-- Kick statistics with cluster-bootstrap s.e. over slices.
+- Kick statistics with cluster-bootstrap s.e. over slices and over (run, replica); every decision uses the larger.
 - The in-swarm regression (calls only, and with the leak terms; cluster bootstrap over analysts).
 - The reaction coefficient from the swarm's own couplings, Ĝ (S4): û from the twins' first-order responses, v̂ from
   the leak regression, d and d^r from the beliefs.
-- The falsifiers below, and residuals of every observable against the frozen M1 and M2 values.
+- The falsifiers below, the verdict table, and residuals of every observable against the frozen M1 and M2 values.
+- Gaussian-cavity flags (guardrail 5): excess kurtosis and the bimodality coefficient of x − ĉ, conditional on the
+  previous call.
 
 Figures come from `plot.py`.
 
@@ -114,7 +126,7 @@ Figures come from `plot.py`.
   - `kick_slice` equals the note's `kick_twins` for every reader at t0+1 and the kicked analyst at t0+2, with E = 0
     and identical prompts in the one-way world.
 - A full-size dry run of `run.py` with all 12 runs and all twins, plus `analyze.py`, under a mock backend that obeys
-  frozen law M1 including its residual (see "Controls").
+  frozen law M1 including its residual (see "Controls"). The harness is committed as `dryrun.py`.
 
 ## Inputs
 
@@ -128,7 +140,7 @@ Worker W1 (mutual and one-way):
 ```bash
 set -euo pipefail; bash experiments/06-qwen-smoke/setup_vllm.sh
 set -euo pipefail; uv run --no-sync pytest -q tests/test_analyst.py tests/test_vllm_backend.py
-set -euo pipefail; uv run --no-sync python experiments/09-analyst-signrule/run.py smoke 2>&1 | tee results/analyst-signrule-smoke-W1.log
+set -euo pipefail; uv run --no-sync python experiments/09-analyst-signrule/run.py smoke --label W1 2>&1 | tee results/analyst-signrule-smoke-W1.log
 set -euo pipefail; uv run --no-sync python experiments/09-analyst-signrule/run.py base mutual:0 oneway:0 mutual:1 oneway:1 oneway:2 oneway:3 2>&1 | tee results/analyst-signrule-base-W1.log
 set -euo pipefail; uv run --no-sync python experiments/09-analyst-signrule/run.py kicks mutual:0 mutual:1 oneway:0 oneway:1 oneway:2 oneway:3 2>&1 | tee results/analyst-signrule-kicks-W1.log
 ```
@@ -138,7 +150,7 @@ Worker W2 (antagonistic and one one-way run):
 ```bash
 set -euo pipefail; bash experiments/06-qwen-smoke/setup_vllm.sh
 set -euo pipefail; uv run --no-sync pytest -q tests/test_analyst.py tests/test_vllm_backend.py
-set -euo pipefail; uv run --no-sync python experiments/09-analyst-signrule/run.py smoke 2>&1 | tee results/analyst-signrule-smoke-W2.log
+set -euo pipefail; uv run --no-sync python experiments/09-analyst-signrule/run.py smoke --label W2 2>&1 | tee results/analyst-signrule-smoke-W2.log
 set -euo pipefail; uv run --no-sync python experiments/09-analyst-signrule/run.py base antagonistic:0 antagonistic:1 antagonistic:2 antagonistic:3 antagonistic:4 oneway:4 2>&1 | tee results/analyst-signrule-base-W2.log
 set -euo pipefail; uv run --no-sync python experiments/09-analyst-signrule/run.py kicks antagonistic:0 antagonistic:1 antagonistic:2 antagonistic:3 antagonistic:4 oneway:4 2>&1 | tee results/analyst-signrule-kicks-W2.log
 ```
@@ -152,7 +164,8 @@ one, and its mean belief says which law holds (reported, ĉ unchanged). Coordina
 - `results/analyst-signrule-20261125-{world}-g{g}/`: `analyst_calls.jsonl` (one line per replica, round and
   analyst: x, P_buy, p_sample, call, uniform, note, inbox fields, valid mass, censoring), `analyst_timings.jsonl`,
   `inputs.npz`, `beliefs.npz`, `graph.json` and `analyst_meta.json`. About 25 MB per run.
-- `results/analyst-signrule-20261125/kicks_{world}.jsonl`: one line per twin.
+- `results/analyst-signrule-20261125/kicks_{world}_g{g}.jsonl`: one file per run, one line per slice (a single append,
+  so a stop never leaves a partial slice), holding that slice's twins.
 - `results/analyst-signrule-*.log`.
 - Coordinator: `results/analyst-signrule/summary.json`, figures `paper/figures/analyst_signrule_*.{pdf,png}`, and
   `RESULT.md` here.
@@ -185,12 +198,9 @@ one, and its mean belief says which law holds (reported, ĉ unchanged). Coordina
 The run fails if vLLM doesn't load or the decision tokens fail `tok`. If a run has ≥ 5% missing decisions, it is
 reported, and the world's statistics are given with and without it.
 
-The scientific outcome is the set of falsifier outcomes below, each reported with its numbers.
-- **Supported:** F1, F2, F4 and F6 are consistent, and F3 is consistent with its sign predicted (or the antagonistic
-  world is a second null by the |Ĝ_A d| < 0.004 rule).
-- **Not supported:** any of F1, F2, F3, F4 or F6 is falsified.
-
-F5 decides whether the comparison is zero-shot or uses in-swarm numbers, and is reported either way.
+The scientific outcome is the set of falsifier outcomes, each reported with its numbers, mapped to a label by the
+verdict table under "Fixed rules" (`analyze.verdict`). F2 is reported separately as the memory premise. F5 decides
+whether magnitudes are compared zero-shot or with in-swarm numbers, and is reported either way.
 
 ## Time and cost
 
@@ -211,8 +221,9 @@ notes. So the antagonistic twins ≈ 0.85 run and the mutual and one-way twins �
 **Caps and stop rule.** Cap 8 h (1.5 × the larger projection), budget $9 per worker. If a worker runs past 1.5 × its
 projection, the driver stops it and reports.
 
-**Timing contingency** (fixed): if the smoke's inbox round (round 1) takes more than 190 s, W1 drops oneway:3 and W2
-drops oneway:4, together with their twins. That leaves 3 one-way runs.
+**Timing contingency** (fixed): if the smoke's inbox round (round 1) takes more than 170 s, W1 drops oneway:3 and W2
+drops oneway:4, together with their twins. That leaves 3 one-way runs. The reviewer's estimate from 08's timing files is
+about 165 s per lockstep round on an A40, so W2 ≈ 7 h.
 
 **Memory.** One process per worker, max_num_seqs 256 (a lockstep batch of 512 queues), weights 16.7 GiB, KV about
 20 GiB.
@@ -234,6 +245,7 @@ drops oneway:4, together with their twins. That leaves 3 one-way runs.
   0.95), and no belief parsed from text.
 - The s.e. definitions: pooled within-world run s.d. / √n for world means; the cluster bootstrap over slices for
   twins.
+- **Kick s.e.:** the larger of the cluster bootstraps over slices and over (run, replica).
 - **Power rule for the kick parts.** A world's twins count as "powered" iff the frozen M1 kick echo (mutual +0.0553,
   antagonistic +0.0092) is at least 3 × the observed s.e. of E. Unpowered twins are reported, but they don't decide F1
   or F4 (an echo they couldn't have resolved is not evidence against it), and those falsifiers are then decided on X₂.
@@ -245,7 +257,10 @@ comparison from the data.
 - **F1, mutual echo.** If X₂(mutual) − X₂(one-way) > 3 se and E_mutual > 3 se (or the mutual twins are unpowered),
   the result is consistent. If either is below −3 se, it is falsified. Otherwise, while the in-swarm Ĝ_M d > 0.03, it
   is falsified ("not positive").
-- **F2, one-way echo.** |X₂(one-way)| > 3 se is falsified.
+- **F2, one-way echo, which is the one-step memory premise.** |X₂(one-way)| > 3 se is falsified. X₂ = 0 there holds
+  only if the own memory is one step in the call. A path through the analyst's own notes (σ_i(t) → note_i(t) →
+  note_i(t+1) → x_i(t+2)) would show here, and the kick echo excludes it by holding i's history at the base run's.
+  That is why F5, F6 and the Ĝd check use differences from the one-way world.
 - **F3, antagonistic sign, conditional on the swarm's couplings.**
   - The prediction is sign(Ĝ_A) of (S4), with û from the first-order kick responses, v̂ from the in-swarm leak
     regression, and d, d^r from the beliefs.
@@ -255,11 +270,26 @@ comparison from the data.
   - Notes kept: E_kept with the sign opposite to r_A·r_D at > 3 se is falsified.
 - **F4, ordering.** X₂(mutual) − X₂(antagonistic) < 3 se, or E_mutual − E_antagonistic < 3 se with both worlds' twins
   powered, is falsified.
-- **F5, magnitudes.** Mutual X₂ outside [0.03, 0.07], or antagonistic X₂ outside [0.005, 0.021], by > 3 se means the
-  calibration did not transfer. Then X₂ is compared with Ĝd per world, and |X₂ − Ĝd| > 0.25|Ĝd| + 3 se means the
-  single-site reduction fails.
-- **F6, kick against echo function.** |E − X₂| > 3 se + 0.15|X₂| in the mutual or antagonistic world is falsified.
+- **F5, magnitudes**, on dX₂ = X₂(world) − X₂(one-way). Mutual dX₂ outside [0.03, 0.07], or antagonistic dX₂ outside
+  [0.005, 0.021], by > 3 se means the calibration did not transfer. Then dX₂ is compared with Ĝd per world, and
+  |dX₂ − Ĝd| > 0.25|Ĝd| + 3 se means the single-site reduction fails.
+- **F6, kick against echo function.** |E − dX₂| > 3 se + 0.15|dX₂| in a world whose twins are powered is falsified.
+  Unpowered twins give "unpowered", which decides nothing.
 - **F7, asynchronous control.** Not run.
+
+**Verdict table** (implemented in `analyze.verdict`; the strings are `analyze.py`'s outcomes):
+
+| condition, checked in this order | label |
+|---|---|
+| any of F1, F3, F3 notes-kept, F4 or F6 starts with "falsified" | **not supported** (the falsified ones named) |
+| F1 "unresolved (G_M d <= 0.03)" | **inconclusive** |
+| F3 "consistent (sign resolved)" | **supported**: reciprocity, ordering and the antagonistic sign |
+| F3 "no sign predicted …" without "but an echo is resolved" | **supported**: reciprocity and ordering; antagonistic world a second null as predicted |
+| otherwise (F3 "consistent (sign not resolved at 3 se)", or an unexpected resolved echo when none is predicted) | **inconclusive (antagonistic part)**: reciprocity and ordering confirmed, antagonistic sign not resolved |
+
+Appended to every label: "one-step memory holds" (F2 consistent) or "one-step memory fails (F2)". A falsified F2 does
+not by itself make the sign rule "not supported", because F1, F3, F4 and F6 use differences or the kick echo, which are
+free of the own-note path. Also appended: the F6 status (consistent, or unpowered) and the F5 reading.
 
 **Recorded, not decided:** m (which law holds); the composition ratios E/(K r_A r_D) (antagonistic) and
 E/((K/2)(r_A² + r_D²)) (mutual), which are 1 for calls only and about 5 under M2; missing and refusal rates; and the
@@ -277,7 +307,28 @@ here:
 
 ## Review
 
-<fill: reviewer findings>
+First pass (general-purpose agent following `agents/experiment-reviewer.md`, definition path only): needs revision.
+- **P1, raw X₂ mixes the echo with own-note memory**, while F2, F5 and F6 treated it as pure echo. The reviewer
+  recomputed the 08 pilot's ρ₂ − ρ₁² as −0.04 to −0.09, against the law's −0.002 to +0.02. Fixed: F5, F6 and the Ĝd
+  check now use X₂(world) − X₂(one-way); F2 is reported as the memory premise, and a falsified F2 alone reads
+  "one-step memory fails", not "not supported".
+- **P1, "Supported" without the antagonistic world contributing, and the coupling sign never varied.** Fixed: the
+  claim is reworded to reciprocity, ordering and a resolved-positive antagonistic echo. "Supported" needs the
+  antagonistic sign resolved at 3 s.e. (or the second-null case); otherwise the label is "inconclusive (antagonistic
+  part)". The sign-blind alternative is stated. The suggested adaptive swap of twins for extra base runs is not
+  adopted: the coordinator fixed about 570 twins. If they are unpowered, RESULT.md says so and names extra base runs
+  as the follow-up.
+- **P1, outcomes not mapped to labels.** Fixed: the verdict table above, implemented in `analyze.verdict`.
+- **P2, timing about 25% optimistic.** Fixed: the threshold is 170 s, and W2 is estimated at about 7 h, inside the cap.
+- **P2, kick file collision between the workers.** Fixed: per-run files, one line per slice. Smoke tags are per
+  worker (`--label`).
+- **P2, slice-bootstrap s.e. too small.** Fixed: the s.e. is also clustered by (run, replica), and the larger is used.
+- **P2, Gaussian-cavity flags missing.** Fixed: conditional kurtosis and the bimodality coefficient go into
+  `summary.json`.
+- **P2, dry-run harness not committed.** Fixed: `dryrun.py`. Partial slices can no longer occur (one append per
+  slice).
+- Both dry variants were re-run after the fixes. Each gives "supported" with "one-step memory holds". In the
+  prompt-sensitive variant F6 is "unpowered", and in the white variant it is "consistent".
 
 ## Amendments
 
