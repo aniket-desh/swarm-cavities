@@ -124,12 +124,17 @@ def shared_replay(root: Path) -> ReplayCache:
 class Runner:
     def __init__(self, experiment_id: str, guard: BudgetGuard, client=None, cfg: AgentConfig = AgentConfig(),
                  concurrency: int = 16, results_root: Path = ROOT / "results", replay_dir: Path | None = None,
-                 ledger_path: Path = LEDGER, sdk_max_retries: int = 4, replay_salt: str | None = None):
+                 ledger_path: Path = LEDGER, sdk_max_retries: int = 4, replay_salt: str | None = None,
+                 checkpoint_replays: bool = True):
         if client is None:
             import anthropic  # deferred so tests and spend_watch never need the network client
             client = anthropic.AsyncAnthropic(max_retries=sdk_max_retries)
         self.experiment_id = experiment_id
         self.replay_salt = replay_salt
+        # checkpoint_replays=False: a call answered entirely from the replay cache gets no checkpoint line (it costs
+        # nothing to replay again after a restart). Kick twins replay ~124 of ~128 calls per twin, and each line is an
+        # fsync'd append on the network volume, which made the writes, not the API, the bottleneck.
+        self.checkpoint_replays = checkpoint_replays
         self.guard = guard
         self.client = client
         self.cfg = cfg
@@ -174,7 +179,8 @@ class Runner:
                "cost_usd": sum(a["cost_usd"] for a in attempts), "attempts": attempts, "ts": time.time()}
         if belief:
             rec.update(belief)
-        append_jsonl(self.ckpt_path, rec)
+        if self.checkpoint_replays or not all(a["replayed"] for a in attempts):
+            append_jsonl(self.ckpt_path, rec)
         self.done[self._key(seed, round_t, req.agent_id)] = _slim(rec)
         return rec
 

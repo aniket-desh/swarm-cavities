@@ -46,12 +46,13 @@ async def kick_cell(c: dict, base_tag: str, kick_tag: str, t0s, reps, agents, gu
     out = out_dir / "twins.jsonl"
     done = {(r["rep"], r["t0"], tuple(r["kicked"]), bool(r.get("sham"))) for r in read_jsonl(out)}
     J, game = graph_for(c), game_for(c)
-    runner = Runner(f"{kick_tag}-{cell_id(c)}", guard, cfg=AgentConfig(), concurrency=16, ledger_path=LEDGER)
+    runner = Runner(f"{kick_tag}-{cell_id(c)}", guard, cfg=AgentConfig(), concurrency=16, ledger_path=LEDGER,
+                    checkpoint_replays=False)
     cfg = SwarmConfig(experiment_id=base_exp, T=c["T"], H=H, replicas=REPLICAS, mode=c["mode"], seed=c["graph"])
     sw = Swarm(J, game, cfg, LLMBackend(runner, disagree=c["wording"]))
     # sham twins: the readers redraw on identical prompts through a Runner with its own replay namespace
     sham_runner = Runner(f"{kick_tag}-{cell_id(c)}-sham", guard, cfg=AgentConfig(), concurrency=16, ledger_path=LEDGER,
-                         replay_salt=f"sham|{kick_tag}")
+                         replay_salt=f"sham|{kick_tag}", checkpoint_replays=False)
     sham_backend = LLMBackend(sham_runner, disagree=c["wording"])
     rows = base_rows(base_dir)
     # agents with |s_i(t0)| < min_abs_s are skipped: a mirror kick of size 2|s_i| adds almost nothing (and nothing at

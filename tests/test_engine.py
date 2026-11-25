@@ -351,3 +351,18 @@ def test_batch_errored_entries_not_checkpointed(tmp_path):
     runner2, _ = make_runner(tmp_path, FakeClient())
     out = asyncio.run(runner2.run_round_batch(0, 0, requests(3), poll_s=0))
     assert runner2.client.messages.batches.created == [["r0"]] and out[1]["status"] == "ok"
+
+
+def test_checkpoint_replays_off_skips_only_pure_replays(tmp_path):
+    """checkpoint_replays=False: replayed calls get no checkpoint line, paid calls still do, and both are returned."""
+    client = FakeClient()
+    runner, _ = make_runner(tmp_path, client, exp="a")
+    asyncio.run(runner.run_round(0, 0, requests(3)))
+    runner2, _ = make_runner(tmp_path, FakeClient(), exp="b")
+    runner2.checkpoint_replays = False
+    reqs = requests(3) + [AgentRequest(agent_id=9, system_rules="RULES " * 50, evidence="evidence for agent 9",
+                                       dynamic="new")]
+    out = asyncio.run(runner2.run_round(0, 0, reqs))
+    assert len(out) == 4
+    lines = list(read_jsonl(runner2.ckpt_path))
+    assert [r["agent_id"] for r in lines] == [9]
