@@ -1,14 +1,14 @@
 # HANDOFF: swarm-cavity overnight run
 
-Last updated: 2026-11-25 05:45 UTC. Working copy: `/workspace-global/swarm-cavity/repo` (see Blocked). Running in tmux session `swarm-cavity` (attach: `tmux attach -t swarm-cavity`).
+Last updated: 2026-11-25 08:15 UTC. Working copy: `/workspace-global/swarm-cavity/repo` (see Blocked). Running in tmux session `swarm-cavity` (attach: `tmux attach -t swarm-cavity`).
 
 ## Spend against the $2,000
 
 | | so far |
 |---|---|
-| Anthropic API (experiment code, `budget/ledger.jsonl`) | $0.00 |
+| Anthropic API (experiment code, `budget/ledger.jsonl`) | $2.15 (6,086 calls) |
 | Runpod pods (`orch spend`) | $0.00 |
-| **total** | **$0.00** |
+| **total** | **$2.15** |
 
 Agent usage (the Fable theory agent, Opus implementation agents) isn't counted here, per your instructions.
 
@@ -80,13 +80,30 @@ $25–180; (4) zealot hysteresis vs γ, about $170; (5) PR vs Var(m_B) as an ear
 in total, leaving room for Sonnet slices and reruns. Test 1 decides whether the couplings are strong enough for tests
 2–4 to show anything.
 
+- **DMFT solver** (`theory/dmft_solver.py`, gate a). It reproduces every reference number in `theory/solver_spec.md`
+  at the stated tolerance (114 tests pass in total). The variants with the spec's original errors fail the kick test,
+  as they should. It also found three errata in the spec's own reference values.
+- **Swarm environment and probes** (`envs/`, `cavity/`). The game is a neutral coin with sensor reports. Prompts are
+  shared between the swarm and the probes. The swarm reads signed inboxes on directed graphs with fixed in-degree,
+  runs synchronously or asynchronously, and has a mock backend for zero-cost tests. The prompt check gave 0 of 20
+  refusals.
+- **Gate (b) smoke test** (`experiments/02_smoke/`): N=8, T=4 on Haiku, 0 of 102 calls missing, $0.035, and a resume
+  costs nothing. The swarm tracks the truth.
+- **Test 1, single-agent calibration** (`experiments/03_calibration/RESULT.md`, $2.10).
+  - The nominal scalar field fails (η²_comp = 0.48). Peers "you tend to disagree with" still attract at about 40% of
+    agree strength, as in the Physics of Agents small models.
+  - A two-channel effective field fits, and since it's linear in the peers' states, DMFT still applies with
+    effective couplings.
+  - A wording that gives agents a reason to invert disagree sources flips their gain to +0.57, which makes J̄ ≈ 0 and
+    γ < 0 reachable.
+  - The memory kernel is 0.50, 0.15, 0.08 at lags 1–3, carried by the agent's own message content.
+  - At K=8 the swarm sits in the quiet regime (Λ ≈ 0.35 even at |γ|=1), so reciprocity effects there are O(g²) ≈ 0.05.
+
 ## In progress
 
-- DMFT solver (`theory/dmft_solver.py`) against the spec's reference numbers, which is gate (a).
-- Swarm environment (evidence game, shared prompts, signed-inbox directed graphs with fixed in-degree,
-  synchronous and asynchronous modes, a mock backend) and the single-agent cavity probe harness.
-- Zero-cost Physics of Agents analyses: field sufficiency in inbox counts, the asynchronous control for the flicker,
-  and effective g and Λ.
+- Swarm experiment design from the calibrated parameters (theory agent): which K, wording and γ cells
+  discriminate the predictions within about $300, with pre-registered predictions.
+- Zero-cost Physics of Agents analyses (restarted after the volume problem).
 
 ## Decisions for you to review
 
