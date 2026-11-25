@@ -70,10 +70,16 @@ def record_call(experiment_id: str, model: str, batch: bool, tokens: dict, cost_
 
 
 def total_api_spend(path: Path = LEDGER, experiment_id: str | None = None) -> float:
-    """Sum of cost_usd over the ledger (optionally for one experiment). Also used by scripts/spend_watch.py."""
+    """Sum of cost_usd over the ledger (optionally for one experiment; a trailing "*" matches every
+    experiment_id with that prefix, so one cap can cover a sweep of runs). Also used by scripts/spend_watch.py."""
     total = 0.0
+    prefix = experiment_id[:-1] if experiment_id is not None and experiment_id.endswith("*") else None
     for rec in read_jsonl(path):
-        if experiment_id is not None and rec.get("experiment_id") != experiment_id:
+        eid = str(rec.get("experiment_id"))
+        if prefix is not None:
+            if not eid.startswith(prefix):
+                continue
+        elif experiment_id is not None and eid != experiment_id:
             continue
         try:
             total += float(rec.get("cost_usd", 0.0))

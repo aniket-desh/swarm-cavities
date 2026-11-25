@@ -1,14 +1,62 @@
-# HANDOFF: swarm-cavity overnight run
+# HANDOFF: swarm-cavity
 
-Last updated: 2026-11-25 08:15 UTC. Working copy: `/workspace-global/swarm-cavity/repo` (see Blocked). Running in tmux session `swarm-cavity` (attach: `tmux attach -t swarm-cavity`).
+Last updated: 2026-11-25 15:00 UTC. Working copy: `/workspace/swarm-cavity` again (the volume is now 1 TB; the
+`/workspace-global` clone is stale). The overnight session died at about 08:25 UTC when its OAuth token was revoked;
+this afternoon's session resumed the plan at 14:20 and lost its editor connection at 14:42 (nothing was lost; see
+"Afternoon session").
 
 ## Spend against the $2,000
 
 | | so far |
 |---|---|
-| Anthropic API (experiment code, `budget/ledger.jsonl`) | $2.15 (6,086 calls) |
-| Runpod pods (`orch spend`) | $0.00 |
-| **total** | **$2.15** |
+| Anthropic API (experiment code, `budget/ledger.jsonl`) | $6.94 (18,950 calls) |
+| Runpod pods (`orch spend`) | $0.00 (no worker has been launched) |
+| **total** | **$6.94** |
+
+## Afternoon session (14:20–15:00 UTC): pilot and transfer check
+
+- **Infrastructure.** Shared Runpod key switched to the account that owns volume `2we3auziu3` (old key ending
+  `uhtn`; backups in `/workspace/.env-backups/`); `orch doctor` is green after a one-line fix to the toolkit's
+  `engine/rpctl` (it now reads `/workspace/.env` too; uncommitted in runpod-research). `sc-spend` runs from this copy.
+  `engine/ledger.total_api_spend` accepts a trailing `*` so one BudgetGuard cap can cover a sweep of runs.
+- **Pilot swarm** (`experiments/05_swarm/cells.py pilot`, tag `pilot-20261125`, $3.02, 0 of 8,448 replies missing):
+  inverted wording, p_neg=0.5, K=2 and 4, γ ∈ {−1, 0, +1}, N=64, T=10, one graph each. Excluded from confirmatory
+  analysis. The thermal observables disagree with the surrogate's predictions: c1 = 0.68–0.80 (predicted ≈ 0.3),
+  c2 = +0.33 to +0.61 with no sign flip at γ=−1 (predicted −0.14 to −0.36), P_delta ≈ 1.7–2.4 everywhere. c2 does
+  rise with γ in both K (K=4: 0.33, 0.40, 0.61), so the direction matches but the magnitude doesn't. The swarm
+  settles: mean per-round change falls from ≈ 0.2 at round 1 to 0.02–0.04 by round 6, and 30–48% of agents leave
+  their answer unchanged in late rounds, so replica differences persist instead of being refreshed each round.
+- **Why the surrogate missed it.** The single-agent white-probe trajectories (field redrawn every round, sd 0.34)
+  show weak persistence: residual lag-1 autocorrelation 0.21, own-answer weight 0.19, only 2–10% unchanged answers.
+  So the stickiness depends on state: the agent repeats itself when its inbox brings nothing new ("the new messages
+  don't give me independent evidence, so I'm holding steady"), which the white probes never allowed. The surrogate's
+  i.i.d. noise (σ_ξ = 0.10 from repeated identical prompts) is the wrong noise model for a settled swarm.
+- **Transfer check** (`experiments/05_swarm/transfer.py`, tag `transfer-20261125`, $1.78, 600 paired probes per
+  cell, 0 missing): the same inbox probabilities delivered with real pilot messages against template messages,
+  fitted with E[s] = tanh(a₊ f_A − a₋ f_D + a_p h_priv + c); paired bootstrap s.e. in parentheses.
+
+  | wording, K | real a₊ | real a₋ | template a₊ | template a₋ | real − template a₊ | real − template a₋ |
+  |---|---|---|---|---|---|---|
+  | inverted, 2 | 0.80 (0.03) | 0.15 (0.02) | 1.08 (0.04) | 0.39 (0.03) | −0.28 (0.04) | −0.24 (0.03) |
+  | inverted, 4 | 0.66 (0.05) | 0.22 (0.04) | 1.35 (0.06) | 0.52 (0.04) | −0.69 (0.06) | −0.30 (0.05) |
+  | label, 2 | 0.54 (0.03) | −0.24 (0.02) | 0.71 (0.03) | −0.25 (0.02) | −0.18 (0.04) | +0.01 (0.02) |
+  | label, 4 | 0.40 (0.03) | −0.21 (0.02) | 0.78 (0.03) | −0.37 (0.03) | −0.38 (0.04) | +0.15 (0.03) |
+
+  The template calibration does not transfer: real messages couple 25–50% more weakly, and the inverted disagree
+  channel is nearly switched off (a₋ = 0.15–0.22 against the design's assumed 0.76). Real gains per unit field fall
+  from K=2 to K=4, so agents average their inbox rather than add it. With real gains, the strongest cell (inverted,
+  K=2) has g ≈ 0.41 and effective reciprocity at γ=−1 of only −0.36, so Λ ≈ 0.45: the Haiku swarm is in the quiet
+  regime in every cell the design considered, and the γ<0 period-4 signature the design was built around is not
+  reachable with this prompt.
+- **Not yet done.** The swarm design (DESIGN.md) has to be redone with the real-message gains and a corrected noise
+  model before Test 2 spends anything; `predictions.json` in `experiments/04_swarm_design/` uses the old gains.
+- **GPU track.** A subagent wrote `envs/vllm_backend.py` (Qwen3.5-9B on vLLM, belief = expected stated probability
+  from digit-token logprobs, missing when valid mass < 0.95) and died with the editor before testing it on a GPU.
+  Reviewed by reading: complete and consistent; `language_model_only=True` and the vLLM structured-output import
+  are unverified until a worker runs it. No pod was launched.
+- **Tests.** All 114 pass file by file. The full `uv run pytest` is killed (exit 137) because `tests/test_solver.py`
+  peaks at 3.4 GB and the container's 8 GB cap already holds 4.4 GB of editor and Claude processes; that's a
+  memory limit, not a regression.
 
 Agent usage (the Fable theory agent, Opus implementation agents) isn't counted here, per your instructions.
 
@@ -99,11 +147,17 @@ in total, leaving room for Sonnet slices and reruns. Test 1 decides whether the 
   - The memory kernel is 0.50, 0.15, 0.08 at lags 1–3, carried by the agent's own message content.
   - At K=8 the swarm sits in the quiet regime (Λ ≈ 0.35 even at |γ|=1), so reciprocity effects there are O(g²) ≈ 0.05.
 
-## In progress
+## Next
 
-- Swarm experiment design from the calibrated parameters (theory agent): which K, wording and γ cells
-  discriminate the predictions within about $300, with pre-registered predictions.
-- Zero-cost Physics of Agents analyses (restarted after the volume problem).
+1. Theory (Fable agent): revise the single-agent surrogate with the real-message gains and a state-dependent noise
+   model (stickiness when the inbox is stable), and re-derive which observables can still discriminate the theory
+   in the quiet regime. A kick-and-echo measurement looks like the cleanest: perturb one agent's message once and
+   read its own answer two rounds later. The replay cache makes unaffected agents free, the echo is exactly zero
+   at γ=0, and its sign is set by γ and the wording. It measures the reaction term without relying on any noise model.
+2. Redo DESIGN.md with pre-registered predictions, get an unanchored review, then run Test 2 (pilot first).
+3. GPU track: finish validating `envs/vllm_backend.py` on a worker, time large-N rounds, calibrate Qwen3.5-9B with
+   real-message inboxes (templates are now known not to transfer).
+4. Zealot hysteresis and the Var(m_B) early warning on whichever model shows strong enough coupling.
 
 ## Decisions for you to review
 
@@ -113,26 +167,9 @@ in total, leaving room for Sonnet slices and reruns. Test 1 decides whether the 
   they're refused I'll reframe the zealots as agents with sincerely wrong evidence (closer to the real Hugging Face
   incident anyway).
 
-- **Network volume is at its quota** (`uv sync` failed with "Disk quota exceeded"; /workspace holds about 55 GB across
-  projects, 12 GB of it the shared uv cache). I didn't delete anything. This project's venv and uv cache live on the
-  container disk instead (`scripts/env.sh`), which a container restart wipes, though `uv sync` rebuilds it in about a
-  minute. Bulky experiment outputs will go to `/workspace-global` or stay on workers. You may want to raise the volume
-  size or prune `/workspace/.cache/uv` (another uv process held its lock, so I couldn't).
+- **The volume and the Runpod key are fixed** (resized to 1 TB; shared key switched, see Afternoon session). The
+  venv still lives on the container disk (`scripts/env.sh`), which a restart wipes; `uv sync` rebuilds it.
 
 ## Blocked
 
-- **The /workspace network volume is full** (as of about 06:15 UTC), so writes fail with "Disk quota exceeded" for
-  every project and every Claude session, since Claude transcripts live on it via /root/.claude. It's at about 55 GB.
-  The biggest folders are coupled-tensor-networks (22 GB), the shared uv cache (12 GB) and participation-ratios
-  (9.9 GB). The swarm-cavity repo is 114 MB. My attempt to force-prune the uv cache was denied, which is fair, since
-  it's shared. Meanwhile this project works from `/workspace-global/swarm-cavity/repo` and pushes to GitHub, and the
-  spend watcher runs from there too. To fix it, resize the network volume or clear space in the other projects, then
-  `cd /workspace/swarm-cavity && git pull` brings the old copy up to date.
-- **GPU work (Exp 4) needs you to pick the Runpod account.** `orch doctor` fails for every project on this
-  coordinator, not just this one: "network volume 2we3auziu3 doesn't exist on this account". The cause is that the
-  `RUNPOD_API_KEY` in the shared `/workspace/.env` belongs to an account that doesn't hold this coordinator's volumes
-  (its volume list has 38 others, none of them `2we3auziu3`). `runpodctl`'s own config uses a different key, and that
-  one does see the coordinator pod. I didn't swap keys between configs, because which account pays for GPUs is your
-  call. To unblock, put the key of the account that owns volume `2we3auziu3` into `/workspace/swarm-cavity/.env` as
-  `RUNPOD_API_KEY`, then `cd /workspace/swarm-cavity && orch doctor` should go green. Exps 1–3 use only the Anthropic
-  API and aren't blocked.
+Nothing.

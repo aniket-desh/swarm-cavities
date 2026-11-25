@@ -1,0 +1,140 @@
+{
+ "cellset": "pilot",
+ "tag": "pilot-20261125",
+ "cap": 6.0,
+ "cells": [
+  {
+   "N": 64,
+   "T": 10,
+   "mode": "sync",
+   "wording": "inverted",
+   "K": 2,
+   "p_neg": 0.5,
+   "gamma": -1.0,
+   "graph": 900,
+   "graph_log": {
+    "N": 64,
+    "P": 1,
+    "gamma_all": -1.0,
+    "mean_in_degree": 2.0,
+    "in_degree_min": 2,
+    "in_degree_max": 2,
+    "out_degree_std": 0.0,
+    "recip_per_agent_min": 2,
+    "recip_per_agent_max": 2
+   },
+   "truth": 1
+  },
+  {
+   "N": 64,
+   "T": 10,
+   "mode": "sync",
+   "wording": "inverted",
+   "K": 2,
+   "p_neg": 0.5,
+   "gamma": 0.0,
+   "graph": 900,
+   "graph_log": {
+    "N": 64,
+    "P": 1,
+    "gamma_all": 0.0,
+    "mean_in_degree": 2.0,
+    "in_degree_min": 2,
+    "in_degree_max": 2,
+    "out_degree_std": 1.14564392373896,
+    "recip_per_agent_min": 0,
+    "recip_per_agent_max": 0
+   },
+   "truth": 1
+  },
+  {
+   "N": 64,
+   "T": 10,
+   "mode": "sync",
+   "wording": "inverted",
+   "K": 2,
+   "p_neg": 0.5,
+   "gamma": 1.0,
+   "graph": 900,
+   "graph_log": {
+    "N": 64,
+    "P": 1,
+    "gamma_all": 1.0,
+    "mean_in_degree": 2.0,
+    "in_degree_min": 2,
+    "in_degree_max": 2,
+    "out_degree_std": 0.0,
+    "recip_per_agent_min": 2,
+    "recip_per_agent_max": 2
+   },
+   "truth": 1
+  },
+  {
+   "N": 64,
+   "T": 10,
+   "mode": "sync",
+   "wording": "inverted",
+   "K": 4,
+   "p_neg": 0.5,
+   "gamma": -1.0,
+   "graph": 900,
+   "graph_log": {
+    "N": 64,
+    "P": 1,
+    "gamma_all": -0.9999999999999998,
+    "mean_in_degree": 4.0,
+    "in_degree_min": 4,
+    "in_degree_max": 4,
+    "out_degree_std": 0.0,
+    "recip_per_agent_min": 4,
+    "recip_per_agent_max": 4
+   },
+   "truth": 1
+  },
+  {
+   "N": 64,
+   "T": 10,
+   "mode": "sync",
+   "wording": "inverted",
+   "K": 4,
+   "p_neg": 0.5,
+   "gamma": 0.0,
+   "graph": 900,
+   "graph_log": {
+    "N": 64,
+    "P": 1,
+    "gamma_all": 0.0,
+    "mean_in_degree": 4.0,
+    "in_degree_min": 4,
+    "in_degree_max": 4,
+    "out_degree_std": 2.143303524935281,
+    "recip_per_agent_min": 0,
+    "recip_per_agent_max": 0
+   },
+   "truth": 1
+  },
+  {
+   "N": 64,
+   "T": 10,
+   "mode": "sync",
+   "wording": "inverted",
+   "K": 4,
+   "p_neg": 0.5,
+   "gamma": 1.0,
+   "graph": 900,
+   "graph_log": {
+    "N": 64,
+    "P": 1,
+    "gamma_all": 0.9999999999999998,
+    "mean_in_degree": 4.0,
+    "in_degree_min": 4,
+    "in_degree_max": 4,
+    "out_degree_std": 0.0,
+    "recip_per_agent_min": 4,
+    "recip_per_agent_max": 4
+   },
+   "truth": 1
+  }
+ ],
+ "projection_usd": 3.2256
+}

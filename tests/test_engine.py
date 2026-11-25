@@ -75,6 +75,9 @@ def test_ledger_concurrent_appends(tmp_path):
     assert len({r["request_id"] for r in recs}) == n_threads * per_thread
     assert total_api_spend(path) == pytest.approx(0.001 * n_threads * per_thread)
     assert total_api_spend(path, f"{long_id}-3") == pytest.approx(0.001 * per_thread)
+    # prefix match: "-1*" covers -1 and -10..-15, an exact id covers only itself
+    assert total_api_spend(path, f"{long_id}-1*") == pytest.approx(0.001 * per_thread * 7)
+    assert total_api_spend(path, f"{long_id}-1") == pytest.approx(0.001 * per_thread)
 
 
 def test_ledger_skips_partial_line(tmp_path):

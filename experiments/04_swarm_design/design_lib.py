@@ -101,20 +101,8 @@ def simulate(N, K, gamma, p_neg, a_plus, a_minus, T=10, mode="sync", n_graphs=10
                                         + sig_xi * rng.standard_normal())
                     S[rep, t + 1] = s
             runs.append(S)
-            de = S[0] - S[1]
-            sl = slice(3, T + 1)
-            num = lambda k: np.sum(de[3:] * de[3 - k:T + 1 - k])
-            den = lambda k: np.sqrt(np.sum(de[3:] ** 2) * np.sum(de[3 - k:T + 1 - k] ** 2))
-            out["m"].append(S.mean((0, 2)))
-            out["Cd"].append((S**2).mean((0, 2)))
-            out["C2"].append(np.r_[np.nan, np.nan, (S[:, 2:] * S[:, :-2]).mean((0, 2))])
-            out["C0"].append((S * S[:, :1]).mean((0, 2)))
-            out["q"].append((S[0] * S[1]).mean(1))
-            out["D"].append((de**2).mean(1))
-            out["c1"].append(num(1) / den(1)); out["c2"].append(num(2) / den(2))
-            out["P_delta"].append(np.sum((de[3:] - de[1:-2]) ** 2) / np.sum((de[3:] - de[2:-1]) ** 2))
-            A1 = np.mean((S[:, 3:] - S[:, 2:-1]) ** 2); A2 = np.mean((S[:, 3:] - S[:, 1:-2]) ** 2)
-            out["P_raw"].append(A2 / A1)
+            for k, v in thermal_observables(S).items():
+                out[k].append(v)
             # linear stability of the noise-free map at the replica-mean final state: delta s' = D (W + kappa) delta s
             d = 1 - np.clip(S[:, -1].mean(0), -CLIP, CLIP) ** 2
             ev = np.linalg.eigvals(d[:, None] * (W + kap * np.eye(N)))
@@ -122,11 +110,35 @@ def simulate(N, K, gamma, p_neg, a_plus, a_minus, T=10, mode="sync", n_graphs=10
             out["radius"].append(abs(top)); out["angle"].append(abs(np.degrees(np.angle(top))))
             out["d_mean"].append(d.mean())
             out["mean_mode"].append(d.mean() * (kap + W.sum(1).mean()))
-        for a in range(graphs_per_game):                              # overlap excess against the other graphs
-            others = [np.mean([(runs[a][x] * runs[b][y]).mean(1) for x in (0, 1) for y in (0, 1)], 0)
-                      for b in range(graphs_per_game) if b != a]
-            out["dq"].append((runs[a][0] * runs[a][1]).mean(1) - np.mean(others, 0))
+        out["dq"].extend(overlap_excess(runs))
     return {k: np.array(v) for k, v in out.items()}
+
+
+def thermal_observables(S):
+    """Per-graph observables of one run S, shaped (2 replicas, T+1 rounds, N agents), in the definitions of the
+    module docstring (theory/claim2.md section 5). Shared with the analysis of the real swarms
+    (experiments/05_swarm/analyze.py), so predictions and data use identical formulas. NaN-free input assumed;
+    the swarm analysis fills missing beliefs with the carried-forward state first."""
+    T = S.shape[1] - 1
+    de = S[0] - S[1]
+    num = lambda k: np.sum(de[3:] * de[3 - k:T + 1 - k])
+    den = lambda k: np.sqrt(np.sum(de[3:] ** 2) * np.sum(de[3 - k:T + 1 - k] ** 2))
+    A1 = np.mean((S[:, 3:] - S[:, 2:-1]) ** 2); A2 = np.mean((S[:, 3:] - S[:, 1:-2]) ** 2)
+    return dict(m=S.mean((0, 2)), Cd=(S**2).mean((0, 2)),
+                C2=np.r_[np.nan, np.nan, (S[:, 2:] * S[:, :-2]).mean((0, 2))], C0=(S * S[:, :1]).mean((0, 2)),
+                q=(S[0] * S[1]).mean(1), D=(de**2).mean(1), c1=num(1) / den(1), c2=num(2) / den(2),
+                P_delta=np.sum((de[3:] - de[1:-2]) ** 2) / np.sum((de[3:] - de[2:-1]) ** 2), P_raw=A2 / A1)
+
+
+def overlap_excess(runs):
+    """dq(t) for each run in `runs` (runs sharing one evidence draw, each on its own graph, each (2, T+1, N)):
+    the replica overlap on the same graph minus the mean cross-overlap with the runs on the other graphs."""
+    out = []
+    for a in range(len(runs)):
+        others = [np.mean([(runs[a][x] * runs[b][y]).mean(1) for x in (0, 1) for y in (0, 1)], 0)
+                  for b in range(len(runs)) if b != a]
+        out.append((runs[a][0] * runs[a][1]).mean(1) - np.mean(others, 0))
+    return out
 
 
 def _cond_gauss(Kc, past, z):
