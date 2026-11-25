@@ -1,6 +1,6 @@
 # Theory for swarm-cavity: the current statement
 
-Last updated 2026-11-25 (evening; analyst calibration no-go added). This file is the one place to read for the state of the theory. The derivations
+Last updated 2026-11-25 (night; kick stage 1 result and analyst calibrations added). This file is the one place to read for the state of the theory. The derivations
 live in the notes it links (`claim1.md` … `claim6.md`, `quiet_regime.md`), each of which opens with its verdict and
 names the scripts in `theory/checks/` that verify its formulas.
 
@@ -10,8 +10,10 @@ messages are used (real messages couple 25–50% more weakly than the templates 
 inverted disagree channel nearly switches off), and they anchor on their own last answer whenever their inbox brings
 nothing new. Both push every Haiku cell into a quiet regime (Λ ≈ 0.45 at best) where the oscillation and
 amplification signatures of claims 2–3 can't be measured. What still isolates the cavity-specific structure is the
-reaction term itself, which a kick-and-echo experiment measures directly; its predictions are frozen and stage 1 is
-being set up. The open-weight track (Qwen3.5-9B) is the route to stronger coupling and large N: in the Physics of
+reaction term itself, which a kick-and-echo experiment measures directly. Stage 1 of that experiment found it, with
+the predicted sign structure: on identical graphs, the wording that makes disagree ties repel turns the echo through
+discordant reciprocated ties negative, and the wording that leaves them attracting turns it positive
+(`experiments/07_kick/RESULT.md`). The open-weight track (Qwen3.5-9B) is the route to stronger coupling and large N: in the Physics of
 Agents data that model sits beyond the stability boundary at round 0, though with binary votes rather than stated
 probabilities.
 
@@ -55,7 +57,7 @@ law +0.07 ± 0.07) and the heavy-tailed noise.
 
 | claim | verdict from the derivations | tested by data so far |
 |---|---|---|
-| 1. DMFT reduction (`claim1.md`) | **Holds with three corrections**: full ⟨ss⟩ noise covariance, a two-round reaction term ΣR(t,t′)s(t′), the neighbour population's kernel; matches an N = 4000 simulation to 0.004. | **Scalar-field premise tested and revised**: a two-channel field is needed (Haiku, Physics of Agents). The reaction term is **untested**; kick and echo (section 4) tests it. Zero-shot DMFT curves are no longer zero-shot, since the agent law was tuned on the pilot. |
+| 1. DMFT reduction (`claim1.md`) | **Holds with three corrections**: full ⟨ss⟩ noise covariance, a two-round reaction term ΣR(t,t′)s(t′), the neighbour population's kernel; matches an N = 4000 simulation to 0.004. | **Scalar-field premise tested and revised**: a two-channel field is needed (Haiku, Physics of Agents). The reaction term is **confirmed in sign structure** by kick stage 1 (section 4): echoes of the predicted sign in all four \|γ\| = 1 cells at 4.9–10.5 s.e., exactly zero at γ = 0, and composed from single-link responses as the reaction term assumes. Zero-shot DMFT curves are no longer zero-shot, since the agent law was tuned on the pilot. |
 | 2. Sharp γ_c into frozen polarization (`claim2.md`) | **False as stated.** Boundary d·g(1+\|γ\|) = 1 for memoryless agents; γ < 0 destabilizes too (period 4); no freezing for γ < 1. | **Unmeasurable for Haiku.** Anchoring moves the γ = −1 boundary to d·g = ½√((1+ρ)/(1−ρ)) ≈ 1.19 at ρ ≈ 0.7 and leaves the static one in place (`quiet_regime.md` 2.2); real gains give d·g ≈ 0.4. P_δ = (1−c2)/(1−c1) for any stationary sequence and carries no period information. Period-2 flicker as a synchronous-update effect is **confirmed** in the Physics of Agents data. |
 | 3. Two-site cavity and PR (`claim3.md`) | **Theory holds; safety claim false**: PR doesn't fall before a zealot flip, N·Var(m_B) rises 5–20×. | **Untested.** Needs a model and setting with a tipping point (section 5). |
 | 4. Zealot threshold and hysteresis (`claim4.md`) | Threshold and hysteresis already known (De Marzo et al. 2026); **the spec's γ effect has the wrong sign**: γ > 0 widens the loop. | **Untested.** Hysteresis needs bistability (steep conformity); Haiku's response is not steep, so it likely has none in this game. |
@@ -93,8 +95,21 @@ partners' measured first-order changes, weighted by slope factors, eq. (K5)) equ
 equals the open-path control F_open unless agents discount their own returning influence, and falls to about 0.75
 (K = 2) or 0.53 (K = 4) under anchoring. Status: the machinery is verified (exact zero at γ = 0 and the predicted
 sign on a mock; only downstream agents are paid), a 384-twin pilot on the pilot graphs passed every methods check,
-and stage 1 (both wordings, K = 2, γ ∈ {−1, 0, +1}, about 2,000 twins per cell, about $40) is defined in
-`experiments/07_kick/DESIGN.md`. **No echo has been compared with these predictions yet.**
+and stage 1 ran as frozen in `experiments/07_kick/DESIGN.md` (both wordings, K = 2, γ ∈ {−1, 0, +1}, 9,048 twins,
+$45.9). **Stage 1 result** (`experiments/07_kick/RESULT.md`):
+
+- *Sign structure confirmed.* E = −0.0146 ± 0.0030 (inverted, γ = −1), +0.0137 ± 0.0018 (label, γ = −1), +0.0567 ±
+  0.0054 (inverted, γ = +1), +0.0151 ± 0.0020 (label, γ = +1), exactly 0 at γ = 0; sham controls show no resampling
+  offset.
+- *Composition holds:* the factorization slope matched to open paths differs by +0.05 ± 0.05 (predicted +0.06), so the
+  reaction term can be computed from population responses.
+- *Linear response over anchoring, marginally:* pooled F = 0.86 ± 0.06 and F_open = 0.88 ± 0.04 against 0.98/0.945
+  (linear) and 0.67/0.63 (anchoring).
+- *Magnitudes:* the inverted echoes match the linear prediction; the label echoes are about half, because label
+  readers' single-message responses are half the transfer-check gains, and composing the measured responses
+  reproduces them.
+- *Unplanned finding:* agents under-react to inputs that confirm their lean (slope ≈ 0.6) and react fully to inputs
+  that contradict it (≈ 1.0–1.1), on closed and open paths alike, which a stated-confidence ceiling would produce.
 
 ## 5. What the open-weight track is for
 
