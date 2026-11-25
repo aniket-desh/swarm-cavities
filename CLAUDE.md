@@ -7,14 +7,13 @@ belief dynamics with asymmetric couplings and context-window memory, then test t
 
 ## Environment
 
-- **The working copy is `/workspace-global/swarm-cavity/repo`** (moved 2026-11-25 06:20 UTC because the /workspace
-  network volume ran out of quota and writes there fail). `/workspace/swarm-cavity` is a stale copy that holds the
-  real `.env` (the clone's `.env` is a symlink to it) and the `orch.toml` that orch commands need. GitHub `main` is
-  the source of truth. Run code from the clone so the ledger lands in the clone's `budget/`.
-- The network volume is near its quota, so the venv and uv cache live on the container disk. Before any `uv` command:
-  `source scripts/env.sh` (sets `UV_CACHE_DIR=/root/.cache/uv-sc`, `UV_PROJECT_ENVIRONMENT=/root/venvs/swarm-cavity`).
-  If the container restarted, `uv sync` rebuilds it. Don't write large files under `/workspace`; put bulky outputs
-  (activations, transcripts beyond a few hundred MB) on `/workspace-global` or the worker.
+- **The working copy is `/workspace/swarm-cavity`.** It ran from `/workspace-global/swarm-cavity/repo` between
+  06:20 and 14:20 UTC on 2026-11-25 while the network volume was full; the volume is now 1 TB and that clone is
+  stale (see its `STALE_COPY.md`). Run code here so the ledger lands in this `budget/`.
+- The venv and uv cache live on the container disk. Before any `uv` command: `source scripts/env.sh` (sets
+  `UV_CACHE_DIR=/root/.cache/uv-sc`, `UV_PROJECT_ENVIRONMENT=/root/venvs/swarm-cavity`). If the container restarted,
+  `uv sync` rebuilds it. Bulky outputs (activations, transcripts beyond a few GB) still go on `/workspace-global` or
+  the worker.
 - Run orch as `cd /workspace/swarm-cavity && orch ...`. Never touch `/workspace/rr-trial` or other projects.
 - `.env` holds `ANTHROPIC_API_KEY`. Load it inside Python (`dotenv.load_dotenv()`); a hook blocks shell commands that
   both read `.env` and call a non-Runpod API.
