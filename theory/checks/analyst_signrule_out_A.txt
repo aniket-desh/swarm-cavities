@@ -1,0 +1,45 @@
+Part A. Calibration cells, refitted from results/analyst-calib2-20261125 (1,000 base probes per cell, K = 16,
+'max' wording). M1: x = a+ f_A - a- f_D + nu xi + a0 h0 + kappa sigma_own + c. M2 = M1 + b_LA L_A + b_LD L_D,
+L = sum_group (s_j - sigma_j)/16 with s_j the belief of the pilot analyst who wrote the note.
+M2A = M1 + b_LA L_A (ally leak only). Bootstrap over base probes, B = 400, the same resample for the three
+models of a cell. s.e. in brackets.
+
+  P0 M1: a_plus +1.735 (0.040)  a_minus -0.146 (0.037)  nu_05 +0.299 (0.022)  nu_1 +0.456 (0.019)  a0 +0.090 (0.012)  kappa -0.095 (0.012)  c -0.637 (0.012)  resid_sd +0.396 (0.010)
+  P0 M2: a_plus +2.089 (0.097)  a_minus -0.530 (0.085)  nu_05 +0.297 (0.022)  nu_1 +0.463 (0.018)  a0 +0.096 (0.012)  kappa -0.097 (0.012)  c -0.371 (0.046)  b_LA +0.426 (0.098)  b_LD +0.468 (0.100)  resid_sd +0.389 (0.010)
+  P0 M2A: a_plus +1.995 (0.099)  a_minus -0.143 (0.038)  nu_05 +0.297 (0.022)  nu_1 +0.458 (0.019)  a0 +0.092 (0.012)  kappa -0.097 (0.012)  c -0.541 (0.034)  b_LA +0.314 (0.101)  resid_sd +0.394 (0.010)
+     largest difference of the M1 estimates from experiments/08b summary.json: 0.0e+00
+     M2 as pulls: ally call uA = +1.663, ally belief vA = +0.426, faded call uD = +0.062, faded belief vD = +0.468
+  P1 M1: a_plus +1.583 (0.040)  a_minus -0.109 (0.033)  nu_05 +0.269 (0.021)  nu_1 +0.411 (0.019)  a0 +0.093 (0.012)  kappa -0.167 (0.012)  c -0.382 (0.011)  resid_sd +0.385 (0.011)
+  P1 M2: a_plus +1.921 (0.102)  a_minus -0.451 (0.081)  nu_05 +0.267 (0.021)  nu_1 +0.417 (0.018)  a0 +0.100 (0.012)  kappa -0.168 (0.011)  c -0.136 (0.047)  b_LA +0.408 (0.101)  b_LD +0.417 (0.094)  resid_sd +0.380 (0.011)
+  P1 M2A: a_plus +1.838 (0.102)  a_minus -0.106 (0.034)  nu_05 +0.267 (0.021)  nu_1 +0.412 (0.019)  a0 +0.096 (0.012)  kappa -0.169 (0.011)  c -0.289 (0.035)  b_LA +0.308 (0.102)  resid_sd +0.383 (0.011)
+     largest difference of the M1 estimates from experiments/08b summary.json: 0.0e+00
+     M2 as pulls: ally call uA = +1.513, ally belief vA = +0.408, faded call uD = +0.034, faded belief vD = +0.417
+  T0 M1: a_plus +1.652 (0.041)  a_minus +0.098 (0.033)  nu_05 +0.390 (0.019)  nu_1 +0.575 (0.020)  a0 +0.138 (0.012)  kappa +0.044 (0.012)  c -0.486 (0.012)  resid_sd +0.394 (0.010)
+  T0 M2: a_plus +1.696 (0.107)  a_minus -0.083 (0.086)  nu_05 +0.390 (0.019)  nu_1 +0.578 (0.020)  a0 +0.140 (0.012)  kappa +0.044 (0.012)  c -0.406 (0.051)  b_LA +0.053 (0.117)  b_LD +0.219 (0.094)  resid_sd +0.393 (0.010)
+  T0 M2A: a_plus +1.652 (0.106)  a_minus +0.098 (0.033)  nu_05 +0.390 (0.019)  nu_1 +0.575 (0.020)  a0 +0.138 (0.012)  kappa +0.044 (0.012)  c -0.486 (0.038)  b_LA +0.000 (0.116)  resid_sd +0.394 (0.010)
+     largest difference of the M1 estimates from experiments/08b summary.json: 0.0e+00
+     M2 as pulls: ally call uA = +1.643, ally belief vA = +0.053, faded call uD = -0.135, faded belief vD = +0.219
+  F3 M1: a_plus +1.943 (0.041)  a_minus -0.171 (0.038)  nu_05 +0.257 (0.020)  nu_1 +0.406 (0.021)  a0 +0.085 (0.012)  kappa -0.043 (0.012)  c -0.755 (0.012)  resid_sd +0.393 (0.010)
+  F3 M2: a_plus +2.350 (0.101)  a_minus -0.364 (0.085)  nu_05 +0.254 (0.019)  nu_1 +0.411 (0.020)  a0 +0.091 (0.012)  kappa -0.045 (0.012)  c -0.536 (0.046)  b_LA +0.491 (0.104)  b_LD +0.239 (0.097)  resid_sd +0.388 (0.010)
+  F3 M2A: a_plus +2.302 (0.100)  a_minus -0.167 (0.038)  nu_05 +0.254 (0.020)  nu_1 +0.408 (0.021)  a0 +0.089 (0.012)  kappa -0.046 (0.012)  c -0.623 (0.035)  b_LA +0.434 (0.104)  resid_sd +0.389 (0.010)
+     largest difference of the M1 estimates from experiments/08b summary.json: 0.0e+00
+     M2 as pulls: ally call uA = +1.859, ally belief vA = +0.491, faded call uD = +0.126, faded belief vD = +0.239
+
+  T0 (template notes: no sender belief in the text) and F3 (faded notes not shown) are placebos for the belief
+  pulls: a nonzero b there is not a response to note content.
+
+  Identification of the belief pulls. corr(f, L) in the probe design, and M2 with the group size (n_allies - 8)/16
+  added as a regressor (L_D carries the number of faded colleagues, because every pool sender is bearish):
+    P0: corr(f_A, L_A) -0.91  corr(f_D, L_D) -0.90   b_LA +0.532 (0.114)  b_LD +0.366 (0.119)  n_allies term +0.266 (0.137)  c -0.369 (0.044)
+    P1: corr(f_A, L_A) -0.91  corr(f_D, L_D) -0.90   b_LA +0.513 (0.122)  b_LD +0.317 (0.111)  n_allies term +0.262 (0.137)  c -0.135 (0.045)
+    T0: corr(f_A, L_A) -0.91  corr(f_D, L_D) -0.90   b_LA +0.096 (0.138)  b_LD +0.177 (0.103)  n_allies term +0.109 (0.140)  c -0.406 (0.050)
+    F3: corr(f_A, L_A) -0.91  corr(f_D, L_D) -0.90   b_LA +0.544 (0.113)  b_LD +0.188 (0.112)  n_allies term +0.133 (0.138)  c -0.535 (0.044)
+
+  Residual of the in-swarm M1 regression in the pilot (results/analyst-pilot-20261125-*, N = 256, T = 10, mild
+  wording, x on f_A, f_D, news, note, own call): s.d., share of its variance that is a per-analyst constant
+  (variance of analyst means minus the within-analyst variance / T), and lag-1 autocorrelation.
+    mutual        s.d. 0.335  per-analyst share 0.05  lag-1 autocorrelation +0.077
+    oneway        s.d. 0.341  per-analyst share 0.03  lag-1 autocorrelation +0.025
+    antagonistic  s.d. 0.329  per-analyst share 0.04  lag-1 autocorrelation +0.087
+
+  Note pool (pilot, calls sampled from the raw belief): 959 BUY notes written at mean raw belief -0.517, 6721 SELL notes at -0.785.

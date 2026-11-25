@@ -1,0 +1,38 @@
+Part S. Sizing, cell P0. Run-to-run s.d. of each statistic at N = 256, T = 20, rounds 5..20, from 300 runs
+(R = 2) and 150 runs (R = 4). Entries: mean [s.d. of one run].
+
+  M1 mutual        R = 2: rho1 -0.0740 [0.0065]  rho2 +0.0626 [0.0066]  X2 +0.0571 [0.0066]  c2 +0.0972 [0.0205]  Xc2 +0.0818 [0.0206]  m -0.0020 [0.0269]  q +0.2264 [0.0029]
+  M1 mutual        R = 4: rho1 -0.0740 [0.0046]  rho2 +0.0626 [0.0041]  X2 +0.0571 [0.0042]  c2 +0.0967 [0.0144]  Xc2 +0.0820 [0.0146]  m +0.0013 [0.0204]  q +0.2261 [0.0020]
+  M1 oneway        R = 2: rho1 -0.0746 [0.0060]  rho2 +0.0051 [0.0060]  X2 -0.0005 [0.0059]  c2 +0.0138 [0.0214]  Xc2 +0.0058 [0.0219]  m -0.0006 [0.0243]  q +0.2230 [0.0026]
+  M1 oneway        R = 4: rho1 -0.0735 [0.0043]  rho2 +0.0052 [0.0044]  X2 -0.0002 [0.0044]  c2 +0.0154 [0.0136]  Xc2 +0.0074 [0.0142]  m -0.0011 [0.0232]  q +0.2230 [0.0020]
+  M1 antagonistic  R = 2: rho1 -0.0739 [0.0061]  rho2 +0.0151 [0.0066]  X2 +0.0096 [0.0066]  c2 +0.0288 [0.0196]  Xc2 +0.0198 [0.0199]  m +0.0008 [0.0247]  q +0.2230 [0.0026]
+  M1 antagonistic  R = 4: rho1 -0.0745 [0.0042]  rho2 +0.0151 [0.0044]  X2 +0.0096 [0.0043]  c2 +0.0287 [0.0137]  Xc2 +0.0198 [0.0138]  m -0.0002 [0.0208]  q +0.2230 [0.0021]
+  M2 mutual        R = 2: rho1 -0.0642 [0.0065]  rho2 +0.0581 [0.0072]  X2 +0.0539 [0.0070]  c2 +0.1311 [0.0311]  Xc2 +0.1212 [0.0333]  m +0.3747 [0.0465]  q +0.3223 [0.0231]
+  M2 mutual        R = 4: rho1 -0.0642 [0.0047]  rho2 +0.0577 [0.0048]  X2 +0.0535 [0.0047]  c2 +0.1296 [0.0236]  Xc2 +0.1207 [0.0262]  m +0.3820 [0.0386]  q +0.3258 [0.0191]
+  M2 oneway        R = 2: rho1 -0.0665 [0.0057]  rho2 +0.0043 [0.0060]  X2 -0.0002 [0.0060]  c2 +0.0323 [0.0356]  Xc2 +0.0273 [0.0371]  m +0.3519 [0.0497]  q +0.3074 [0.0231]
+  M2 oneway        R = 4: rho1 -0.0658 [0.0047]  rho2 +0.0044 [0.0046]  X2 +0.0000 [0.0046]  c2 +0.0313 [0.0273]  Xc2 +0.0268 [0.0286]  m +0.3494 [0.0481]  q +0.3066 [0.0222]
+  M2 antagonistic  R = 2: rho1 -0.0674 [0.0060]  rho2 +0.0215 [0.0063]  X2 +0.0170 [0.0063]  c2 +0.0779 [0.0310]  Xc2 +0.0711 [0.0329]  m +0.3217 [0.0481]  q +0.2937 [0.0205]
+  M2 antagonistic  R = 4: rho1 -0.0673 [0.0040]  rho2 +0.0222 [0.0041]  X2 +0.0176 [0.0040]  c2 +0.0758 [0.0234]  Xc2 +0.0692 [0.0256]  m +0.3214 [0.0434]  q +0.2939 [0.0183]
+
+Comparisons in units of their s.e., for a split (mutual, one-way, antagonistic) of runs at R = 2. Difference of
+world means; s.e. = sqrt(sd_1^2 / n_1 + sd_2^2 / n_2). Law M1 / law M2.
+  split (4, 4, 4): X2 mut-one 12.9 / 11.7   X2 ant-one 2.3 / 3.9   X2 mut-ant 10.1 / 7.8   Xc2 mut-one 5.1 / 3.8   Xc2 ant-one 0.9 / 1.8   Xc2 mut-ant 4.3 / 2.1   s.e. of one-way X2: 0.0030
+  split (3, 4, 5): X2 mut-one 11.9 / 10.7   X2 ant-one 2.4 / 4.2   X2 mut-ant 9.8 / 7.5   Xc2 mut-one 4.7 / 3.5   Xc2 ant-one 1.0 / 1.8   Xc2 mut-ant 4.2 / 2.1   s.e. of one-way X2: 0.0030
+  split (2, 5, 5): X2 mut-one 10.7 / 9.6   X2 ant-one 2.6 / 4.4   X2 mut-ant 8.6 / 6.5   Xc2 mut-one 4.3 / 3.3   Xc2 ant-one 1.1 / 2.0   Xc2 mut-ant 3.6 / 1.8   s.e. of one-way X2: 0.0027
+  split (2, 4, 6): X2 mut-one 10.4 / 9.3   X2 ant-one 2.5 / 4.3   X2 mut-ant 8.8 / 6.6   Xc2 mut-one 4.2 / 3.1   Xc2 ant-one 1.0 / 1.9   Xc2 mut-ant 3.7 / 1.8   s.e. of one-way X2: 0.0030
+  split (1, 5, 6): X2 mut-one 8.1 / 7.2   X2 ant-one 2.7 / 4.6   X2 mut-ant 6.6 / 4.9   Xc2 mut-one 3.3 / 2.5   Xc2 ant-one 1.1 / 2.0   Xc2 mut-ant 2.8 / 1.4   s.e. of one-way X2: 0.0027
+
+The same with R = 4 replicas on every graph (twice the calls per run), split (2, 5, 5):
+  X2 mutual-oneway: 16.1 / 13.7
+  X2 antagonistic-oneway: 3.6 / 6.4
+  Xc2 mutual-oneway: 6.1 / 4.2
+  Xc2 antagonistic-oneway: 1.4 / 2.5
+
+Asynchronous control (analyst_lib.simulate, mode 'async'; calls-only law, residual and news as one white field):
+echo function rho_1..rho_3, 24 runs per world, mean [s.d. of one run]; and the synchronous values on the same law.
+  async mutual        rho1 -0.0299 [0.0048]  rho2 +0.0168 [0.0052]  rho3 +0.0001 [0.0053]
+  async oneway        rho1 -0.0729 [0.0054]  rho2 +0.0076 [0.0066]  rho3 -0.0012 [0.0044]
+  async antagonistic  rho1 -0.0649 [0.0057]  rho2 +0.0075 [0.0064]  rho3 -0.0028 [0.0044]
+  sync  mutual        rho1 -0.0737 [0.0071]  rho2 +0.0634 [0.0067]  rho3 -0.0131 [0.0053]
+  sync  oneway        rho1 -0.0736 [0.0065]  rho2 +0.0069 [0.0052]  rho3 +0.0011 [0.0049]
+  sync  antagonistic  rho1 -0.0735 [0.0057]  rho2 +0.0158 [0.0054]  rho3 -0.0030 [0.0061]

@@ -657,3 +657,7 @@ expectations for $\rho_1$. Neither is assumed here.
 | kick echo, noise per twin | simulations (part D) |
 | sizing | simulations (part E) |
 | the law itself for Qwen | not tested; calibration and section 7 |
+
+**Update, 2026-11-25.** The calibrations (`experiments/08-analyst-calibration`, `08b-analyst-calibration-2`) found this
+design a no-go at $K=16$. The de-biased sign-rule test that replaces it, with its own frozen predictions, is in
+`analyst_signrule.md`. Nothing above was changed.

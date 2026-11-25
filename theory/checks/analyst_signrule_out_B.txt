@@ -1,0 +1,39 @@
+Part B. Code and identity checks (cell P0).
+
+B1. De-biased sampling is the frozen law (A1)-(A3) with bias c - chat. Calls-only law, no residual, same graph,
+    notes, news and uniforms; this script's simulate against analyst_lib.simulate(Agent(c = c - chat)).
+    mutual        chat = -0.637: max |s - s_ref| = 3.9e-16, calls that differ: 0 of 10752
+    mutual        chat = -0.537: max |s - s_ref| = 3.3e-16, calls that differ: 0 of 10752
+    oneway        chat = -0.637: max |s - s_ref| = 4.4e-16, calls that differ: 0 of 10752
+    oneway        chat = -0.537: max |s - s_ref| = 3.9e-16, calls that differ: 0 of 10752
+    antagonistic  chat = -0.637: max |s - s_ref| = 4.4e-16, calls that differ: 0 of 10752
+    antagonistic  chat = -0.537: max |s - s_ref| = 3.9e-16, calls that differ: 0 of 10752
+
+B2. Kick replay against analyst_lib.kick_twins (calls-only law, no residual): largest difference of the belief
+    changes at t0+1 and t0+2 over 256 twins.
+    mutual        2.8e-16, 3.3e-16
+    oneway        3.3e-16, 2.8e-16
+    antagonistic  3.3e-16, 2.8e-16
+
+B3. The echo function needs the sampling belief. zeta = sigma - tanh(X - chat) has zero mean given the past;
+    sigma - tanh X (the raw belief) does not. rho_1, rho_2, X_2 from 100 runs of the calls-only law, with the
+    estimator fed (a) the sampling belief, (b) the raw belief. Mean (s.e.).
+    mutual        (a) rho1 -0.0741 (0.0007)  rho2 +0.0640 (0.0006)  X2 +0.0584 (0.0006)
+                  (b) rho1 -0.0505 (0.0005)  rho2 +0.0422 (0.0004)  X2 +0.0396 (0.0004)
+    oneway        (a) rho1 -0.0736 (0.0007)  rho2 +0.0061 (0.0007)  X2 +0.0006 (0.0007)
+                  (b) rho1 -0.0491 (0.0005)  rho2 +0.0036 (0.0005)  X2 +0.0012 (0.0005)
+    antagonistic  (a) rho1 -0.0742 (0.0007)  rho2 +0.0160 (0.0006)  X2 +0.0104 (0.0006)
+                  (b) rho1 -0.0497 (0.0004)  rho2 +0.0103 (0.0004)  X2 +0.0079 (0.0004)
+
+B4. What the in-swarm regressions return (one-way world, 20 runs pooled by averaging the coefficients).
+    Law M1 simulated: the calls-only regression must return (a+, a-, kappa, c - chat). Law M2 simulated: the
+    regression with L_A, L_D must return the M2 coefficients, and the calls-only regression returns the
+    effective gains a_eff = u + v beta with beta the slope of the sender's raw belief on its call.
+    law M1: truth a+ +1.735 a- -0.146 kappa -0.095 b_LA +0.000 b_LD +0.000;  beta = 0.179
+       calls-only regression: a+ +1.739 a- -0.156 kappa -0.089 c +0.001   (u + v beta: a+ +1.735, a- -0.146)
+       with L_A, L_D:         a+ +1.733 a- -0.150 kappa -0.089 c -0.003 b_LA -0.008 b_LD -0.008
+       notes: mean raw belief of BUY writers -0.281, of SELL writers -0.639; share of BUY notes written at raw P(BUY) < 1/2: 0.75; share of SELL notes written at raw P(BUY) > 1/2: 0.04
+    law M2: truth a+ +2.089 a- -0.530 kappa -0.097 b_LA +0.426 b_LD +0.468;  beta = 0.217
+       calls-only regression: a+ +1.764 a- -0.189 kappa -0.088 c +0.172   (u + v beta: a+ +1.756, a- -0.164)
+       with L_A, L_D:         a+ +2.068 a- -0.533 kappa -0.089 c +0.264 b_LA +0.417 b_LD +0.465
+       notes: mean raw belief of BUY writers +0.027, of SELL writers -0.408; share of BUY notes written at raw P(BUY) < 1/2: 0.48; share of SELL notes written at raw P(BUY) > 1/2: 0.16
