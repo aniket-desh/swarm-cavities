@@ -96,7 +96,13 @@ async def main_async(a):
         rows = base_rows(ROOT / "results" / f"{a.base_tag}-{cell_id(c)}")
         if any((r, c["T"]) not in rows for r in range(REPLICAS)):
             sys.exit(f"base run {cell_id(c)} is incomplete; rerun the base command until every cell is done")
-    agents_for = lambda c: range(c["N"]) if a.agents == "all" else [int(x) for x in a.agents.split(",")]
+    def agents_for(c):
+        if a.agents == "all":
+            return range(c["N"])
+        if a.agents == "first-eligible":       # one-twin replay check: the first agent that passes the |s| filter
+            s0 = 2 * np.array(base_rows(ROOT / "results" / f"{a.base_tag}-{cell_id(c)}")[(a.rep[0], a.t0[0])]["p_carried"]) - 1
+            return [int(np.flatnonzero(np.abs(s0) >= a.min_abs_s)[0])]
+        return [int(x) for x in a.agents.split(",")]
     tot = sum(await asyncio.gather(*(kick_cell(c, a.base_tag, a.kick_tag, a.t0, a.rep, agents_for(c), guard, sem,
                                                a.min_abs_s, a.sham) for c in cs)))
     print(f"done: {tot} calls sent in {time.time() - t:.0f}s; spent ${guard.experiment_spent():.3f} on {a.kick_tag}",

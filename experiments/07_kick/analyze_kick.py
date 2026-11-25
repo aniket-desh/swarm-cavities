@@ -175,6 +175,8 @@ def analyze_cell(twins: list[tuple[dict, np.ndarray]], methods: bool) -> dict:
     if methods:
         return out
     Q = [q for q in real if abs(q["s0"]) >= S_MIN]
+    out["_Q"] = Q
+    out["_S"] = [q for q in Q_all if q["sham"] and abs(q["s0"]) >= S_MIN]
     out.update(n_used=len(Q), D2_mean=float(np.mean([q["D"] ** 2 for q in Q])),
                open_per_twin=float(np.mean([len(q["open"]) for q in Q])),
                frac_echo_exactly_zero=float(np.mean([q["y"] == 0 for q in Q])), **bootstrap(Q))
@@ -230,15 +232,47 @@ def load(tag: str) -> dict:
     return cells
 
 
-def pooled(rows: list[dict], key: str) -> tuple[float, float]:
-    """Inverse-variance pooled estimate over the |gamma| = 1 cells."""
-    v = [(r[key], r[key + "_se"]) for r in rows if abs(r["gamma"]) == 1 and np.isfinite(r.get(key, np.nan))
-         and r.get(key + "_se", 0) > 0]
-    if not v:
-        return np.nan, np.nan
-    x, s = np.array(v).T
-    wt = 1 / s**2
-    return float(np.sum(wt * x) / np.sum(wt)), float(1 / np.sqrt(np.sum(wt)))
+POOL_KEYS = ("F", "F_open", "F_open_matched", "F_minus_open_matched", "F_confirm", "F_open_confirm", "F_disconfirm",
+             "F_open_disconfirm", "rA_ratio")
+SHAM_KEYS = ("r_agree", "r_disagree", "echo")
+
+
+def _tercile_cuts(Q):
+    aD = np.abs([q["D"] for q in Q])
+    return (np.quantile(aD, 1 / 3), np.quantile(aD, 2 / 3))
+
+
+def joint_pooled(rows: list[dict], n_boot: int = 1000) -> dict:
+    """Pooled statistics over the |gamma| = 1 cells with a joint bootstrap: one resample of graph indices per draw,
+    applied to every cell, because cells with the same graph index share evidence (and the two wordings at a gamma
+    share the graph). Real-twin statistics are inverse-variance weighted with weights fixed from the per-cell s.e.;
+    sham slopes are pooled the same way."""
+    use = [r for r in rows if abs(r["gamma"]) == 1]
+    graphs = sorted({q["graph"] for r in use for q in r["_Q"]})
+    rng = np.random.default_rng(1)
+    draws = [np.bincount(rng.integers(len(graphs), size=len(graphs)), minlength=len(graphs)) for _ in range(n_boot)]
+
+    def pool(key, sets, se_key):
+        wts = np.array([1 / r[se_key] ** 2 if r.get(se_key, 0) > 0 else 0.0 for r in use])
+        if wts.sum() == 0:
+            return np.nan, np.nan
+        wts = wts / wts.sum()
+        cuts = [_tercile_cuts(Q) if Q else (0, 0) for Q in sets]
+        point = sum(wt * estimates(Q, np.ones(len(Q)), c)[key] for wt, Q, c in zip(wts, sets, cuts) if wt > 0)
+        bs = []
+        for d in draws:
+            v = 0.0
+            for wt, Q, c in zip(wts, sets, cuts):
+                if wt > 0:
+                    w = np.array([d[graphs.index(q["graph"])] for q in Q], float)
+                    v += wt * estimates(Q, w, c)[key]
+            bs.append(v)
+        return float(point), float(np.nanstd(bs, ddof=1))
+
+    out = {k: pool(k, [r["_Q"] for r in use], k + "_se") for k in POOL_KEYS}
+    if all(len(r["_S"]) >= 10 for r in use):
+        out.update({f"sham_{k}": pool(k, [r["_S"] for r in use], f"sham_{k}_se") for k in SHAM_KEYS})
+    return out
 
 
 if __name__ == "__main__":
@@ -271,8 +305,16 @@ if __name__ == "__main__":
                          f"({r['sham_echo_se']:.4f})")
         print(line, flush=True)
     if mode == "full":
-        pool = {k: pooled(rows, k) for k in ("F", "F_open", "F_open_matched", "F_minus_open_matched", "F_confirm",
-                                              "F_open_confirm", "F_disconfirm", "F_open_disconfirm", "rA_ratio")}
-        print("pooled over |gamma|=1 cells:", {k: (round(v[0], 3), round(v[1], 3)) for k, v in pool.items()})
-        (ROOT / "results" / f"{tag}-summary.json").write_text(json.dumps({"cells": rows, "pooled": pool}, indent=1,
+        pool = joint_pooled(rows)
+        print("pooled over |gamma|=1 cells (joint graph bootstrap):",
+              {k: (round(v[0], 4), round(v[1], 4)) for k, v in pool.items()})
+        # rule 0: pooled sham slopes, each tested at 3 s.e. (Bonferroni over the three slopes); on failure the pooled
+        # offset is subtracted from the real slope with its s.e. propagated
+        for k in SHAM_KEYS:
+            if f"sham_{k}" in pool:
+                off, se = pool[f"sham_{k}"]
+                print(f"  sham {k}: {off:+.4f} ({se:.4f}) -> {'PASS' if abs(off) < 3 * se else 'FAIL: subtract'}; "
+                      f"minimum detectable offset (3 s.e.) {3 * se:.4f}")
+        clean = [{k: v for k, v in r.items() if not k.startswith("_")} for r in rows]
+        (ROOT / "results" / f"{tag}-summary.json").write_text(json.dumps({"cells": clean, "pooled": pool}, indent=1,
                                                                           default=float))

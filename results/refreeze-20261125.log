@@ -1,0 +1,10 @@
+linear+noise|inverted|g-1    F 0.997(0.034) F_open 0.987(0.006) matched 0.969 F-matched +0.028(0.034) frac_conf 0.97
+linear+noise|inverted|g+1    F 1.009(0.012) F_open 0.918(0.012) matched 0.933 F-matched +0.076(0.012) frac_conf 0.00
+linear+noise|label|g-1       F 0.952(0.003) F_open 0.930(0.006) matched 0.911 F-matched +0.041(0.013) frac_conf 0.01
+linear+noise|label|g+1       F 0.958(0.023) F_open 0.946(0.010) matched 0.919 F-matched +0.038(0.009) frac_conf 0.00
+linear+noise pooled (unweighted mean of the four cells): {'F': 0.979, 'F_open': 0.945, 'F_open_matched': 0.933, 'F_minus_open_matched': 0.046}
+anchoring|inverted|g-1       F 0.648(0.020) F_open 0.737(0.022) matched 0.675 F-matched -0.027(0.020) frac_conf 0.87
+anchoring|inverted|g+1       F 0.795(0.021) F_open 0.653(0.021) matched 0.666 F-matched +0.129(0.017) frac_conf 0.01
+anchoring|label|g-1          F 0.597(0.002) F_open 0.584(0.025) matched 0.546 F-matched +0.051(0.010) frac_conf 0.06
+anchoring|label|g+1          F 0.650(0.016) F_open 0.544(0.034) matched 0.523 F-matched +0.127(0.053) frac_conf 0.03
+anchoring pooled (unweighted mean of the four cells): {'F': 0.672, 'F_open': 0.63, 'F_open_matched': 0.602, 'F_minus_open_matched': 0.07}
