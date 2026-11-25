@@ -200,6 +200,11 @@ in total, leaving room for Sonnet slices and reruns. Test 1 decides whether the 
   sweep at K = 16. Write-up must say that inverting faded calls tests the reaction term's sign structure given negative
   couplings, not whether agents act on distrust. Small K (2 or 4) deferred: a separate experiment with its own frozen
   sparse-graph predictions, only after checking back with the user. K = 4/2 gains dropped from the second calibration.
+  **Second calibration result** (`experiments/08b-analyst-calibration-2/RESULT.md`, A40 0.6 h ≈ $0.35, deleted): no-go.
+  Reversed fading backfires (a₋ = −0.52), the SELL bias is reduced but not removed (best c = −0.38), no resolvable echo
+  at the measured bias. Relayed with two options for the user: stop and report, or a de-biased sign-rule test (mutual
+  positive / one-way zero / "antagonistic" weakly positive since a₋ < 0; about $6 plus a re-freeze). Scenario pod
+  spend ≈ $1.35. Waiting for the user's decision.
 
 ## Next
 

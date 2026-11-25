@@ -132,9 +132,15 @@ inbox and whose call is sampled from its belief:
   weakly (ā = 0.72–1.24 over four trust wordings; Λ_mutual = 0.010–0.015) and follow their faded colleagues instead
   of fading them (a₋ = −0.12 to −0.27 in every wording), with a SELL bias of c ≈ −0.65 that saturates beliefs. The
   law's premise (A1) is not supported as written: readers partly average within the ally group instead of adding,
-  so ā doesn't grow with K. The pilot (N = 256) shows no echo in any world, consistent with the weak coupling. A
-  second calibration (polarity counterbalancing, experimenter-inverted fading, gains at K = 4 and 2) is running; a
-  small-K variant would leave the Gaussian-closure regime and need re-frozen predictions.
+  so ā doesn't grow with K. The pilot (N = 256) shows no echo in any world, consistent with the weak coupling.
+- **Second calibration (`experiments/08b-analyst-calibration-2/RESULT.md`): still no-go.** Showing faded calls
+  already reversed by the experimenter made analysts follow faded colleagues more (a₋ = −0.52), apparently because
+  readers undo the reversal and the faded notes argue for the original call; only template notes carrying nothing but
+  the call give a positive a₋ (+0.10). No prompt variant removes the SELL bias (best c = −0.38, listing SELL first).
+  With the measured bias no cell has a resolvable echo (best |Γ|(1−q)² = 0.024 against 0.03). With the bias removed
+  by the experimenter the mutual echo would be resolvable (ρ₂ ≈ +0.06 to +0.09), and since a₋ < 0 the theory's sign
+  rule predicts a positive echo in the "antagonistic" graphs; whether to run that test is the user's call. Small K is
+  deferred.
 
 ## Files
 
