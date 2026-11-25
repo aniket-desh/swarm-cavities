@@ -117,7 +117,7 @@ class Runner:
     def _finish(self, seed, round_t, req: AgentRequest, belief, reason, attempts, batch) -> dict:
         rec = {"experiment_id": self.experiment_id, "seed": seed, "round_t": round_t, "agent_id": req.agent_id,
                "status": "ok" if belief else "missing", "missing_reason": None if belief else reason,
-               "private_reasoning": None, "public_message": None, "calibrated_belief_prob": None,
+               "rationale": None, "public_message": None, "calibrated_belief_prob": None,
                "belief_vector": None, "model": self.cfg.model, "batch": batch, "n_attempts": len(attempts),
                "cost_usd": sum(a["cost_usd"] for a in attempts), "attempts": attempts, "ts": time.time()}
         if belief:

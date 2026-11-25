@@ -47,8 +47,12 @@ model itself, and replay determinism comes from caching transcripts, not from se
    `budget/alerts.log`.
 3. **Atomic checkpointing.** Every round of every trajectory is appended to JSONL keyed by
    `(experiment_id, seed, round_t, agent_id)` and flushed immediately, so a crash resumes without re-spending.
-4. **Structured beliefs.** Agents return JSON with `private_reasoning`, `public_message`, `calibrated_belief_prob`
-   (validated; a malformed reply is retried once, then recorded as missing, never regex-guessed).
+4. **Structured beliefs.** Agents return JSON with `rationale`, `public_message`, `calibrated_belief_prob`
+   (validated; a malformed reply is retried once, then recorded as missing, never regex-guessed). The spec's field
+   name `private_reasoning`, together with "never shown to anyone" wording, triggered `reasoning_extraction` refusals
+   on 6 of 12 Haiku 5.5 calls; `rationale` with neutral wording gave 0 of 12 (experiment_id refusal-ab-20261125-042342).
+   So never describe any output field or prompt text as private, hidden, or secret reasoning. Track the refusal rate
+   in every run, because a refusal is a missing belief.
 5. **Falsification first.** Every comparison plots DMFT prediction vs. empirical with residuals, and flags where the
    Gaussian cavity assumption fails (bimodal fields, heavy tails, small N). Negative results are reported plainly.
 

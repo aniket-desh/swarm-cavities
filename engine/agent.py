@@ -38,7 +38,7 @@ class AgentConfig:
 
 def belief_schema(q: int | None = None) -> dict:
     props = {
-        "private_reasoning": {"type": "string", "description": "Your private reasoning; never shown to peers."},
+        "rationale": {"type": "string", "description": "One or two sentences on why you hold your belief."},
         "public_message": {"type": "string", "description": "The message your peers will read next round."},
         "calibrated_belief_prob": {"type": "number",
                                    "description": "Your calibrated probability (0 to 1) that the claim is true."},
@@ -75,7 +75,7 @@ def validate_belief(obj, q: int | None) -> dict:
     keys = set(belief_schema(q)["properties"])
     if set(obj) != keys:
         raise ValueError(f"keys {sorted(obj)} != {sorted(keys)}")
-    for k in ("private_reasoning", "public_message"):
+    for k in ("rationale", "public_message"):
         if not isinstance(obj[k], str):
             raise ValueError(f"{k} is not a string")
     if not _is_prob(obj["calibrated_belief_prob"]):

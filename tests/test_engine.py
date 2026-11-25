@@ -116,7 +116,7 @@ def test_budget_project(tmp_path, capsys):
 # ---------------- fake client ----------------
 
 def belief_json(p, q=None):
-    d = {"private_reasoning": "r", "public_message": f"I think {p}", "calibrated_belief_prob": p}
+    d = {"rationale": "r", "public_message": f"I think {p}", "calibrated_belief_prob": p}
     if q:
         d["belief_vector"] = [1.0 / q] * q
     return json.dumps(d)
@@ -281,7 +281,7 @@ def test_malformed_retry_then_ok(tmp_path):
 @pytest.mark.parametrize("text,stop,reason,calls", [
     ("{not json", "end_turn", "malformed_json", 2),
     (belief_json(1.7), "end_turn", "invalid: calibrated_belief_prob=1.7 not in [0, 1]", 2),
-    ('{"private_reasoning": "trunc', "max_tokens", "max_tokens", 2),
+    ('{"rationale": "trunc', "max_tokens", "max_tokens", 2),
     ("", "refusal", "refusal", 1),
 ])
 def test_bad_output_recorded_missing(tmp_path, text, stop, reason, calls):
