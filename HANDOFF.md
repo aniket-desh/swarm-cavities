@@ -9,9 +9,9 @@ this afternoon's session resumed the plan at 14:20 and lost its editor connectio
 
 | | so far |
 |---|---|
-| Anthropic API (experiment code, `budget/ledger.jsonl`) | $6.94 (18,950 calls) |
+| Anthropic API (experiment code, `budget/ledger.jsonl`) | $8.88 (24,258 calls) |
 | Runpod pods (`orch spend`) | $0.00 (no worker has been launched) |
-| **total** | **$6.94** |
+| **total** | **$8.88** |
 
 ## Afternoon session (14:20–15:00 UTC): pilot and transfer check
 
@@ -146,6 +146,22 @@ in total, leaving room for Sonnet slices and reruns. Test 1 decides whether the 
     γ < 0 reachable.
   - The memory kernel is 0.50, 0.15, 0.08 at lags 1–3, carried by the agent's own message content.
   - At K=8 the swarm sits in the quiet regime (Λ ≈ 0.35 even at |γ|=1), so reciprocity effects there are O(g²) ≈ 0.05.
+
+## Evening session (tmux `sc-work`, from 15:00 UTC)
+
+- **Kick twins built and verified** (`envs/kick.py`, `tests/test_kick.py`, 7 tests): restoring a replica at round
+  t0, mirroring one agent's outgoing message as its readers see it, and replaying rounds t0+1, t0+2. On the mock
+  agent the echo is exactly zero without reciprocity and has the sign of J_ij J_ji with it; through the real Runner
+  (fake client) only downstream agents reach the API, and replays add no ledger lines. On a real Haiku base run one
+  twin sent exactly the kicked agent's 2 readers at t0+1 and the predicted 5 agents at t0+2 (7 calls, not 128).
+- **Kick pilot** (`experiments/07_kick/kick.py`, tag `kickpilot-20261125`, $1.93): every agent of replica 0 of the
+  six pilot runs kicked once at t0=5, 384 twins, 5,301 calls, 0 missing; methods checks clean (kicked agent never
+  changed at t0+1, no non-reader resent). 7 of 384 kicks were zero because the agent stood at p=0.50, which a mirror
+  can't move; confirmatory runs will skip such agents. Echo values not yet examined: they wait until the theory
+  agent's predictions are frozen (`experiments/07_kick/analyze_kick.py`, slopes through the origin, leave-one-out
+  factorization test, verified on synthetic twins).
+- Running in parallel: a Fable agent on `theory/quiet_regime.md` (revised surrogate, what still discriminates, echo
+  predictions) and an Opus agent on the GPU track (`experiments/06_qwen_*`).
 
 ## Next
 

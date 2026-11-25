@@ -1,0 +1,9 @@
+[budget] projection: 6144 calls x (in 400 + cache_read 1000 + cache_write 0, out 700) on claude-haiku-5-5 batch=False -> $2.46 ($0.00040/call); spent $6.95 of cap $1900.00
+[kickpilot-20261125-inverted-K2-pn0.5-g-1.0-N64-T10-sync-G900] 64 twins, 432 calls sent; spent so far $0.172
+[kickpilot-20261125-inverted-K2-pn0.5-g+0.0-N64-T10-sync-G900] 64 twins, 501 calls sent; spent so far $0.361
+[kickpilot-20261125-inverted-K2-pn0.5-g+1.0-N64-T10-sync-G900] 64 twins, 441 calls sent; spent so far $0.526
+[kickpilot-20261125-inverted-K4-pn0.5-g-1.0-N64-T10-sync-G900] 64 twins, 1278 calls sent; spent so far $0.992
+[kickpilot-20261125-inverted-K4-pn0.5-g+0.0-N64-T10-sync-G900] 64 twins, 1388 calls sent; spent so far $1.489
+[kickpilot-20261125-inverted-K4-pn0.5-g+1.0-N64-T10-sync-G900] 64 twins, 1261 calls sent; spent so far $1.929
+done: 5301 calls sent in 1180s; spent $1.929 on kickpilot-20261125
+KICKPILOT_EXIT 0
