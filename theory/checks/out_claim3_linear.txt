@@ -1,0 +1,54 @@
+
+homogeneous, gamma=0  : a=[0.8] sigma=[1.] g=1.0   (N=1000, 4 samples; cavity iterations 11)
+  t                [1, 2, 3, 5, 8, 11]
+  vbar   exact     [1.     1.6392 2.048  2.4768 2.6964 2.7538]
+         cavity    [1.     1.64   2.0496 2.4795 2.6996 2.7573]
+  psi    exact     [0.     0.4078 1.2649 3.1016 4.6452 5.1538]
+         cavity    [0.     0.4096 1.2694 3.1067 4.6473 5.1565]
+  PR/N   exact     [1.     0.868  0.7679 0.6638 0.6097 0.5949]
+         cavity    [1.     0.8678 0.7679 0.6643 0.6106 0.5959]
+  max relative error over t>=2:  psi 0.0044   PR/N 0.0016    (sample-to-sample sd of exact psi at t=11: 0.0934, relative 0.0181)
+
+homogeneous, gamma=0.6: a=[0.55] sigma=[1.] g=1.0   (N=1000, 4 samples; cavity iterations 11)
+  t                [1, 2, 3, 5, 8, 11]
+  vbar   exact     [1.     1.3015 1.4251 1.5314 1.5839 1.6008]
+         cavity    [1.     1.3025 1.4269 1.5343 1.5875 1.6045]
+  psi    exact     [0.     0.0909 0.222  0.4679 0.6871 0.7876]
+         cavity    [0.     0.0915 0.2237 0.4723 0.6933 0.7936]
+  PR/N   exact     [1.     0.9489 0.9013 0.8334 0.7847 0.7645]
+         cavity    [1.     0.9488 0.901  0.8329 0.7843 0.7644]
+  max relative error over t>=2:  psi 0.0096   PR/N 0.0006    (sample-to-sample sd of exact psi at t=11: 0.0063, relative 0.0080)
+
+homogeneous, gamma=-0.6: a=[0.55] sigma=[1.] g=1.0   (N=1000, 4 samples; cavity iterations 11)
+  t                [1, 2, 3, 5, 8, 11]
+  vbar   exact     [1.     1.302  1.426  1.5328 1.5856 1.6023]
+         cavity    [1.     1.3025 1.4269 1.5343 1.5875 1.6045]
+  psi    exact     [0.     0.0911 0.2223 0.4683 0.6855 0.7831]
+         cavity    [0.     0.0915 0.2237 0.4723 0.6933 0.7936]
+  PR/N   exact     [1.     0.9489 0.9013 0.8335 0.7854 0.766 ]
+         cavity    [1.     0.9488 0.901  0.8329 0.7843 0.7644]
+  max relative error over t>=2:  psi 0.0134   PR/N 0.0021    (sample-to-sample sd of exact psi at t=11: 0.0261, relative 0.0333)
+
+homogeneous, gamma=1  : a=[0.45] sigma=[1.] g=1.0   (N=1000, 4 samples; cavity iterations 10)
+  t                [1, 2, 3, 5, 8, 11]
+  vbar   exact     [1.     1.2022 1.2841 1.3489 1.3783 1.3871]
+         cavity    [1.     1.2025 1.2845 1.3496 1.379  1.3877]
+  psi    exact     [0.     0.0409 0.1072 0.2132 0.2953 0.3294]
+         cavity    [0.     0.041  0.1076 0.214  0.2959 0.3295]
+  PR/N   exact     [1.     0.9725 0.9388 0.895  0.8652 0.8536]
+         cavity    [1.     0.9724 0.9388 0.8949 0.8653 0.8539]
+  max relative error over t>=2:  psi 0.0043   PR/N 0.0004    (sample-to-sample sd of exact psi at t=11: 0.0053, relative 0.0162)
+
+two site types, gamma=0.5: a=[0.3 0.8] sigma=[1.  0.5] g=1.0   (N=1000, 4 samples; cavity iterations 11)
+  t                [1, 2, 3, 5, 8, 11]
+  vbar   exact     [0.625  0.8531 0.9455 1.0341 1.0911 1.1177]
+         cavity    [0.625  0.8531 0.9458 1.0348 1.092  1.1184]
+  psi    exact     [0.     0.0706 0.1233 0.2672 0.4708 0.6331]
+         cavity    [0.     0.0708 0.1239 0.2691 0.4726 0.6311]
+  PR/N   exact     [0.7353 0.8666 0.8623 0.797  0.7159 0.663 ]
+         cavity    [0.7353 0.8666 0.8623 0.7967 0.716  0.6646]
+  max relative error over t>=2:  psi 0.0068   PR/N 0.0025    (sample-to-sample sd of exact psi at t=11: 0.0217, relative 0.0343)
+
+frozen fraction 0.4, a=0.75, gamma=0.5, t=11:  vbar exact 1.6825 cavity 1.6811;  PR/N_b exact 0.7409 cavity 0.7429
+
+stationary gamma=0: PR/N exact 0.5888   1-(ag)^4 = 0.5904   vbar exact 2.7846  1/(1-(ag)^2) = 2.7778

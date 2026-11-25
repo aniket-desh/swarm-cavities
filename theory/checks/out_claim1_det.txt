@@ -1,0 +1,38 @@
+stochastic=False  N=4000  disorder samples=40  DMFT trajectories M=400000  T=10
+simulation SEM (max over t and population): m 0.0028  C(t,t) 0.0016  C(t,t-2) 0.0015
+
+population 0:  t = [ 2  4  6  8 10]
+  sim   m(t)       [0.3679 0.3743 0.3677 0.3603 0.3541]
+  correct                  m [0.364  0.3704 0.3642 0.3573 0.3518]
+  spec noise (connected)   m [0.3799 0.3998 0.3987 0.3936 0.3884]
+  spec time index          m [0.329  0.3635 0.3604 0.3551 0.3517]
+  no reaction              m [0.329  0.3248 0.3196 0.3158 0.3134]
+  sim   C(t,t)     [0.4763 0.5831 0.6286 0.6515 0.6645]
+  correct                  C [0.4737 0.5819 0.6278 0.6508 0.664 ]
+  spec noise (connected)   C [0.4611 0.5679 0.6154 0.6397 0.6539]
+  spec time index          C [0.4142 0.5484 0.6014 0.6312 0.6496]
+  no reaction              C [0.4142 0.4691 0.4913 0.5009 0.5053]
+
+population 1:  t = [ 2  4  6  8 10]
+  sim   m(t)       [-0.0456 -0.0363 -0.0336 -0.0358 -0.0375]
+  correct                  m [-0.0477 -0.0379 -0.0351 -0.0369 -0.0382]
+  spec noise (connected)   m [-0.0462 -0.0308 -0.0251 -0.0259 -0.0268]
+  spec time index          m [-0.0558 -0.0347 -0.0402 -0.0376 -0.0383]
+  no reaction              m [-0.0558 -0.0493 -0.0506 -0.052  -0.053 ]
+  sim   C(t,t)     [0.1808 0.2077 0.2203 0.2266 0.2301]
+  correct                  C [0.1817 0.2086 0.2213 0.2273 0.2309]
+  spec noise (connected)   C [0.1558 0.1799 0.1937 0.2011 0.2058]
+  spec time index          C [0.1866 0.2042 0.2141 0.2228 0.2273]
+  no reaction              C [0.1866 0.2093 0.2164 0.2193 0.2205]
+
+max abs error over t >= 1 and both populations   [m(t), C(t,t), C(t,t-2)]
+  correct                  0.0040  0.0026  0.0022
+  spec noise (connected)   0.0343  0.0281  0.0264
+  spec time index          0.0389  0.0621  0.0479
+  no reaction              0.0495  0.1593  0.1539
+
+response to a kick at t'=3: R(t, t') for t = t'+1 .. t'+5
+  pop 0 sim   [0.5003 0.0676 0.1293 0.06   0.0664]
+  pop 0 DMFT  [0.5018 0.065  0.129  0.0591 0.0661]
+  pop 1 sim   [ 0.713  -0.0022 -0.0496  0.0047  0.0187]
+  pop 1 DMFT  [ 0.7123  0.     -0.0508  0.0046  0.0192]

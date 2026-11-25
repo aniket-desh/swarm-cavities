@@ -1,0 +1,32 @@
+stochastic=True  N=4000  disorder samples=40  DMFT trajectories M=400000  T=10
+simulation SEM (max over t and population): m 0.0049  C(t,t) 0.0  C(t,t-2) 0.0044
+
+population 0:  t = [ 2  4  6  8 10]
+  sim   m(t)       [0.2751 0.289  0.2947 0.301  0.2976]
+  correct                  m [0.2704 0.2853 0.2929 0.2954 0.2924]
+  spec noise (connected)   m [0.2746 0.2933 0.3032 0.3081 0.3075]
+  spec time index          m [0.2477 0.2802 0.2902 0.292  0.2944]
+  no reaction              m [0.2477 0.2547 0.2575 0.257  0.2531]
+  sim   C(t,t)     [1. 1. 1. 1. 1.]
+  correct                  C [1. 1. 1. 1. 1.]
+  spec noise (connected)   C [1. 1. 1. 1. 1.]
+  spec time index          C [1. 1. 1. 1. 1.]
+  no reaction              C [1. 1. 1. 1. 1.]
+
+population 1:  t = [ 2  4  6  8 10]
+  sim   m(t)       [-0.0539 -0.0534 -0.048  -0.0522 -0.0495]
+  correct                  m [-0.0575 -0.055  -0.05   -0.0451 -0.048 ]
+  spec noise (connected)   m [-0.0569 -0.0537 -0.0478 -0.0428 -0.044 ]
+  spec time index          m [-0.062  -0.0542 -0.0523 -0.0466 -0.048 ]
+  no reaction              m [-0.062  -0.0614 -0.0595 -0.0563 -0.0592]
+  sim   C(t,t)     [1. 1. 1. 1. 1.]
+  correct                  C [1. 1. 1. 1. 1.]
+  spec noise (connected)   C [1. 1. 1. 1. 1.]
+  spec time index          C [1. 1. 1. 1. 1.]
+  no reaction              C [1. 1. 1. 1. 1.]
+
+max abs error over t >= 1 and both populations   [m(t), C(t,t), C(t,t-2)]
+  correct                  0.0072  0.0000  0.0045
+  spec noise (connected)   0.0106  0.0000  0.0179
+  spec time index          0.0274  0.0000  0.1628
+  no reaction              0.0445  0.0000  0.2327

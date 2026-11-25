@@ -1,0 +1,15 @@
+Part 1: directed, K=3, p_plus=0.8, b=0.9; simulation N=200000 x 5 runs
+t                       [0 1 2 3 4 5 6 7 8]
+m(t)  simulation        [0.096  0.1089 0.1219 0.1291 0.1361 0.1391 0.1435 0.1469 0.1486]
+m(t)  exact eq.(1)      [0.096  0.1106 0.1216 0.1299 0.1361 0.1408 0.1444 0.1471 0.1491]
+m(t)  Gaussian DMFT     [0.0962 0.1145 0.1276 0.1343 0.1394 0.1449 0.1491 0.1515 0.1522]
+C(t,t-1) simulation     [0.0259 0.0319 0.0373 0.0397 0.0424 0.0427 0.046  0.0472]
+C(t,t-1) pop. dynamics  [0.0251 0.0305 0.0343 0.0374 0.0416 0.0453 0.0431 0.0477]
+C(t,t-1) Gaussian DMFT  [0.0283 0.0346 0.0418 0.0461 0.0498 0.0538 0.056  0.0575]
+simulation s.e. of m (max over t): 0.0026
+max |error| in m:  exact 0.0017   Gaussian DMFT 0.0057;   in C(t,t-1):  pop. dyn. 0.0030   Gaussian DMFT 0.0111
+
+Part 2: N=32, 56 undirected signed edges, gain d=0.2, 400 graphs
+mean number of triangles per graph: 6.83
+mean relative effect of the network on chi_ii (chi/d - 1): 0.2190
+relative error of chi_ii:  tree  mean 0.01774  95th pct 0.06109   |  tree + triangles  mean 0.00944  95th pct 0.03192

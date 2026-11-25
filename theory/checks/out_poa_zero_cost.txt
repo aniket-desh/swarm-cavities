@@ -1,0 +1,45 @@
+Test 1: lag displacements over rounds 3..8 (mean over communities; s.e. over communities)
+model            task        graph class                  n |  A1      A2    | excess E1  E2   |  E1 - E2 (s.e.)    E2/E1
+Llama-3.1-8B-Instruct objective   lattice, bipartite         160 | 0.7127  0.1657 | 0.6810  0.1273 | +0.5537 (0.0670)   0.19
+Llama-3.1-8B-Instruct objective   lattice, not bipartite     160 | 0.1225  0.1595 | 0.0962  0.1261 | -0.0299 (0.0052)   1.31
+Llama-3.1-8B-Instruct objective   random signed             1280 | 0.4523  0.2414 | 0.3678  0.1506 | +0.2172 (0.0099)   0.41
+Llama-3.1-8B-Instruct subjective  lattice, bipartite          80 | 0.4712  0.2148 | 0.4644  0.2066 | +0.2578 (0.0514)   0.44
+Llama-3.1-8B-Instruct subjective  lattice, not bipartite      80 | 0.2209  0.2427 | 0.2137  0.2338 | -0.0201 (0.0136)   1.09
+Llama-3.1-8B-Instruct subjective  random signed              640 | 0.4171  0.1903 | 0.4021  0.1737 | +0.2284 (0.0155)   0.43
+Qwen3.5-9B       objective   lattice, bipartite         160 | 0.6488  0.1717 | 0.6115  0.1277 | +0.4837 (0.0595)   0.21
+Qwen3.5-9B       objective   lattice, not bipartite     160 | 0.1319  0.1681 | 0.1040  0.1332 | -0.0292 (0.0067)   1.28
+Qwen3.5-9B       objective   random signed             1280 | 0.5866  0.2170 | 0.5165  0.1422 | +0.3743 (0.0145)   0.28
+Qwen3.5-9B       subjective  lattice, bipartite          80 | 0.7242  0.3053 | 0.6808  0.2590 | +0.4218 (0.0594)   0.38
+Qwen3.5-9B       subjective  lattice, not bipartite      80 | 0.3213  0.2931 | 0.2752  0.2433 | +0.0319 (0.0154)   0.88
+Qwen3.5-9B       subjective  random signed              640 | 0.8239  0.3628 | 0.7553  0.2922 | +0.4631 (0.0166)   0.39
+gemma-3n-E4B-it  objective   lattice, bipartite         160 | 0.3860  0.1909 | 0.3740  0.1773 | +0.1967 (0.0383)   0.47
+gemma-3n-E4B-it  objective   lattice, not bipartite     160 | 0.1363  0.1513 | 0.1281  0.1415 | -0.0134 (0.0078)   1.10
+gemma-3n-E4B-it  objective   random signed             1280 | 0.3875  0.2804 | 0.3628  0.2544 | +0.1084 (0.0079)   0.70
+gemma-3n-E4B-it  subjective  lattice, bipartite          80 | 0.5750  0.3917 | 0.5483  0.3630 | +0.1853 (0.0440)   0.66
+gemma-3n-E4B-it  subjective  lattice, not bipartite      80 | 0.3494  0.3552 | 0.3245  0.3280 | -0.0036 (0.0119)   1.01
+gemma-3n-E4B-it  subjective  random signed              640 | 0.6261  0.4185 | 0.5941  0.3855 | +0.2087 (0.0117)   0.65
+gpt-4o-mini      objective   lattice, bipartite         160 | 1.3268  0.2523 | 1.3203  0.2438 | +1.0764 (0.0864)   0.18
+gpt-4o-mini      objective   lattice, not bipartite     160 | 0.3337  0.3201 | 0.3264  0.3106 | +0.0158 (0.0161)   0.95
+gpt-4o-mini      objective   random signed             1280 | 1.3303  0.3179 | 1.2971  0.2832 | +1.0139 (0.0215)   0.22
+gpt-4o-mini      subjective  lattice, bipartite          80 | 1.0326  0.2089 | 1.0259  0.2011 | +0.8247 (0.0674)   0.20
+gpt-4o-mini      subjective  lattice, not bipartite      80 | 0.2900  0.2563 | 0.2840  0.2490 | +0.0350 (0.0173)   0.88
+gpt-4o-mini      subjective  random signed              640 | 0.9356  0.2219 | 0.9219  0.2074 | +0.7146 (0.0211)   0.22
+
+Test 2: dq(t) = q_same-graph - q_other-graph, mean over statements (s.e. over statements)
+model            task           n | t = 0 .. 8
+Llama-3.1-8B-Instruct objective     40 | +0.000  +0.020  +0.022  +0.027  +0.028  +0.034  +0.036  +0.039  +0.042
+                                  | (0.001)  (0.003)  (0.003)  (0.004)  (0.005)  (0.006)  (0.006)  (0.007)  (0.007)
+Llama-3.1-8B-Instruct subjective    20 | +0.000  +0.193  +0.076  +0.111  +0.072  +0.088  +0.070  +0.076  +0.067
+                                  | (0.001)  (0.034)  (0.016)  (0.025)  (0.018)  (0.022)  (0.017)  (0.019)  (0.016)
+Qwen3.5-9B       objective     40 | +0.000  +0.019  +0.017  +0.016  +0.016  +0.016  +0.016  +0.016  +0.015
+                                  | (0.001)  (0.003)  (0.002)  (0.003)  (0.003)  (0.003)  (0.004)  (0.004)  (0.004)
+Qwen3.5-9B       subjective    20 | -0.001  +0.190  +0.091  +0.147  +0.103  +0.142  +0.115  +0.141  +0.107
+                                  | (0.000)  (0.023)  (0.010)  (0.019)  (0.012)  (0.017)  (0.013)  (0.016)  (0.012)
+gemma-3n-E4B-it  objective     40 | +0.000  +0.038  +0.025  +0.033  +0.034  +0.036  +0.036  +0.037  +0.038
+                                  | (0.000)  (0.009)  (0.005)  (0.007)  (0.007)  (0.008)  (0.009)  (0.010)  (0.010)
+gemma-3n-E4B-it  subjective    20 | +0.001  +0.244  +0.147  +0.172  +0.153  +0.174  +0.165  +0.166  +0.164
+                                  | (0.001)  (0.026)  (0.017)  (0.021)  (0.019)  (0.021)  (0.022)  (0.021)  (0.020)
+gpt-4o-mini      objective     40 | +0.001  +0.128  +0.068  +0.106  +0.083  +0.107  +0.089  +0.108  +0.091
+                                  | (0.001)  (0.010)  (0.006)  (0.009)  (0.008)  (0.010)  (0.009)  (0.010)  (0.010)
+gpt-4o-mini      subjective    20 | +0.001  +0.549  +0.252  +0.468  +0.286  +0.437  +0.299  +0.423  +0.305
+                                  | (0.000)  (0.035)  (0.019)  (0.034)  (0.023)  (0.034)  (0.024)  (0.034)  (0.026)

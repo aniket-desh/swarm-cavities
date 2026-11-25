@@ -1,0 +1,8 @@
+
+Part C: rounds until max_i |s_i(t+2) - s_i(t)| < 1e-6 (median over samples; inf = not reached), beta=2.0, g=1
+ gamma | N=  125  N=  250  N=  500  N= 1000  N= 2000
+  0.70 |     400     1265      inf      inf      inf
+  0.80 |     340      795      inf    17305      inf
+  0.90 |     245      365      910     2130     6420
+  0.95 |     280      580      660     1585     1885
+  1.00 |     250      340      610      780     2320
