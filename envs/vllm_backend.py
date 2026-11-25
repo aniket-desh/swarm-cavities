@@ -327,7 +327,7 @@ class VLLMBackend:
                            skipped_mass=b["skipped_mass"], expanded_d1=b["expanded_d1"],
                            masses={str(k): round(float(m[k]), 6) for k in np.flatnonzero(m > 1e-5)},
                            rationale=s["rationale"], public_message=s["public_message"],
-                           n_gen_tokens=len(s["gen_ids"]))
+                           n_gen_tokens=len(s["gen_ids"]), prefix_tail=[self._text(t) for t in s["gen_ids"][-4:]])
             append_jsonl(self.ckpt, rec)
             self.done[self._key(seed, round_t, c.agent_id)] = rec
         st1, st2, n1, n2 = getattr(self, "_last_stage_s", (0.0, 0.0, 0, 0))
