@@ -1,0 +1,243 @@
+A. White-probe MLE of the law (Q3)-(Q6), n = 1400 transitions; bootstrap s.e. over the 200 trajectories
+  rho0         0.540 (0.079)
+  rho_inf      0.188 (0.052)
+  u0           0.247 (0.210)
+  sig0         0.045 (0.003)
+  sig1         0.185 (0.015)
+  pi0          0.195 (0.033)
+  mu_pi        0.064 (0.010)
+  beta_white   1.030 (0.048)
+  c_white      0.424 (0.021)
+  A_white      0.419 (0.015)
+  -log L = -1337.7;  without gating (constant rho, sigma, pi; 6 parameters): -1118.4
+  plain tanh target (A = 1): -log L = -1252.9, rho0 0.665 rho_inf 0.237 u0 0.111
+  rho(u) at u = 0, 0.05, 0.15, 0.3, 0.6:  adopted 0.54 0.48 0.38 0.29 0.22   plain tanh 0.66 0.51 0.35 0.27 0.24
+
+B. Gains (s.e.). one_shot = response gains of a tanh fit to answers to a new inbox; target = gains of tau (Q2)
+  transfer inverted|K2 one_shot      a+ 0.80 (0.03)  a- +0.15 (0.02)  a_p 0.386  c +0.005  resid s.d. 0.110
+  transfer inverted|K2 target        a+ 1.00 (0.03)  a- +0.19 (0.03)  a_p 0.382  c +0.010  resid s.d. 0.110
+  transfer inverted|K4 one_shot      a+ 0.66 (0.05)  a- +0.22 (0.04)  a_p 0.384  c +0.007  resid s.d. 0.100
+  transfer inverted|K4 target        a+ 0.82 (0.04)  a- +0.28 (0.04)  a_p 0.377  c +0.013  resid s.d. 0.100
+  transfer label|K2 one_shot         a+ 0.54 (0.03)  a- -0.24 (0.02)  a_p 0.372  c +0.003  resid s.d. 0.102
+  transfer label|K2 target           a+ 0.66 (0.03)  a- -0.30 (0.02)  a_p 0.362  c +0.007  resid s.d. 0.102
+  transfer label|K4 one_shot         a+ 0.40 (0.03)  a- -0.21 (0.02)  a_p 0.392  c +0.010  resid s.d. 0.079
+  transfer label|K4 target           a+ 0.49 (0.03)  a- -0.26 (0.03)  a_p 0.385  c +0.016  resid s.d. 0.079
+  pilot K2|gains0 (target)           a+ 1.65 (0.05)  a- +0.23 (0.04)  a_p 0.396  c -0.017  resid s.d. 0.122
+  pilot K2|gains (target)            a+ 1.21 (0.05)  a- +0.24 (0.05)  a_p 0.346  c +0.004  resid s.d. 0.108
+  pilot K2|gains|gamma=-1 (target)   a+ 1.42 (0.09)  a- +0.13 (0.08)  a_p 0.377  c -0.005  resid s.d. 0.099
+  pilot K2|gains|gamma=+0 (target)   a+ 1.13 (0.09)  a- +0.35 (0.10)  a_p 0.334  c +0.018  resid s.d. 0.108
+  pilot K2|gains|gamma=+1 (target)   a+ 1.16 (0.08)  a- +0.32 (0.07)  a_p 0.328  c +0.010  resid s.d. 0.102
+  pilot K4|gains0 (target)           a+ 2.39 (0.09)  a- +0.12 (0.07)  a_p 0.329  c -0.053  resid s.d. 0.146
+  pilot K4|gains (target)            a+ 1.13 (0.06)  a- +0.20 (0.06)  a_p 0.327  c +0.029  resid s.d. 0.086
+  pilot K4|gains|gamma=-1 (target)   a+ 1.15 (0.10)  a- +0.11 (0.14)  a_p 0.332  c +0.029  resid s.d. 0.099
+  pilot K4|gains|gamma=+0 (target)   a+ 1.04 (0.10)  a- +0.27 (0.10)  a_p 0.320  c +0.040  resid s.d. 0.080
+  pilot K4|gains|gamma=+1 (target)   a+ 1.15 (0.10)  a- +0.24 (0.09)  a_p 0.326  c +0.023  resid s.d. 0.072
+
+C. Swarm-specific law parameters (in-sample, simulated moments on the pilot's one-step statistics)
+  K=2: rho0 0.712  pi0 0.362  q_j 0.050  (sig_j = 0.25 fixed)
+       repeat    pilot 0.262   surrogate 0.263   (matched)
+       big       pilot 0.040   surrogate 0.041   (matched)
+       rho_eff   pilot 0.706   surrogate 0.692   (matched)
+       sd_small  pilot 0.053   surrogate 0.057   (not fitted)
+       b_A       pilot 0.372   surrogate 0.281   (not fitted)
+       resid_sd  pilot 0.087   surrogate 0.090   (not fitted)
+  K=4: rho0 0.712  pi0 0.471  q_j 0.031  (sig_j = 0.25 fixed)
+       repeat    pilot 0.362   surrogate 0.357   (matched)
+       big       pilot 0.016   surrogate 0.021   (matched)
+       rho_eff   pilot 0.674   surrogate 0.712   (matched)
+       sd_small  pilot 0.045   surrogate 0.055   (not fitted)
+       b_A       pilot 0.343   surrogate 0.284   (not fitted)
+       resid_sd  pilot 0.064   surrogate 0.075   (not fitted)
+  loss 6.35 (sum of squared standardized differences of the six matched statistics)
+
+1. White probes (200 trajectories, field redrawn each round, u = |hbar(t) - hbar(t-1)|):
+   data | white-law surrogate driven by the same fields, mean (s.d. over 200 reruns)
+   own-answer weight                       0.187 |  0.233 (0.015)
+   residual lag-1 autocorrelation          0.211 |  0.290 (0.025)
+   repeat fraction                         0.045 |  0.045 (0.005)
+   own-answer weight, u in [0,0.1)         0.592 |  0.546 (0.042)
+   repeat fraction,   u in [0,0.1)         0.134 |  0.106 (0.022)
+   residual s.d.,     u in [0,0.1)         0.057 |  0.057 (0.003)
+   own-answer weight, u in [0.1,0.2)       0.445 |  0.420 (0.037)
+   repeat fraction,   u in [0.1,0.2)       0.071 |  0.079 (0.019)
+   residual s.d.,     u in [0.1,0.2)       0.064 |  0.064 (0.003)
+   own-answer weight, u in [0.2,0.4)       0.204 |  0.274 (0.026)
+   repeat fraction,   u in [0.2,0.4)       0.025 |  0.041 (0.010)
+   residual s.d.,     u in [0.2,0.4)       0.082 |  0.080 (0.003)
+   own-answer weight, u in [0.4,3)         0.058 |  0.142 (0.024)
+   repeat fraction,   u in [0.4,3)         0.012 |  0.010 (0.004)
+   residual s.d.,     u in [0.4,3)         0.105 |  0.115 (0.004)
+
+2. Pilot replica differences, delta(t+1) = rho_eff delta(t) + b_A dfA(t) + b_D dfD(t), by inbox change u (Q1):
+   pilot rho_eff (s.e.), b_A (s.e.) | white law, pilot gains | v2, pilot gains   (surrogate: mean of 20 reruns)
+   K=2 u in [0.00,0.03) n= 543: 0.76 (0.03), 0.24 (0.07) | 0.57, 0.38 | 0.72, 0.24
+   K=2 u in [0.03,0.08) n= 797: 0.67 (0.03), 0.44 (0.05) | 0.51, 0.44 | 0.67, 0.31
+   K=2 u in [0.08,0.20) n= 295: 0.60 (0.04), 0.40 (0.07) | 0.42, 0.59 | 0.54, 0.50
+   K=2 u in [0.20,2.00) n=  93: 0.45 (0.09), 0.36 (0.15) | 0.32, 0.74 | 0.37, 0.65
+   K=4 u in [0.00,0.03) n= 664: 0.71 (0.03), 0.28 (0.08) | 0.53, 0.38 | 0.73, 0.25
+   K=4 u in [0.03,0.08) n= 740: 0.64 (0.02), 0.37 (0.07) | 0.53, 0.44 | 0.68, 0.29
+   K=4 u in [0.08,0.20) n= 219: 0.42 (0.04), 0.46 (0.13) | 0.41, 0.54 | 0.55, 0.48
+   K=4 u in [0.20,2.00) n= 105: 0.42 (0.07), 1.03 (0.19) | 0.30, 0.63 | 0.37, 0.62
+
+3. Pilot thermal observables on the pilot's own graphs and evidence: pilot | surrogate mean, s.d. and
+   z = (pilot - mean) / s.d. over 200 simulated replica pairs. late = rounds 6-10; repeat_late = fraction
+   of exactly repeated answers; absds = mean |s(t) - s(t-1)|; D = replica distance; m = truth-aligned mean.
+   inverted K=2 gamma=-1
+                                                   c1          c2     P_delta repeat_late     absds_1  absds_late          D1      D_late          m1      m_late
+     pilot                                      0.718       0.436       2.033       0.217       0.240       0.041       0.015       0.013       0.248       0.228
+     v1 (design_lib law), transfer gains        0.317       0.059       1.361       0.000       0.158       0.105       0.020       0.025       0.203       0.212
+       s.d.                                     0.044       0.053       0.083       0.000       0.011       0.004       0.003       0.002       0.012       0.008
+       z                                          9.1         7.1         8.1        99.0         7.8       -17.2        -1.5        -5.0         3.8         2.1
+     white law, transfer gains                  0.547       0.271       1.687       0.137       0.154       0.040       0.012       0.007       0.224       0.226
+       s.d.                                     0.042       0.058       0.092       0.014       0.007       0.002       0.002       0.001       0.007       0.005
+       z                                          4.1         2.9         3.8         5.5        12.8         0.4         1.5         8.6         3.5         0.4
+     white law, pilot gains                     0.556       0.252       1.809       0.137       0.221       0.041       0.016       0.007       0.233       0.209
+       s.d.                                     0.038       0.063       0.108       0.015       0.008       0.002       0.004       0.001       0.008       0.005
+       z                                          4.3         2.9         2.1         5.5         2.4        -0.2        -0.4         7.8         1.8         3.7
+     v2, transfer gains                         0.678       0.439       1.756       0.260       0.155       0.042       0.017       0.017       0.224       0.225
+       s.d.                                     0.044       0.066       0.118       0.018       0.008       0.003       0.005       0.003       0.008       0.008
+       z                                          0.9        -0.0         2.3        -2.4        10.8        -0.4        -0.5        -1.2         3.0         0.3
+     v2, pilot gains                            0.671       0.409       1.833       0.255       0.221       0.044       0.022       0.018       0.233       0.211
+       s.d.                                     0.039       0.062       0.130       0.019       0.008       0.004       0.006       0.004       0.008       0.008
+       z                                          1.2         0.4         1.5        -2.1         2.3        -0.8        -1.3        -1.4         1.8         2.0
+   inverted K=2 gamma=+0
+                                                   c1          c2     P_delta repeat_late     absds_1  absds_late          D1      D_late          m1      m_late
+     pilot                                      0.708       0.486       1.743       0.280       0.162       0.040       0.016       0.020       0.264       0.287
+     v1 (design_lib law), transfer gains        0.294       0.086       1.287       0.000       0.153       0.104       0.020       0.024       0.233       0.317
+       s.d.                                     0.051       0.060       0.073       0.001       0.009       0.003       0.003       0.002       0.013       0.007
+       z                                          8.2         6.6         6.2        99.0         1.0       -19.4        -1.3        -1.7         2.3        -4.1
+     white law, transfer gains                  0.563       0.311       1.645       0.139       0.143       0.040       0.011       0.007       0.259       0.307
+       s.d.                                     0.045       0.059       0.104       0.014       0.006       0.002       0.002       0.001       0.007       0.004
+       z                                          3.2         3.0         0.9        10.0         3.0         0.2         2.0        15.1         0.8        -4.6
+     white law, pilot gains                     0.576       0.316       1.723       0.138       0.203       0.040       0.015       0.007       0.292       0.319
+       s.d.                                     0.037       0.052       0.103       0.013       0.007       0.002       0.003       0.001       0.008       0.005
+       z                                          3.6         3.3         0.2        10.8        -5.5        -0.1         0.2        17.7        -3.5        -7.0
+     v2, transfer gains                         0.688       0.463       1.730       0.261       0.145       0.041       0.017       0.017       0.259       0.301
+       s.d.                                     0.039       0.057       0.110       0.017       0.007       0.003       0.005       0.004       0.008       0.008
+       z                                          0.5         0.4         0.1         1.1         2.3        -0.4        -0.2         1.0         0.7        -1.8
+     v2, pilot gains                            0.699       0.469       1.792       0.261       0.204       0.042       0.020       0.018       0.290       0.316
+       s.d.                                     0.040       0.058       0.121       0.018       0.009       0.003       0.005       0.004       0.009       0.008
+       z                                          0.2         0.3        -0.4         1.0        -4.9        -0.5        -1.0         0.6        -2.9        -3.7
+   inverted K=2 gamma=+1
+                                                   c1          c2     P_delta repeat_late     absds_1  absds_late          D1      D_late          m1      m_late
+     pilot                                      0.800       0.601       1.896       0.289       0.211       0.036       0.013       0.025       0.218       0.243
+     v1 (design_lib law), transfer gains        0.329       0.193       1.196       0.004       0.154       0.102       0.020       0.025       0.192       0.243
+       s.d.                                     0.059       0.057       0.083       0.003       0.009       0.004       0.004       0.003       0.011       0.007
+       z                                          7.9         7.2         8.5        97.7         6.1       -18.3        -2.0         0.2         2.4         0.1
+     white law, transfer gains                  0.601       0.388       1.597       0.141       0.152       0.039       0.011       0.007       0.213       0.249
+       s.d.                                     0.039       0.055       0.095       0.014       0.007       0.002       0.002       0.001       0.007       0.005
+       z                                          5.0         3.9         3.1        10.5         8.4        -1.8         0.8        21.5         0.7        -1.3
+     white law, pilot gains                     0.629       0.430       1.647       0.140       0.216       0.040       0.017       0.008       0.219       0.254
+       s.d.                                     0.051       0.072       0.123       0.014       0.008       0.002       0.004       0.001       0.008       0.005
+       z                                          3.4         2.4         2.0        10.8        -0.6        -1.9        -0.8        14.1        -0.1        -2.0
+     v2, transfer gains                         0.713       0.511       1.706       0.270       0.153       0.040       0.017       0.018       0.213       0.242
+       s.d.                                     0.043       0.066       0.125       0.019       0.007       0.003       0.005       0.004       0.007       0.009
+       z                                          2.0         1.4         1.5         1.0         8.1        -1.3        -0.8         1.9         0.7         0.1
+     v2, pilot gains                            0.725       0.536       1.715       0.265       0.215       0.041       0.022       0.019       0.219       0.246
+       s.d.                                     0.043       0.065       0.128       0.018       0.009       0.003       0.006       0.004       0.010       0.009
+       z                                          1.7         1.0         1.4         1.3        -0.5        -1.5        -1.4         1.4        -0.1        -0.3
+   inverted K=4 gamma=-1
+                                                   c1          c2     P_delta repeat_late     absds_1  absds_late          D1      D_late          m1      m_late
+     pilot                                      0.681       0.326       2.417       0.319       0.270       0.028       0.038       0.011       0.258       0.265
+     v1 (design_lib law), transfer gains        0.308       0.070       1.334       0.000       0.122       0.101       0.020       0.023       0.186       0.200
+       s.d.                                     0.042       0.048       0.078       0.000       0.009       0.003       0.004       0.002       0.011       0.006
+       z                                          8.9         5.3        13.8        99.0        17.3       -22.0         5.2        -6.1         6.6        10.2
+     white law, transfer gains                  0.542       0.283       1.614       0.142       0.111       0.039       0.009       0.006       0.210       0.207
+       s.d.                                     0.040       0.054       0.091       0.014       0.005       0.001       0.002       0.001       0.006       0.004
+       z                                          3.5         0.8         8.9        12.3        29.2        -7.6        17.1         6.2         7.9        15.0
+     white law, pilot gains                     0.550       0.271       1.843       0.141       0.266       0.040       0.022       0.006       0.251       0.246
+       s.d.                                     0.042       0.058       0.134       0.014       0.009       0.002       0.005       0.001       0.009       0.005
+       z                                          3.1         1.0         4.3        12.8         0.4        -7.3         3.2         5.8         0.8         4.0
+     v2, transfer gains                         0.715       0.502       1.759       0.362       0.108       0.032       0.012       0.012       0.211       0.208
+       s.d.                                     0.040       0.057       0.137       0.019       0.007       0.002       0.004       0.002       0.007       0.006
+       z                                         -0.8        -3.1         4.8        -2.3        23.0        -1.6         7.4        -0.4         7.0         9.4
+     v2, pilot gains                            0.710       0.471       1.949       0.353       0.264       0.033       0.025       0.013       0.252       0.246
+       s.d.                                     0.041       0.058       0.154       0.019       0.010       0.002       0.006       0.002       0.010       0.007
+       z                                         -0.7        -2.5         3.0        -1.8         0.6        -2.2         2.4        -0.8         0.6         2.7
+   inverted K=4 gamma=+0
+                                                   c1          c2     P_delta repeat_late     absds_1  absds_late          D1      D_late          m1      m_late
+     pilot                                      0.677       0.400       2.055       0.391       0.188       0.026       0.019       0.006       0.267       0.270
+     v1 (design_lib law), transfer gains        0.297       0.093       1.282       0.000       0.119       0.101       0.020       0.023       0.195       0.222
+       s.d.                                     0.046       0.046       0.074       0.001       0.008       0.003       0.004       0.002       0.011       0.007
+       z                                          8.2         6.7        10.5        99.0         8.7       -23.2        -0.2        -7.7         6.8         6.9
+     white law, transfer gains                  0.547       0.293       1.590       0.143       0.091       0.039       0.008       0.006       0.218       0.230
+       s.d.                                     0.036       0.052       0.090       0.013       0.005       0.002       0.002       0.001       0.005       0.004
+       z                                          3.6         2.0         5.2        19.2        19.5        -7.9         6.9        -0.4         9.2        11.2
+     white law, pilot gains                     0.564       0.306       1.725       0.143       0.194       0.039       0.015       0.006       0.262       0.281
+       s.d.                                     0.041       0.058       0.097       0.014       0.008       0.002       0.003       0.001       0.008       0.005
+       z                                          2.8         1.6         3.4        18.1        -0.8        -8.0         1.2        -0.7         0.8        -2.2
+     v2, transfer gains                         0.719       0.511       1.735       0.360       0.088       0.032       0.011       0.012       0.218       0.229
+       s.d.                                     0.038       0.055       0.121       0.019       0.006       0.003       0.003       0.002       0.006       0.006
+       z                                         -1.1        -2.0         2.6         1.6        16.8        -2.2         2.6        -2.5         7.8         6.5
+     v2, pilot gains                            0.726       0.506       1.864       0.357       0.193       0.032       0.019       0.013       0.261       0.279
+       s.d.                                     0.036       0.052       0.139       0.022       0.008       0.002       0.005       0.002       0.009       0.007
+       z                                         -1.4        -2.0         1.4         1.5        -0.6        -2.5         0.1        -2.9         0.7        -1.3
+   inverted K=4 gamma=+1
+                                                   c1          c2     P_delta repeat_late     absds_1  absds_late          D1      D_late          m1      m_late
+     pilot                                      0.795       0.611       2.086       0.377       0.173       0.026       0.022       0.010       0.193       0.245
+     v1 (design_lib law), transfer gains        0.313       0.140       1.245       0.000       0.119       0.101       0.021       0.023       0.179       0.186
+       s.d.                                     0.050       0.054       0.073       0.001       0.008       0.003       0.004       0.002       0.011       0.007
+       z                                          9.6         8.7        11.5        99.0         6.5       -23.4         0.4        -6.6         1.3         8.8
+     white law, transfer gains                  0.558       0.323       1.567       0.142       0.100       0.039       0.008       0.006       0.201       0.207
+       s.d.                                     0.044       0.059       0.081       0.013       0.005       0.002       0.002       0.001       0.006       0.004
+       z                                          5.4         4.9         6.4        17.7        14.1        -7.8         8.4         4.6        -1.4         8.7
+     white law, pilot gains                     0.589       0.358       1.678       0.141       0.195       0.039       0.015       0.007       0.228       0.251
+       s.d.                                     0.044       0.058       0.105       0.014       0.008       0.002       0.003       0.001       0.008       0.005
+       z                                          4.7         4.4         3.9        17.1        -2.7        -8.1         2.1         3.2        -4.5        -1.2
+     v2, transfer gains                         0.728       0.529       1.729       0.362       0.096       0.031       0.011       0.012       0.200       0.206
+       s.d.                                     0.036       0.055       0.114       0.019       0.006       0.002       0.003       0.003       0.007       0.006
+       z                                          1.9         1.5         3.1         0.8        12.6        -2.1         3.2        -1.0        -1.1         6.2
+     v2, pilot gains                            0.741       0.534       1.852       0.359       0.194       0.032       0.018       0.013       0.227       0.245
+       s.d.                                     0.041       0.063       0.138       0.019       0.008       0.002       0.004       0.003       0.009       0.008
+       z                                          1.3         1.2         1.7         1.0        -2.5        -2.3         0.8        -1.2        -3.7        -0.1
+
+   root-mean-square z over the six cells, per observable (z clipped at 99)
+                                                   c1          c2     P_delta repeat_late     absds_1  absds_late          D1      D_late          m1      m_late
+     v1 (design_lib law), transfer gains          8.7         7.0        10.1        98.8         9.3        20.7         2.4         5.3         4.4         6.5
+     white law, transfer gains                    4.2         3.2         5.3        13.4        16.7         5.6         8.3        11.7         5.2         8.7
+     white law, pilot gains                       3.7         2.8         3.0        13.2         2.7         5.6         1.7        10.1         2.5         3.9
+     v2, transfer gains                           1.3         1.7         2.8         1.7        13.9         1.5         3.5         1.5         4.5         5.4
+     v2, pilot gains                              1.2         1.5         1.8         1.5         2.5         1.8         1.4         1.6         2.1         2.1
+
+4. c2(gamma=+1) - c2(gamma=-1) and c2(+1) - c2(0): pilot (one graph each) | v2, pilot gains: mean (s.d. over pairs)
+   K=2 c2(+1) - c2(-1): pilot +0.166 | +0.128 (0.095)
+   K=2 c2(+1) - c2(+0): pilot +0.115 | +0.072 (0.088)
+   K=4 c2(+1) - c2(-1): pilot +0.285 | +0.065 (0.072)
+   K=4 c2(+1) - c2(+0): pilot +0.211 | +0.040 (0.083)
+
+5. Overlap excess dq at rounds 6-10 (design_lib.overlap_excess, two graphs per evidence draw, gamma = 0):
+   v2, pilot gains: mean (s.d. over graphs); graphs for 3 s.e.
+   K=2: dq = +0.0414 (0.0158); 2 graphs
+   K=4: dq = +0.0175 (0.0105); 4 graphs
+
+6. Regime. Effective couplings from the one-shot gains (design_lib.effective), d = 0.78; critical d g from
+   max_theta |rho + (1 - rho) d g ((1+gamma) cos + i (1-gamma) sin)| = 1 (quiet_regime.md (B1)) at gamma_eff
+   inverted K=2 gamma=-1: Jbar 0.33  g 0.409  gamma_eff -0.36  d g (1+|gamma_eff|) 0.43 | target gains: d g 0.40, critical d g 0.73 (rho = 0), 1.51 (rho = 0.71)
+   inverted K=2 gamma=+1: Jbar 0.33  g 0.409  gamma_eff +1.00  d g (1+|gamma_eff|) 0.64 | target gains: d g 0.40, critical d g 0.50 (rho = 0), 0.50 (rho = 0.71)
+   inverted K=4 gamma=-1: Jbar 0.22  g 0.247  gamma_eff -0.60  d g (1+|gamma_eff|) 0.31 | target gains: d g 0.24, critical d g 0.62 (rho = 0), 1.47 (rho = 0.71)
+   inverted K=4 gamma=+1: Jbar 0.22  g 0.247  gamma_eff +1.00  d g (1+|gamma_eff|) 0.39 | target gains: d g 0.24, critical d g 0.50 (rho = 0), 0.50 (rho = 0.71)
+   label    K=2 gamma=-1: Jbar 0.39  g 0.294  gamma_eff +0.75  d g (1+|gamma_eff|) 0.40 | target gains: d g 0.28, critical d g 0.57 (rho = 0), 0.57 (rho = 0.71)
+   label    K=2 gamma=+1: Jbar 0.39  g 0.294  gamma_eff +1.00  d g (1+|gamma_eff|) 0.46 | target gains: d g 0.28, critical d g 0.50 (rho = 0), 0.50 (rho = 0.71)
+   label    K=4 gamma=-1: Jbar 0.30  g 0.159  gamma_eff +0.84  d g (1+|gamma_eff|) 0.23 | target gains: d g 0.15, critical d g 0.54 (rho = 0), 0.54 (rho = 0.71)
+   label    K=4 gamma=+1: Jbar 0.30  g 0.159  gamma_eff +1.00  d g (1+|gamma_eff|) 0.25 | target gains: d g 0.15, critical d g 0.50 (rho = 0), 0.50 (rho = 0.71)
+   P_delta against (1 - c2) / (1 - c1) in the pilot (identity for a stationary sequence):
+   K=2 gamma=-1: P_delta 2.03   (1-c2)/(1-c1) 2.00   1 + c1 1.72
+   K=2 gamma=+0: P_delta 1.74   (1-c2)/(1-c1) 1.76   1 + c1 1.71
+   K=2 gamma=+1: P_delta 1.90   (1-c2)/(1-c1) 1.99   1 + c1 1.80
+   K=4 gamma=-1: P_delta 2.42   (1-c2)/(1-c1) 2.11   1 + c1 1.68
+   K=4 gamma=+0: P_delta 2.05   (1-c2)/(1-c1) 1.86   1 + c1 1.68
+   K=4 gamma=+1: P_delta 2.09   (1-c2)/(1-c1) 1.89   1 + c1 1.79
+   Long runs of v2 (T = 30, 60 graphs per cell): replica distance D(10), D(30), and the largest real part of the
+   eigenvalues of d W (target gains, d from the final state)
+   transfer gains K=2 gamma=-1: D(10) 0.0164  D(30) 0.0158 (s.e. 0.0006)  max Re eig(d W) 0.09
+   transfer gains K=2 gamma=+0: D(10) 0.0178  D(30) 0.0183 (s.e. 0.0007)  max Re eig(d W) 0.39
+   transfer gains K=2 gamma=+1: D(10) 0.0180  D(30) 0.0195 (s.e. 0.0007)  max Re eig(d W) 0.73
+   transfer gains K=4 gamma=-1: D(10) 0.0116  D(30) 0.0119 (s.e. 0.0004)  max Re eig(d W) 0.10
+   transfer gains K=4 gamma=+0: D(10) 0.0123  D(30) 0.0126 (s.e. 0.0004)  max Re eig(d W) 0.25
+   transfer gains K=4 gamma=+1: D(10) 0.0131  D(30) 0.0121 (s.e. 0.0005)  max Re eig(d W) 0.47
+   pilot gains    K=2 gamma=-1: D(10) 0.0169  D(30) 0.0178 (s.e. 0.0008)  max Re eig(d W) 0.11
+   pilot gains    K=2 gamma=+0: D(10) 0.0189  D(30) 0.0201 (s.e. 0.0007)  max Re eig(d W) 0.44
+   pilot gains    K=2 gamma=+1: D(10) 0.0214  D(30) 0.0208 (s.e. 0.0010)  max Re eig(d W) 0.84
+   pilot gains    K=4 gamma=-1: D(10) 0.0117  D(30) 0.0125 (s.e. 0.0004)  max Re eig(d W) 0.21
+   pilot gains    K=4 gamma=+0: D(10) 0.0130  D(30) 0.0124 (s.e. 0.0005)  max Re eig(d W) 0.38
+   pilot gains    K=4 gamma=+1: D(10) 0.0126  D(30) 0.0123 (s.e. 0.0004)  max Re eig(d W) 0.63

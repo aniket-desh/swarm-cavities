@@ -1,0 +1,178 @@
+A. Engine conventions (envs.swarm, MockBackend deterministic, N=64, T=10, K=4, gamma=+1, t0=6)
+   numpy map against envs.swarm run: max |difference| = 2.2e-16
+   twin through Swarm._context against numpy twin, all 64 kicks: max |difference| = 2.2e-16
+   kicked agent unchanged at t0+1 and only its readers changed: True for all 64 kicks
+   envs.kick.kick_twin against numpy twin (3 kicks): max |difference| = 1.0e-03 (its mirrored p is rounded to two decimals)
+   gamma = 0: max |echo| over 64 kicks = 0.0e+00 (exactly zero: no reciprocated tie)
+
+B. Linear-response formulas on the mock (20 graphs x 64 kicks per cell, t0=8; gains as the real one-shot gains)
+   per-agent check at a small kick (eta = 0.01): max relative error of (K1) and (K2) over all kicks
+     (K1) first order 6.2e-03   (K2) echo 7.1e-03   (both O(eta); echo identically 0 at gamma = 0)
+   population slopes. E_small: exact twin, eta=0.01; E_graph: (K2) summed on the graph; E_cav: (K3) with
+   <d_i> weighted by D^2 and R = <d_j>; E_mirror: exact twin at the full mirror kick (eta = 1)
+   gains           K gamma    Gamma   E_small   E_graph     E_cav  E_mirror mirror/small     r_A     r_D
+   inverted-like   2  -1.0  -0.0600   -0.0323   -0.0323   -0.0327   -0.0319         0.99  +0.337  -0.063
+   inverted-like   2  -0.5  -0.0300   -0.0158   -0.0158   -0.0162   -0.0158         1.00  +0.337  -0.063
+   inverted-like   2  +0.0  +0.0000   +0.0000   +0.0000   +0.0000   +0.0000          nan  +0.333  -0.063
+   inverted-like   2  +0.5  +0.0828   +0.0432   +0.0431   +0.0429   +0.0522         1.21  +0.336  -0.063
+   inverted-like   2  +1.0  +0.1656   +0.0779   +0.0776   +0.0788   +0.1013         1.30  +0.330  -0.062
+   inverted-like   4  -1.0  -0.0363   -0.0211   -0.0211   -0.0211   -0.0208         0.99  +0.141  -0.047
+   inverted-like   4  -0.5  -0.0181   -0.0100   -0.0100   -0.0101   -0.0100         1.00  +0.140  -0.047
+   inverted-like   4  +0.0  +0.0000   +0.0000   +0.0000   +0.0000   +0.0000          nan  +0.138  -0.046
+   inverted-like   4  +0.5  +0.0303   +0.0161   +0.0161   +0.0161   +0.0169         1.05  +0.138  -0.047
+   inverted-like   4  +1.0  +0.0605   +0.0324   +0.0323   +0.0325   +0.0345         1.07  +0.139  -0.046
+   label-like      2  -1.0  +0.0648   +0.0322   +0.0322   +0.0330   +0.0348         1.08  +0.225  +0.100
+   label-like      2  -0.5  +0.0324   +0.0164   +0.0164   +0.0169   +0.0174         1.06  +0.226  +0.101
+   label-like      2  +0.0  +0.0000   +0.0000   +0.0000   +0.0000   +0.0000          nan  +0.225  +0.100
+   label-like      2  +0.5  +0.0437   +0.0231   +0.0231   +0.0234   +0.0252         1.09  +0.229  +0.101
+   label-like      2  +1.0  +0.0873   +0.0445   +0.0444   +0.0452   +0.0498         1.12  +0.228  +0.100
+   label-like      4  -1.0  +0.0210   +0.0117   +0.0117   +0.0117   +0.0119         1.02  +0.085  +0.044
+   label-like      4  -0.5  +0.0105   +0.0056   +0.0056   +0.0057   +0.0057         1.02  +0.084  +0.044
+   label-like      4  +0.0  +0.0000   +0.0000   +0.0000   +0.0000   +0.0000          nan  +0.084  +0.044
+   label-like      4  +0.5  +0.0128   +0.0069   +0.0069   +0.0069   +0.0070         1.02  +0.084  +0.045
+   label-like      4  +1.0  +0.0255   +0.0137   +0.0137   +0.0138   +0.0141         1.03  +0.084  +0.044
+
+C. Factorization (K5) and additivity on the mock (20 graphs x 64 kicks per cell).
+   F_raw: slope with type-mean first-order responses; <d_i>_w/<d_j>: its predicted value; F: with slope factors (K5)
+   gains           K gamma F_raw eta=.01 <d_i>_w/<d_j> F eta=.01 F_raw mirror F mirror  E(gamma)/E(sign)
+   inverted-like   2  -1.0         0.815         0.799     0.999        0.767    0.960               nan
+   inverted-like   2  -0.5         0.823         0.797     0.999        0.785    0.974             0.496
+   inverted-like   2  +0.5         0.855         0.800     0.999        0.809    0.999             0.515
+   inverted-like   2  +1.0         0.868         0.801     1.000        0.839    1.023               nan
+   inverted-like   4  -1.0         0.803         0.799     1.000        0.786    0.984               nan
+   inverted-like   4  -0.5         0.786         0.783     1.000        0.770    0.986             0.479
+   inverted-like   4  +0.5         0.804         0.776     1.000        0.783    0.993             0.491
+   inverted-like   4  +1.0         0.799         0.786     1.000        0.794    1.005               nan
+   label-like      2  -1.0         0.816         0.798     1.000        0.791    0.990               nan
+   label-like      2  -0.5         0.828         0.801     1.000        0.796    0.985             0.500
+   label-like      2  +0.5         0.836         0.809     1.000        0.804    0.988             0.506
+   label-like      2  +1.0         0.839         0.804     1.000        0.819    1.000               nan
+   label-like      4  -1.0         0.802         0.797     1.000        0.797    0.998               nan
+   label-like      4  -0.5         0.788         0.784     1.000        0.776    0.992             0.480
+   label-like      4  +0.5         0.801         0.784     1.000        0.785    0.991             0.500
+   label-like      4  +1.0         0.794         0.790     1.000        0.786    0.997               nan
+   (F = 1: responses compose; E(+-0.5)/E(+-1) = 0.5: echoes add over reciprocated ties)
+
+D. Anchoring and the oscillatory boundary: delta(t+1) = rho delta(t) + (1 - rho) d W delta(t), Gaussian W with
+   variance g^2/N and reciprocity gamma (N=1500). Spectral radius: numerical | formula
+    rho gamma   d g numerical  formula   critical d g (formula)
+    0.0  -1.0  0.45     0.888    0.900   0.50
+    0.0  -1.0  1.50     2.995    3.000   0.50
+    0.0  -0.5  0.45     0.676    0.675   0.67
+    0.0  -0.5  1.50     2.252    2.250   0.67
+    0.0  +0.0  0.45     0.459    0.450   1.00
+    0.0  +0.0  1.50     1.546    1.500   1.00
+    0.0  +1.0  0.45     0.899    0.900   0.50
+    0.0  +1.0  1.50     2.979    3.000   0.50
+    0.7  -1.0  0.45     0.750    0.750   1.19
+    0.7  -1.0  1.50     1.136    1.140   1.19
+    0.7  -0.5  0.45     0.771    0.767   1.49
+    0.7  -0.5  1.50     1.003    1.003   1.49
+    0.7  +0.0  0.45     0.835    0.835   1.00
+    0.7  +0.0  1.50     1.147    1.150   1.00
+    0.7  +1.0  0.45     0.969    0.970   0.50
+    0.7  +1.0  1.50     1.590    1.600   0.50
+   gamma = -1: critical d g = sqrt((1+rho)/(1-rho)) / 2 = 1.190 at rho = 0.7 (0.5 at rho = 0)
+
+E. Kick protocol on surrogate v2 (swarm law; every agent whose prompt changed is resampled; settled t0 = 6, 8;
+   32 graphs x 2 replicas x 2 t0 x agents with |s_i| >= 0.1). E, r: slopes through the origin.
+   se(E): its Monte Carlo s.e. here; E/lin: E over the linear-response value (K2) at one-shot gains (target
+   gains times (1 - rho_inf) per step);
+   sig_y: s.d. of one echo around E D; kurt: its kurtosis; zero: echoes that are exactly 0; n3: kicks for
+   |E| = 3 s.e.; F: factorization slope (K5) on closed paths, F_open: the same on open two-step paths;
+   nF: kicks for s.e.(F) = 0.15; se: sqrt(n) s.e.(E), sandwich formula / 400 random subsets of 200 kicks.
+   Gains g: T = transfer (target form), P = pilot fit (inverted only).
+   wording  g  K gamma     r_A     r_D        E   se(E)  E/lin  sig_y  kurt  zero  <D^2>     n3      F F_open    nF           se
+   inverted T  2  -1.0  +0.305  -0.053  -0.0128  0.0013   0.40  0.096  10.3  0.06   0.83    609   0.69   0.75   283  0.105/0.104
+   inverted T  2  -0.5  +0.302  -0.049  -0.0056  0.0012   0.38  0.093  12.0  0.07   0.89   2731   0.64   0.74   607  0.098/0.095
+   inverted T  2  +0.0  +0.299  -0.054  +0.0000  0.0000    nan  0.000   nan  1.00   0.93    inf    nan   0.75   nan  0.000/0.000
+   inverted T  2  +0.5  +0.296  -0.050  +0.0313  0.0012   0.86  0.103   9.4  0.06   1.02    100   0.69   0.70   170  0.104/0.106
+   inverted T  2  +1.0  +0.285  -0.053  +0.0672  0.0015   1.00  0.117   8.3  0.05   1.08     30   0.83   0.62    88  0.124/0.127
+   inverted T  4  -1.0  +0.106  -0.030  -0.0063  0.0011   0.30  0.076  13.5  0.14   0.73   1797   0.69   0.56  1206  0.089/0.088
+   inverted T  4  -0.5  +0.106  -0.030  -0.0011  0.0010   0.11  0.077  15.3  0.14   0.77  52559   0.79   0.56  3005  0.087/0.084
+   inverted T  4  +0.0  +0.104  -0.032  +0.0000  0.0000    nan  0.000   nan  1.00   0.78    inf    nan   0.54   nan  0.000/0.000
+   inverted T  4  +0.5  +0.101  -0.032  +0.0044  0.0010   0.28  0.076  17.4  0.14   0.84   3050   0.38   0.51  1540  0.082/0.080
+   inverted T  4  +1.0  +0.103  -0.033  +0.0132  0.0011   0.42  0.078  13.8  0.13   0.85    397   0.52   0.51   614  0.088/0.089
+   inverted P  2  -1.0  +0.373  -0.067  -0.0254  0.0014   0.47  0.099  10.7  0.06   0.72    175   0.70   0.79   157  0.112/0.118
+   inverted P  2  -0.5  +0.370  -0.064  -0.0106  0.0012   0.45  0.096  13.4  0.07   0.86    837   0.66   0.80   342  0.102/0.096
+   inverted P  2  +0.0  +0.377  -0.070  +0.0000  0.0000    nan  0.000   nan  1.00   0.91    inf    nan   0.77   nan  0.000/0.000
+   inverted P  2  +0.5  +0.364  -0.066  +0.0548  0.0016   1.01  0.118   7.6  0.05   0.99     53   0.77   0.69   107  0.133/0.133
+   inverted P  2  +1.0  +0.343  -0.067  +0.1132  0.0019   1.23  0.149   6.5  0.04   1.15     18   0.90   0.68    71  0.161/0.152
+   inverted P  4  -1.0  +0.155  -0.018  -0.0039  0.0011   0.19  0.077  15.2  0.12   0.73   5161   0.63   0.55   620  0.093/0.088
+   inverted P  4  -0.5  +0.154  -0.022  -0.0037  0.0011   0.36  0.081  16.5  0.13   0.75   5156   0.70   0.55  1866  0.088/0.081
+   inverted P  4  +0.0  +0.151  -0.022  +0.0000  0.0000    nan  0.000   nan  1.00   0.80    inf    nan   0.54   nan  0.000/0.000
+   inverted P  4  +0.5  +0.151  -0.022  +0.0153  0.0010   0.55  0.081  14.2  0.12   0.87    282   0.62   0.50   397  0.086/0.089
+   inverted P  4  +1.0  +0.147  -0.023  +0.0287  0.0011   0.56  0.083  11.0  0.11   0.96     90   0.65   0.49   175  0.091/0.092
+   label    T  2  -1.0  +0.203  +0.087  +0.0208  0.0012   0.65  0.096  12.3  0.07   0.86    226   0.59   0.54   388  0.104/0.099
+   label    T  2  -0.5  +0.201  +0.086  +0.0102  0.0012   0.63  0.093  13.1  0.07   0.87    837   0.54   0.59  1148  0.098/0.093
+   label    T  2  +0.0  +0.204  +0.086  +0.0000  0.0000    nan  0.000   nan  1.00   0.82    inf    nan   0.61   nan  0.000/0.000
+   label    T  2  +0.5  +0.199  +0.087  +0.0124  0.0012   0.59  0.092  11.9  0.07   0.87    610   0.51   0.55   549  0.102/0.102
+   label    T  2  +1.0  +0.199  +0.087  +0.0307  0.0013   0.74  0.102  10.9  0.06   0.88    115   0.66   0.61   230  0.110/0.109
+   label    T  4  -1.0  +0.057  +0.030  +0.0030  0.0010   0.27  0.076  18.9  0.14   0.83   6852   0.31   0.43  3685  0.082/0.078
+   label    T  4  -0.5  +0.059  +0.031  +0.0014  0.0010   0.25  0.076  16.6  0.13   0.82  30446   0.36   0.38  7279  0.082/0.082
+   label    T  4  +0.0  +0.058  +0.029  +0.0000  0.0000    nan  0.000   nan  1.00   0.80    inf    nan   0.62   nan  0.000/0.000
+   label    T  4  +0.5  +0.059  +0.029  +0.0012  0.0010   0.17  0.077  14.2  0.14   0.82  47067   0.21   0.57  7799  0.083/0.081
+   label    T  4  +1.0  +0.058  +0.030  +0.0047  0.0010   0.37  0.074  13.8  0.13   0.85   2612   0.37   0.38  3173  0.080/0.079
+
+   Pooled over the |gamma| = 1 cells of both wordings (transfer gains), weighting by 1/s.e.^2:
+     K=2 F      = 0.745 +- 0.012
+     K=2 F_open = 0.647 +- 0.011
+     K=4 F      = 0.530 +- 0.033
+     K=4 F_open = 0.508 +- 0.019
+
+   Agree-tie first-order response by kick size (lowest and highest third of |D|), gamma = 0 cells:
+     inverted K=2: |D| <= 0.59: r_A = +0.237;  |D| >= 1.06: r_A = +0.310;  ratio 0.77
+     inverted K=4: |D| <= 0.54: r_A = +0.072;  |D| >= 0.93: r_A = +0.112;  ratio 0.64
+     label    K=2: |D| <= 0.57: r_A = +0.150;  |D| >= 0.98: r_A = +0.213;  ratio 0.70
+     label    K=4: |D| <= 0.56: r_A = +0.042;  |D| >= 0.94: r_A = +0.063;  ratio 0.67
+
+   Early kicks (t0 = 0: the mirrored message is a round-0 sensor report; echo read at round 2), inverted, pilot gains.
+   E/lin is printed against the settled formula with the later-round gains, so it is not an attenuation here.
+   wording  g  K gamma     r_A     r_D        E   se(E)  E/lin  sig_y  kurt  zero  <D^2>     n3      F F_open    nF           se
+   inverted P  2  -1.0  +0.506  -0.075  -0.0424  0.0020   0.89  0.121   8.0  0.03   0.96     71   0.66   0.60    57  0.119/0.116
+   inverted P  2  +1.0  +0.509  -0.073  +0.1381  0.0033   1.33  0.170   4.8  0.03   0.96     19   0.66   0.57    18  0.198/0.199
+   inverted P  4  -1.0  +0.373  -0.018  -0.0194  0.0018   1.03  0.108   7.4  0.05   0.93    283   0.41   0.34    78  0.109/0.103
+   inverted P  4  +1.0  +0.370  -0.019  +0.0926  0.0023   1.86  0.131   6.0  0.04   0.95     21   0.40   0.37    11  0.140/0.137
+
+   Control: the same code with anchoring, repeats and noise switched off (rho = 0, pi_0 = 0, sigma = 0, one-shot
+   gains) is the mock of part B: E/E_lin must equal B's mirror/small ratio, F and F_open must be 1 up to the tanh
+   nonlinearity of a mirror kick, and sig_y must be the spread of slope factors only
+   inverted K=2 gamma=+1: E +0.1004, E_lin (K2) +0.0768, ratio 1.31; F_raw 0.851, F 1.026, F_open 0.919; sig_y 0.072; r_A small/large |D| 1.07
+   inverted K=2 gamma=-1: E -0.0337, E_lin (K2) -0.0343, ratio 0.98; F_raw 0.810, F 0.968, F_open 0.986; sig_y 0.010; r_A small/large |D| 1.03
+   inverted K=4 gamma=+1: E +0.0344, E_lin (K2) +0.0322, ratio 1.07; F_raw 0.801, F 1.006, F_open 0.977; sig_y 0.015; r_A small/large |D| 1.05
+   inverted K=4 gamma=-1: E -0.0202, E_lin (K2) -0.0205, ratio 0.99; F_raw 0.763, F 0.980, F_open 0.987; sig_y 0.005; r_A small/large |D| 0.96
+
+F. Frozen predictions for settled kicks (t0 = 6, 8): linear response with the one-shot real-message gains
+   Slope factors at the settled state (weights D_i^2). d_A, d_D: readers by edge type; D2: d_i d_j over reciprocated
+   ties, by type (AA, DD at gamma=+1; AD at gamma=-1); <D^2>: mean squared kick over all agents
+   inverted                         K=2: d_A 0.684 d_D 0.758 (range 0.590-0.782)  D2_AA 0.342 D2_DD 0.457 D2_AD 0.470  <D^2> 0.89
+   label                            K=2: d_A 0.757 d_D 0.809 (range 0.705-0.814)  D2_AA 0.434 D2_DD 0.512 D2_AD 0.507  <D^2> 0.72
+   label, raised first-inbox gains  K=2: d_A 0.762 d_D 0.799 (range 0.734-0.847)  D2_AA 0.471 D2_DD 0.520 D2_AD 0.467  <D^2> 0.72
+   inverted                         K=4: d_A 0.775 d_D 0.818 (range 0.754-0.837)  D2_AA 0.486 D2_DD 0.519 D2_AD 0.543  <D^2> 0.75
+   label                            K=4: d_A 0.797 d_D 0.805 (range 0.770-0.813)  D2_AA 0.480 D2_DD 0.499 D2_AD 0.521  <D^2> 0.75
+   label, raised first-inbox gains  K=4: d_A 0.785 d_D 0.801 (range 0.769-0.811)  D2_AA 0.479 D2_DD 0.489 D2_AD 0.476  <D^2> 0.77
+
+   Predictions. r_A = d_A a_+/K, r_D = -d_D a_-/K, E from (K4); +- is 1 s.d. from the gain s.e. (transfer check)
+   and from the slope factors (6% each for inverted, 12% for label, where no swarm has been run).
+   n3 = 9 sig_y^2 / (E^2 <D^2>), sig_y^2 = 2 <(s(t+1)-s(t))^2> of the pilot's rounds 6-10: sig_y = 0.089 (K=2), 0.066 (K=4).
+   wording   K gamma             r_A             r_D                 E  sign      n3 n3 at E-1sd
+   inverted  2  -1.0  +0.275 +- 0.020  -0.057 +- 0.009  -0.0285 +- 0.0051     -     100         148
+   inverted  2  -0.5  +0.275 +- 0.020  -0.057 +- 0.009  -0.0142 +- 0.0025     -     399         590
+   inverted  2  +0.0  +0.275 +- 0.020  -0.057 +- 0.009  +0.0000 +- 0.0000     0     nan         nan
+   inverted  2  +0.5  +0.275 +- 0.020  -0.057 +- 0.009  +0.0290 +- 0.0034     +      96         122
+   inverted  2  +1.0  +0.275 +- 0.020  -0.057 +- 0.009  +0.0581 +- 0.0067     +      24          31
+   inverted  4  -1.0  +0.128 +- 0.012  -0.046 +- 0.008  -0.0200 +- 0.0039     -     133         204
+   inverted  4  -0.5  +0.128 +- 0.012  -0.046 +- 0.008  -0.0100 +- 0.0019     -     531         814
+   inverted  4  +0.0  +0.128 +- 0.012  -0.046 +- 0.008  +0.0000 +- 0.0000     0     nan         nan
+   inverted  4  +0.5  +0.128 +- 0.012  -0.046 +- 0.008  +0.0150 +- 0.0023     +     236         329
+   inverted  4  +1.0  +0.128 +- 0.012  -0.046 +- 0.008  +0.0300 +- 0.0046     +      59          82
+   label     2  -1.0  +0.203 +- 0.026  +0.098 +- 0.015  +0.0329 +- 0.0065     +      93         145
+   label     2  -0.5  +0.203 +- 0.026  +0.098 +- 0.015  +0.0164 +- 0.0033     +     371         579
+   label     2  +0.0  +0.203 +- 0.026  +0.098 +- 0.015  +0.0000 +- 0.0000     0     nan         nan
+   label     2  +0.5  +0.203 +- 0.026  +0.098 +- 0.015  +0.0194 +- 0.0037     +     266         408
+   label     2  +1.0  +0.203 +- 0.026  +0.098 +- 0.015  +0.0388 +- 0.0075     +      67         102
+   label     4  -1.0  +0.079 +- 0.011  +0.043 +- 0.007  +0.0110 +- 0.0024     +     430         710
+   label     4  -0.5  +0.079 +- 0.011  +0.043 +- 0.007  +0.0055 +- 0.0012     +    1721        2841
+   label     4  +0.0  +0.079 +- 0.011  +0.043 +- 0.007  +0.0000 +- 0.0000     0     nan         nan
+   label     4  +0.5  +0.079 +- 0.011  +0.043 +- 0.007  +0.0062 +- 0.0013     +    1380        2247
+   label     4  +1.0  +0.079 +- 0.011  +0.043 +- 0.007  +0.0123 +- 0.0027     +     345         562

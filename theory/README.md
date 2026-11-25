@@ -24,6 +24,17 @@ thresholds; the PR estimator. Derived but not verified: multi-channel fields, th
 agents. Numerical observation without derivation: the growth of the correlation time with $\gamma$. Conjecture: a
 genuine noiseless transition somewhere in $0.8<\gamma<1$.
 
+## Update after the pilot swarm: the quiet, anchored regime (`quiet_regime.md`)
+
+The Haiku 5.5 pilot swarm and the real-message transfer check put every cell in the quiet regime, and the agent
+keeps about 0.7 of its own last answer when its inbox has not changed. `quiet_regime.md` gives the revised
+single-agent law (`experiments/04_swarm_design/surrogate_v2.py`), shows that anchoring moves the period-4 boundary
+from $d\,g(1+|\gamma|)=1$ to $\sqrt{(1+\rho)/(1-\rho)}$ while leaving the static one in place, and replaces tests
+2 and 3 of the table below by a direct measurement of the reaction term: kick one agent's message once and read
+its own answer two rounds later. The echo is zero at $\gamma=0$ by construction, its sign follows $\gamma$ and the
+wording, and its size can be predicted from first-order responses measured in the same experiment. Frozen
+predictions are in section 3.8 of that note and in `checks/kick_predictions.json`.
+
 ## Physics of Agents data: usable at zero cost, and two predictions already pass
 
 The release is a synchronous, symmetric ($\gamma=1$), memoryless swarm at $N=32$, $T=8$, with four replicas on each
