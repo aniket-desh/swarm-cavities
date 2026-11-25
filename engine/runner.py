@@ -62,6 +62,13 @@ def _slim(rec: dict) -> dict:
     return out
 
 
+def _slim_response(msg: dict) -> dict:
+    """What a replayed reply is read for (engine.agent.parse_belief, Runner._attempt, usage_tokens): stop reason and
+    details, usage, and the text blocks. Thinking blocks, most of the bytes, stay on disk only."""
+    return {"stop_reason": msg.get("stop_reason"), "stop_details": msg.get("stop_details"), "usage": msg.get("usage"),
+            "content": [b for b in msg.get("content", []) if b.get("type") == "text"]}
+
+
 class ReplayCache:
     """Append-only store of request -> response, sharded by the first two hex chars of the key.
 
@@ -93,7 +100,7 @@ class ReplayCache:
                 r = json.loads(line)
             except json.JSONDecodeError:
                 continue
-            d[r["key"]] = {"response": r["response"], "request_id": r.get("request_id")}
+            d[r["key"]] = {"response": _slim_response(r["response"]), "request_id": r.get("request_id")}
         self._offset[shard] = self._offset.get(shard, 0) + end
         return d
 
@@ -107,7 +114,7 @@ class ReplayCache:
     def put(self, key: str, params: dict, attempt: int, response: dict, request_id: str | None) -> None:
         rec = {"key": key, "attempt": attempt, "request_id": request_id, "params": params, "response": response}
         append_jsonl(self.root / f"{key[:2]}.jsonl", rec)
-        self._shards.setdefault(key[:2], {})[key] = {"response": response, "request_id": request_id}
+        self._shards.setdefault(key[:2], {})[key] = {"response": _slim_response(response), "request_id": request_id}
 
 
 _SHARED_REPLAY: dict[Path, ReplayCache] = {}
