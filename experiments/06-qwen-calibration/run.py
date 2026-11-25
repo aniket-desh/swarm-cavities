@@ -120,7 +120,7 @@ def transfer(llm):
                              "s_sampled": 2 * rec["p_sampled"] - 1 if rec.get("p_sampled") is not None else None,
                              "valid_mass": rec.get("valid_mass"), "message": r.message})
             progress(f"transfer {wording} K={K}: {len(ctxs)} calls in {time.time() - t0:.0f}s")
-        (OUT / f"transfer_{wording}.json").write_text(json.dumps(recs))
+            (OUT / f"transfer_{wording}.json").write_text(json.dumps(recs))     # after each K, so a stop keeps it
 
 
 # ---------------------------------------------------------------- conformity
@@ -169,7 +169,7 @@ def conformity(llm):
                 rec["s"] = None if rec["p"] is None else rec["s"]
                 recs.append(rec)
             progress(f"conformity {wording} K={K}: {len(arms)} calls in {time.time() - t0:.0f}s")
-        (OUT / f"conformity_{wording}.json").write_text(json.dumps(recs, default=float))
+            (OUT / f"conformity_{wording}.json").write_text(json.dumps(recs, default=float))
 
 
 STEPS = {"pilot": pilot, "transfer": transfer, "conformity": conformity}

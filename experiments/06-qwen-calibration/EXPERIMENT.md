@@ -1,15 +1,16 @@
 ---
 name: 06-qwen-calibration
 title: Qwen3.5-9B calibration with real Qwen swarm messages: pilot swarm, real-vs-template probes, conformity curve
-status: draft
-gpu: NVIDIA H100 80GB HBM3,NVIDIA H200,NVIDIA A100-SXM4-80GB
+status: approved
+gpu: NVIDIA A40,NVIDIA RTX A6000
 count: 1
 min_gpu_gb: 40
-hours: 3
-budget_usd: 16
+hours: 8
+budget_usd: 6
 disk_gb: 120
 data:
 secrets:
+approved_utc: 2026-11-25T15:38:29Z
 ---
 
 # Qwen3.5-9B calibration with real Qwen swarm messages: pilot swarm, real-vs-template probes, conformity curve
@@ -114,7 +115,9 @@ Then on the coordinator, after `orch finish`: `uv run python experiments/06-qwen
   `paper/figures/qwen_calibration.{pdf,png}`, `paper/figures/qwen_pilot.{pdf,png}`, `RESULT.md` here.
 
 Launch gate: this runs only after 06-qwen-smoke met its own criteria (missing < 5%, median valid mass >= 0.99, the
-sampled prefix ending in a lone " " token); see experiments/06-qwen-smoke/RESULT.md.
+sampled prefix ending in a lone " " token); see experiments/06-qwen-smoke/RESULT.md. Met at 15:40 UTC from 06-qwen-smoke steps 1-3
+(176 calls: 0 missing, median valid mass 0.99998, minimum 0.9996, every prefix ending in `":` then a lone " ");
+only that experiment's large-N timing was still running.
 
 ## Controls
 
@@ -146,15 +149,16 @@ Fixed before the run; all six (wording, K) cells reported, none selected after t
 Measured in 06-qwen-smoke on an A40: a synchronous round of 256 calls with inboxes takes 187 s (sampling 52 s, the
 two logprob stages 85 + 50 s; the readout is prefill-bound: about 6.5 prefills of ~1,000 tokens per call, and
 prefix caching for this hybrid model caches only in 528-token blocks), i.e. 1.4 calls/s; a batch of 8 takes 8 s.
-This run is 23,200 calls (8,064 + 7,200 + 7,920), which on the A40 would be about 5 h ($3). **GPU choice (a
-deviation from "cheapest per hour"):** the work is prefill compute-bound, and an H100 has about 13x the A40's dense
-bf16 throughput at 7.4x the price, so it should cost about the same per call and finish in about an hour instead of
-five. Projection on the H100 (assuming 6x the A40 throughput, not yet measured): pilot 20 minutes (126 sequential
-batches of 64), transfer + conformity 30 minutes, setup 10 minutes, two engine starts 8 minutes: about 70 minutes,
-$5. Cap 3 h (2.5x the projection), worst case $13.17 at $4.39/hr; budget $16 lets the H200 ($5.29/hr) serve as a
-fallback (worst case $15.87). Memory: one vLLM process, 16.7 GiB weights + KV/state; fits any listed card. Timing
-check: if the pilot's first cell takes more than 8 minutes (1.5x the 5-minute estimate for 21 batches), the whole
-run projects past 2 h; that is still inside the cap, so continue, and record the measured rate.
+This run is 23,200 calls (8,064 + 7,200 + 7,920). The A40 is also the cheapest card per call, not only per hour:
+the readout is prefill compute-bound, and dense bf16 throughput per dollar is about 150 TFLOPS / $0.59 for the A40
+against 990 / $4.39 for an H100 and 312 / $2.19 for an A100, so a faster card buys wall-clock time, not savings.
+Projection on the A40 at the measured 1.4 calls/s (1.2 calls/s for the pilot's batches of 64): pilot 1.9 h,
+transfer 1.4 h, conformity 1.6 h, setup and two engine starts 0.3 h: about 5.2 h, $3.10. Cap 8 h (1.5x the
+projection), worst case $4.72 on the A40 or $5.52 on the A6000 ($0.69/hr), inside the $6 budget. Memory: one vLLM
+process, 16.7 GiB weights + 20.4 GiB KV/state on the 44 GiB A40 (measured in 06-qwen-smoke). Timing check: the
+pilot's first cell (1,408 calls) is projected at 20 minutes; if it takes over 30 minutes the whole run projects past
+the cap, and the driver stops after the pilot and transfer steps, publishes, and reports (conformity then runs on a
+second worker).
 
 ## If something fails
 
@@ -173,10 +177,12 @@ run projects past 2 h; that is still inside the cap, so continue, and record the
   seeing data. Extra analyses are labelled exploratory in RESULT.md.
 - Missing rule: valid mass < 0.95 or two malformed samples; no belief is parsed from text.
 - All six (wording, K) transfer cells and all twelve conformity (wording, K, arm) cells are reported; no arm is
-  dropped for time (the cap covers 2.5x the projection).
+  dropped for time (if time runs short, a whole step moves to a second worker instead).
 - Pilot cells, graphs and seeds are the Haiku pilot's.
 
 ## Questions asked before launch
+
+Approved under the user's standing go-ahead for GPU spend in this phase (capped at $40).
 
 None needed: the user's brief fixed the design (pilot as in cells.py, transfer.py's paired design for both wordings
 at K=2,4,8, the conformity curve with real texts if cheap), the question and its thresholds (Lambda >~ 0.7, slope > 1),
@@ -198,7 +204,9 @@ experiment-reviewer (general-purpose agent following agents/experiment-reviewer.
   [P2] no launch gate on the smoke test: added. [P2] stickiness comparison not like for like: modal stated number
   added as the comparison. [P2] d fixed in the bootstrap and sqrt<d^2>: both now stated/reported.
 Also changed after review (not from it): conformity extended to K=2 (the bistability question covers every K), and
-the GPU list moved to H100 first on the A40 timing (see Time and cost).
+analysis-ready JSONs are written after each K. Second pass: approved, with two P2s: the H100 cost argument used a
+sparse/dense ratio (H100 is not cheaper per call), so the GPU list went back to the A40 per the user's rule with an
+8 h cap; and a cap stop would have lost the per-wording JSONs, fixed by writing them after each K.
 
 ## Amendments
 
