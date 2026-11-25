@@ -49,6 +49,19 @@ def _to_dict(msg) -> dict:
     return msg if isinstance(msg, dict) else msg.to_dict()
 
 
+_SLIM_KEYS = ("experiment_id", "seed", "round_t", "agent_id", "status", "missing_reason", "calibrated_belief_prob",
+              "public_message", "belief_vector", "cost_usd")
+
+
+def _slim(rec: dict) -> dict:
+    """The part of a checkpoint record that callers read (swarm backends, kick twins), kept in memory for skipping
+    finished calls; the full record stays on disk. Kick experiments write ~128 records per twin, and holding them in
+    full grew one process past 1 GB."""
+    out = {k: rec.get(k) for k in _SLIM_KEYS}
+    out["attempts"] = [{"replayed": a.get("replayed", False)} for a in rec.get("attempts", [])]
+    return out
+
+
 class ReplayCache:
     """Append-only store of request -> response, sharded by the first two hex chars of the key.
 
@@ -126,7 +139,7 @@ class Runner:
         self.batches_path = self.dir / "batches.jsonl"  # submitted batch ids, so a restart re-attaches
         self.replay = shared_replay(replay_dir or Path(results_root) / "_replay")
         self.ledger_path = ledger_path
-        self.done = {self._key(r["seed"], r["round_t"], r["agent_id"]): r for r in read_jsonl(self.ckpt_path)}
+        self.done = {self._key(r["seed"], r["round_t"], r["agent_id"]): _slim(r) for r in read_jsonl(self.ckpt_path)}
         self.last_batch_latency_s: float | None = None
 
     # ---------- shared pieces ----------
@@ -162,7 +175,7 @@ class Runner:
         if belief:
             rec.update(belief)
         append_jsonl(self.ckpt_path, rec)
-        self.done[self._key(seed, round_t, req.agent_id)] = rec
+        self.done[self._key(seed, round_t, req.agent_id)] = _slim(rec)
         return rec
 
     def _split_done(self, seed, round_t, requests):
