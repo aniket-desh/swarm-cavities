@@ -1,7 +1,7 @@
 ---
 name: 06-qwen-smoke
 title: Qwen3.5-9B on vLLM: backend smoke test and large-N round timing
-status: approved
+status: done
 gpu: NVIDIA A40,NVIDIA RTX A6000,NVIDIA L40S,NVIDIA A100-SXM4-80GB
 count: 1
 min_gpu_gb: 40
@@ -11,6 +11,9 @@ disk_gb: 120
 data:
 secrets:
 approved_utc: 2026-11-25T15:08:06Z
+result: supported
+finished_utc: 2026-11-25T15:59:28Z
+writeup: experiments/06-qwen-smoke/RESULT.md
 ---
 
 # Qwen3.5-9B on vLLM: backend smoke test and large-N round timing
@@ -130,4 +133,9 @@ None.
 
 ## Outcome
 
-Not run yet.
+- All steps complete: yes (timing at N=1024 stopped after round 1 of 2 as redundant).
+- Missing rate < 5%: 0 of 1,968 calls (15 malformed samples recovered on retry).
+- Median valid mass >= 0.99: 0.99998 (minimum 0.9948).
+- Sampled prefix ends in a lone " ": every call.
+- Timing: $0.031 per round at N=256, $0.137 at N=1024 (A40).
+- Cost $0.49 against $5; 0.83 h against a 2 h cap. Write-up: RESULT.md.
