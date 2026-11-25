@@ -33,7 +33,8 @@ Falsifiers (EXPERIMENT.md "Fixed rules"):
   F2 one-way echo (the one-step memory premise): |X2(one-way)| > 3 se -> falsified. X2 = 0 in the one-way world holds
      only if the own memory is one step in the call; a path through the analyst's own notes would show here, and the
      kick echo (own history held at the base run's) excludes it. So F5, F6 and the G d check use X2(world) - X2(one-way).
-  F3 antagonistic sign vs sign(G_A) from the swarm: |G_A d| < 0.004 -> no sign predicted (second null); else the echo
+  F3 antagonistic sign vs sign(G_A) from the swarm: |G_A d| + 2 se < 0.004 -> no sign predicted (second null);
+     |G_A d| < 0.004 but not by 2 se -> no sign test (inconclusive); else the echo
      (X2(ant) - X2(one-way), and E_ant rewritten) opposite to sign(G_A) by > 3 se -> falsified. Notes-kept: E_kept
      opposite in sign to r_A r_D by > 3 se -> falsified.
   F4 ordering: X2(mut) - X2(ant) < 3 se, or (both worlds' twins powered and E_mut - E_ant < 3 se) -> falsified.
@@ -271,10 +272,12 @@ def falsifiers(W, KT, G) -> dict:
     o = W["oneway"]["X2"]
     F["F2"] = dict(X2_oneway=o, outcome="falsified" if abs(o["mean"]) > 3 * o["se"] else "consistent")
     # F3
-    gA = G["antagonistic"]["Gd_A"]
+    gA, gA_se = G["antagonistic"]["Gd_A"], G["antagonistic"]["Gd_A_se"]
     rArD = Ea["rA"]["est"] * Ea["rD"]["est"]
-    if abs(gA) < 0.004:
-        out3 = "no sign predicted (|G_A d| < 0.004): antagonistic world is a second null"
+    if abs(gA) < 0.004 and abs(gA) + 2 * gA_se >= 0.004:
+        out3 = "sign of G_A not resolved (|G_A d| < 0.004 but not by 2 se): no sign test"
+    elif abs(gA) + 2 * gA_se < 0.004:
+        out3 = "no sign predicted (|G_A d| + 2 se < 0.004): antagonistic world is a second null"
         if abs(a_o["diff"]) > 3 * a_o["se"] or abs(Ea["E"]["est"]) > 3 * Ea["E"]["se"]:
             out3 += "; but an echo is resolved (see values)"
     else:

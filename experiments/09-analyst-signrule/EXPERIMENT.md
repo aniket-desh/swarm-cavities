@@ -1,7 +1,7 @@
 ---
 name: 09-analyst-signrule
 title: Analyst de-biased sign-rule test: Qwen3.5-9B swarms (N=256, K=16, T=20) in mutual, one-way and antagonistic graphs, echo function and kick twins against frozen predictions
-status: draft
+status: approved
 gpu: NVIDIA A40,NVIDIA L40S,NVIDIA RTX A6000
 count: 1
 min_gpu_gb: 40
@@ -10,6 +10,7 @@ budget_usd: 9
 disk_gb: 120
 data:
 secrets:
+approved_utc: 2026-11-25T21:21:53Z
 ---
 
 # Analyst de-biased sign-rule test: Qwen3.5-9B swarms (N=256, K=16, T=20) in mutual, one-way and antagonistic graphs, echo function and kick twins against frozen predictions
@@ -120,7 +121,7 @@ readers by tie type, and E and E_x from i, in both replays. There is no asynchro
 Figures come from `plot.py`.
 
 **Validation done before launch:**
-- 64 unit tests, including two identity checks:
+- 64 tests in `tests/test_analyst.py` (77 with `tests/test_vllm_backend.py`), including two identity checks:
   - the de-biased loop under the mock law equals `analyst_signrule_check.simulate` exactly, and `analyst_lib.simulate`
     at c − ĉ;
   - `kick_slice` equals the note's `kick_twins` for every reader at t0+1 and the kicked analyst at t0+2, with E = 0
@@ -243,8 +244,7 @@ about 165 s per lockstep round on an A40, so W2 ≈ 7 h.
   and ĉ is not changed whatever it shows.
 - The cell, the runs, the seeds, the twin allocation, the estimators in `analyze.py`, the missing rule (valid mass
   0.95), and no belief parsed from text.
-- The s.e. definitions: pooled within-world run s.d. / √n for world means; the cluster bootstrap over slices for
-  twins.
+- The s.e. definitions: pooled within-world run s.d. / √n for world means.
 - **Kick s.e.:** the larger of the cluster bootstraps over slices and over (run, replica).
 - **Power rule for the kick parts.** A world's twins count as "powered" iff the frozen M1 kick echo (mutual +0.0553,
   antagonistic +0.0092) is at least 3 × the observed s.e. of E. Unpowered twins are reported, but they don't decide F1
@@ -264,7 +264,8 @@ comparison from the data.
 - **F3, antagonistic sign, conditional on the swarm's couplings.**
   - The prediction is sign(Ĝ_A) of (S4), with û from the first-order kick responses, v̂ from the in-swarm leak
     regression, and d, d^r from the beliefs.
-  - If |Ĝ_A d| < 0.004, no sign is predicted and the antagonistic world counts as a second null.
+  - If |Ĝ_A d| + 2 s.e. < 0.004, no sign is predicted and the antagonistic world counts as a second null. If
+    |Ĝ_A d| < 0.004 but not by 2 s.e., there is no sign test, and the antagonistic part is inconclusive.
   - Otherwise, X₂(antagonistic) − X₂(one-way) or E_antagonistic (rewritten) with the opposite sign at > 3 se is
     falsified.
   - Notes kept: E_kept with the sign opposite to r_A·r_D at > 3 se is falsified.
@@ -284,8 +285,8 @@ comparison from the data.
 | any of F1, F3, F3 notes-kept, F4 or F6 starts with "falsified" | **not supported** (the falsified ones named) |
 | F1 "unresolved (G_M d <= 0.03)" | **inconclusive** |
 | F3 "consistent (sign resolved)" | **supported**: reciprocity, ordering and the antagonistic sign |
-| F3 "no sign predicted …" without "but an echo is resolved" | **supported**: reciprocity and ordering; antagonistic world a second null as predicted |
-| otherwise (F3 "consistent (sign not resolved at 3 se)", or an unexpected resolved echo when none is predicted) | **inconclusive (antagonistic part)**: reciprocity and ordering confirmed, antagonistic sign not resolved |
+| F3 "no sign predicted (\|G_A d\| + 2 se < 0.004) …" without "but an echo is resolved" | **supported**: reciprocity and ordering; antagonistic world a second null as predicted |
+| otherwise (F3 "consistent (sign not resolved at 3 se)", F3 "sign of G_A not resolved …", or an unexpected resolved echo when none is predicted) | **inconclusive (antagonistic part)**: reciprocity and ordering confirmed, antagonistic sign not resolved |
 
 Appended to every label: "one-step memory holds" (F2 consistent) or "one-step memory fails (F2)". A falsified F2 does
 not by itself make the sign rule "not supported", because F1, F3, F4 and F6 use differences or the kick echo, which are
@@ -298,7 +299,7 @@ null-twin note noise.
 ## Questions asked before launch
 
 None needed. The coordinator's message (the user's option (b)) and the frozen note fixed the design, the falsifiers,
-the constraints, spend tracking ($8–15 expected) and approval, which the user's standing go-ahead covers. Choices made
+the constraints, spend tracking ($8–15 expected) and approval, which the user's standing go-ahead covers (the approval below rests on it). Choices made
 here:
 - two workers (W1 mutual and one-way, W2 antagonistic plus one one-way run), with the mutual run first;
 - lockstep replicas with a shared session tag;
@@ -329,6 +330,11 @@ First pass (general-purpose agent following `agents/experiment-reviewer.md`, def
   slice).
 - Both dry variants were re-run after the fixes. Each gives "supported" with "one-step memory holds". In the
   prompt-sensitive variant F6 is "unpowered", and in the white variant it is "consistent".
+
+Re-check (same reviewer, after af11fd3): every earlier P0/P1 addressed and no new P0. One P1 was left: the second-null
+route fired on the point estimate of Ĝ_A d. Fixed, so it now needs |Ĝ_A d| + 2 s.e. < 0.004; a small but unresolved
+value gives no sign test, and the antagonistic part is then inconclusive. Also fixed: the stale kick-s.e. wording and
+the test count. The reviewer said it is ready to run with this fix.
 
 ## Amendments
 
