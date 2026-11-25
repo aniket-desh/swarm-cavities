@@ -50,27 +50,62 @@ def _to_dict(msg) -> dict:
 
 
 class ReplayCache:
-    """Append-only store of request -> response, sharded by the first two hex chars of the key."""
+    """Append-only store of request -> response, sharded by the first two hex chars of the key.
+
+    Memory: only {response, request_id} is kept in memory (the params stay on disk), and one instance is shared by
+    every Runner of a process that uses the same directory (`shared_replay`), so 24 concurrent swarm runs hold one
+    copy instead of 24 (each full copy of a 180 MB cache was enough to hit the container's 8 GB limit).
+    Freshness: on a miss, only the lines appended to the shard since the last read are parsed (another process may
+    have written them), instead of re-reading the whole shard on every miss.
+    """
 
     def __init__(self, root: Path):
         self.root = Path(root)
         self._shards: dict[str, dict] = {}
+        self._offset: dict[str, int] = {}
 
-    def _load(self, shard: str) -> dict:
-        self._shards[shard] = {r["key"]: r for r in read_jsonl(self.root / f"{shard}.jsonl")}
-        return self._shards[shard]
+    def _refresh(self, shard: str) -> dict:
+        d = self._shards.setdefault(shard, {})
+        path = self.root / f"{shard}.jsonl"
+        if not path.exists():
+            return d
+        with open(path, "rb") as f:
+            f.seek(self._offset.get(shard, 0))
+            chunk = f.read()
+        end = chunk.rfind(b"\n") + 1            # parse complete lines only; a partly written last line waits
+        for line in chunk[:end].splitlines():
+            if not line.strip():
+                continue
+            try:
+                r = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            d[r["key"]] = {"response": r["response"], "request_id": r.get("request_id")}
+        self._offset[shard] = self._offset.get(shard, 0) + end
+        return d
 
     def get(self, key: str) -> dict | None:
         shard = key[:2]
         hit = self._shards.get(shard, {}).get(key)
-        if hit is None:  # another process may have written it since we loaded the shard
-            hit = self._load(shard).get(key)
+        if hit is None:
+            hit = self._refresh(shard).get(key)
         return hit
 
     def put(self, key: str, params: dict, attempt: int, response: dict, request_id: str | None) -> None:
         rec = {"key": key, "attempt": attempt, "request_id": request_id, "params": params, "response": response}
         append_jsonl(self.root / f"{key[:2]}.jsonl", rec)
-        self._shards.setdefault(key[:2], {})[key] = rec
+        self._shards.setdefault(key[:2], {})[key] = {"response": response, "request_id": request_id}
+
+
+_SHARED_REPLAY: dict[Path, ReplayCache] = {}
+
+
+def shared_replay(root: Path) -> ReplayCache:
+    """One ReplayCache per directory per process."""
+    root = Path(root).resolve()
+    if root not in _SHARED_REPLAY:
+        _SHARED_REPLAY[root] = ReplayCache(root)
+    return _SHARED_REPLAY[root]
 
 
 class Runner:
@@ -89,7 +124,7 @@ class Runner:
         self.dir = Path(results_root) / experiment_id
         self.ckpt_path = self.dir / "checkpoints.jsonl"
         self.batches_path = self.dir / "batches.jsonl"  # submitted batch ids, so a restart re-attaches
-        self.replay = ReplayCache(replay_dir or Path(results_root) / "_replay")
+        self.replay = shared_replay(replay_dir or Path(results_root) / "_replay")
         self.ledger_path = ledger_path
         self.done = {self._key(r["seed"], r["round_t"], r["agent_id"]): r for r in read_jsonl(self.ckpt_path)}
         self.last_batch_latency_s: float | None = None
