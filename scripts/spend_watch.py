@@ -16,12 +16,16 @@ Run:  uv run python scripts/spend_watch.py            # loop every 5 min (run in
 
 import argparse
 import json
-import subprocess
+import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))  # so `engine` imports under plain `python` as well as `uv run`
+from engine.budget import pod_spend  # noqa: E402  (shared with engine.BudgetGuard)
+from engine.ledger import total_api_spend  # noqa: E402
+
 LEDGER = ROOT / "budget" / "ledger.jsonl"
 ALERTS = ROOT / "budget" / "alerts.log"
 STATE = ROOT / "budget" / "alerts_state.json"
@@ -32,34 +36,7 @@ STEP = 100.0
 
 def api_spend() -> float:
     """Sum cost_usd over the ledger; skip blank or partially written lines."""
-    if not LEDGER.exists():
-        return 0.0
-    total = 0.0
-    for line in LEDGER.read_text().splitlines():
-        line = line.strip()
-        if not line:
-            continue
-        try:
-            total += float(json.loads(line).get("cost_usd", 0.0))
-        except (json.JSONDecodeError, TypeError, ValueError):
-            continue
-    return total
-
-
-def pod_spend() -> float | None:
-    """This project's pod spend since it started; None if orch could not be read."""
-    try:
-        out = subprocess.run(
-            ["orch", "spend", "--json", "--days", "365"],
-            cwd=ROOT, capture_output=True, text=True, timeout=120,
-        )
-        data = json.loads(out.stdout)
-    except (subprocess.SubprocessError, json.JSONDecodeError, OSError):
-        return None
-    for p in data.get("projects", []):
-        if p.get("project") == PROJECT:
-            return max(p.get("billed") or 0.0, p.get("estimated") or 0.0)
-    return 0.0  # no pods tagged for this project yet
+    return total_api_spend(LEDGER)
 
 
 def load_state() -> dict:
