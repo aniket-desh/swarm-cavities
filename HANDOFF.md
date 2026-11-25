@@ -33,12 +33,42 @@ Control wasn't connected.
   didn't mention matter for the design. The Claude API returns no logprobs, so beliefs come from a structured
   probability field. And Haiku 5.5 thinks by default with billed thinking tokens, so agent calls will run at low effort.
 
+- **Literature red-team** (`docs/literature.md`). Both cited papers exist, but the spec misdescribes them. Flag Game
+  (Pavlova & Tanaka) does have transcript memory in its experiments and a zealot (asymmetric) voter theory, with only
+  qualitative fits, and it releases no code. Physics of Agents (El et al.) fits a kinetic logistic Glauber model with
+  three scalar couplings on symmetric sparse graphs, not a static Ising model. Its code (Apache-2.0) is in
+  `third_party/physics-of-agents/`, and its 9,600 trajectories are on Hugging Face as a free pilot dataset. The
+  Hugging Face incident was a spontaneous false belief spreading, not instructed zealots. Verdicts on the claims:
+  - Claim 1 is known mathematics. The spec's noise covariance should use the full correlation, not the connected part.
+  - Claim 2's sharp γ_c into a frozen phase contradicts Crisanti–Sompolinsky and CKLP. For γ<1 there's no freezing,
+    only a correlation time that grows as γ→1. The linear boundary g(1+γ)χ=1 is known (the elliptic law).
+  - Claim 3's two-site theory exists already (Clark et al. 2023). PR works only as an ensemble diagnostic, not as a
+    per-run detector at N=32.
+  - Claim 4's tipping and hysteresis in LLM populations were already shown by De Marzo et al. 2026. Only the
+    γ-dependence is new, and the spec's predicted direction is probably backwards.
+  - Claims 5 and 6 are plausible but low priority.
+
+- **Engine** (`engine/`, 22 tests pass): pricing from `usage`, an atomic ledger, BudgetGuard, structured beliefs,
+  two-breakpoint prompt caching, realtime and Batch API paths, per-round checkpoints and a free replay cache. The live
+  check on Haiku 5.5 showed that ledger costs match `usage` exactly and the cached prefix is read on repeat calls. A
+  call costs about $0.0002–0.0004, and Haiku spends 150–200 thinking tokens per call even at effort low. A 3-request
+  batch took 6 minutes.
+- **Refusal fix** (`experiments/00_refusal_ab/`). The spec's `private_reasoning` field drew `reasoning_extraction`
+  refusals on 6 of 12 calls. Renamed to `rationale` with neutral wording, it drew 0 of 12, with unchanged beliefs.
+  Cost $0.008.
+
 ## In progress
 
-- Literature red-team (background agent): checking whether the two cited arXiv papers exist and say what the spec
-  claims, finding their code, and checking each claim against classical DMFT results.
+- **Theory (Fable 5.2 agent):** deriving corrected versions of Claims 1–6 in `theory/`, with numerical checks, a
+  solver spec with analytic test cases, and a prioritized list of predictions worth testing.
 
 ## Decisions for you to review
+
+- **Belief field renamed** from the spec's `private_reasoning` to `rationale`, because the original name caused 50%
+  refusals (see Done). A related risk: Experiment 2's zealots are "secretly instructed" to push a backdoored PR past a
+  monitor, and that framing may draw refusals too. I'll pilot its prompts for refusal rate before any sweep, and if
+  they're refused I'll reframe the zealots as agents with sincerely wrong evidence (closer to the real Hugging Face
+  incident anyway).
 
 - **Network volume is at its quota** (`uv sync` failed with "Disk quota exceeded"; /workspace holds about 55 GB across
   projects, 12 GB of it the shared uv cache). I didn't delete anything. This project's venv and uv cache live on the
