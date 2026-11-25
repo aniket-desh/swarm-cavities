@@ -41,7 +41,8 @@ Prompt variants (PromptVariant; the default is the prompt above, unchanged): the
 closes "down" instead of "up"; the options can be listed SELL first; the decision can be a YES/NO answer to the
 question (recorded by the desk as BUY/SELL: YES = BUY for "up", YES = SELL for "down"), which separates a bias toward
 a token from a bias toward the content; and the faded colleagues' calls can be shown reversed by the desk
-("reversed"), optionally with the statement that a reversed call is as informative as an ally's ("reversed_equal").
+("reversed"), optionally with the statement that a reversed call is as informative as an ally's ("reversed_equal"),
+and optionally without the faded colleagues' notes ("reversed_equal_nonote").
 Contexts always hold the true calls; only the rendering changes. x is always the half log-odds of the up-call (BUY).
 
 Guardrail 4: no prompt text calls any field or text private, hidden or secret; the research note is "your own
@@ -91,7 +92,7 @@ class PromptVariant:
     question: str = "up"           # "up" | "down": which closing direction the question asks about
     order: str = "buy_first"       # "buy_first" | "sell_first": order of the options wherever they are listed
     tokens: str = "buysell"        # "buysell" | "yesno": the decision word the model writes
-    fade: str = "ordinary"         # "ordinary" | "reversed" | "reversed_equal"
+    fade: str = "ordinary"         # "ordinary" | "reversed" | "reversed_equal" | "reversed_equal_nonote"
 
     @property
     def prefix(self) -> str:
@@ -217,7 +218,9 @@ def rules(wording: str, K: int = 16, asset: str = ASSET, v: PromptVariant = DEFA
         fade = ("colleagues who are usually wrong. The desk reverses their calls before showing them to you: a faded "
                 "colleague who called SELL is shown as BUY (reversed), and one who called BUY is shown as SELL "
                 "(reversed). Their notes are shown as they wrote them.")
-        if v.fade == "reversed_equal":
+        if v.fade == "reversed_equal_nonote":
+            fade = fade.replace("Their notes are shown as they wrote them.", "Their notes are not shown.")
+        if v.fade in ("reversed_equal", "reversed_equal_nonote"):
             fade += " A reversed call is as informative as an ally's call."
     if v.question == "up":
         q = f"whether {asset} will close up this week, that is, higher at Friday's close than at Monday's open."
@@ -267,11 +270,13 @@ def rules(wording: str, K: int = 16, asset: str = ASSET, v: PromptVariant = DEFA
     )
 
 
-def _fmt_calls(msgs, reversed_: bool = False) -> str:
+def _fmt_calls(msgs, reversed_: bool = False, notes: bool = True) -> str:
     if not msgs:
         return "(none)"
     if reversed_:
         flip = {"BUY": "SELL", "SELL": "BUY"}
+        if not notes:
+            return "\n".join(f"- {flip[c]} (reversed)." for c, _ in msgs)
         return "\n".join(f'- {flip[c]} (reversed). Their note: "{n.strip()}"' for c, n in msgs)
     return "\n".join(f'- {c}. Note: "{n.strip()}"' for c, n in msgs)
 
@@ -290,7 +295,8 @@ def dynamic(ctx: AnalystContext, v: PromptVariant = DEFAULT_VARIANT) -> str:
         if v.fade == "ordinary":
             parts.append("Faded colleagues' latest calls:\n" + _fmt_calls(ctx.faded))
         else:
-            parts.append("Faded colleagues' latest calls, reversed by the desk:\n" + _fmt_calls(ctx.faded, True))
+            parts.append("Faded colleagues' latest calls, reversed by the desk:\n"
+                         + _fmt_calls(ctx.faded, True, notes=v.fade != "reversed_equal_nonote"))
     parts.append(f"Make your call for round {ctx.round_t + 1}.")
     return "\n\n".join(parts)
 

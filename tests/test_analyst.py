@@ -305,7 +305,7 @@ def test_parse_note():
 # ---------------------------------------------------------------- prompt variants (08b-analyst-calibration-2)
 
 VARIANTS = [A.PromptVariant(q, o, t, f) for q in ("up", "down") for o in ("buy_first", "sell_first")
-            for t in ("buysell", "yesno") for f in ("ordinary", "reversed", "reversed_equal")]
+            for t in ("buysell", "yesno") for f in ("ordinary", "reversed", "reversed_equal", "reversed_equal_nonote")]
 
 
 def test_default_variant_is_the_original_prompt():
@@ -327,6 +327,8 @@ def test_variants_render_without_forbidden_words(v):
     assert v.prefix[:-1] in text or v.prefix.replace('"', '').strip() in text.replace('"', '')
     if v.fade == "ordinary":
         assert "faded note 0" in text and "(reversed)" not in text
+    elif v.fade == "reversed_equal_nonote":
+        assert "- buy (reversed).\n" in text + "\n" and "faded note 0" not in text and "notes are not shown" in text
     else:
         assert '- buy (reversed). their note: "faded note 0"' in text      # the context's SELL shown reversed
 
