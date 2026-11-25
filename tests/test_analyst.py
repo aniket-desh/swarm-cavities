@@ -300,3 +300,59 @@ def test_vllm_backend_note_retry_and_truncation():
 def test_parse_note():
     assert A.parse_note('Demand is firm, BUY."}') == "Demand is firm, BUY."
     assert A.parse_note('Demand "firm"."}') is None and A.parse_note('a"} extra') is None and A.parse_note('"}') is None
+
+
+# ---------------------------------------------------------------- prompt variants (08b-analyst-calibration-2)
+
+VARIANTS = [A.PromptVariant(q, o, t, f) for q in ("up", "down") for o in ("buy_first", "sell_first")
+            for t in ("buysell", "yesno") for f in ("ordinary", "reversed", "reversed_equal")]
+
+
+def test_default_variant_is_the_original_prompt():
+    """Frozen hash of the prompts used in 08-analyst-calibration: the variant machinery must not change them."""
+    import hashlib
+    g = A.make_game(3, 2, seed=0)
+    ctxs = [A.AnalystContext(0, 4, 0, g.notes[0].text(), "UP", 63),
+            A.AnalystContext(1, 4, 3, g.notes[1].text(), "DOWN", 71, own=("BUY", "x"),
+                             allies=(("BUY", "a"), ("SELL", "b")), faded=(("SELL", "c"),))]
+    s = "".join(m["content"] for w in A.WORDINGS for c in ctxs for m in A.render_messages(c, w))
+    assert hashlib.sha256(s.encode()).hexdigest() == "b0a45d9f4283f49a121f9224533f8aa11893e60a5284fb603ff338f138af43fd"
+
+
+@pytest.mark.parametrize("v", VARIANTS, ids=str)
+def test_variants_render_without_forbidden_words(v):
+    text = " ".join(m["content"] for m in A.render_messages(_ctx(3), "max", v=v)).lower()
+    assert not any(w in text for w in A.FORBIDDEN_WORDS)
+    assert ("whether orsilane freight will close down this week" in text) == (v.question == "down")
+    assert v.prefix[:-1] in text or v.prefix.replace('"', '').strip() in text.replace('"', '')
+    if v.fade == "ordinary":
+        assert "faded note 0" in text and "(reversed)" not in text
+    else:
+        assert '- buy (reversed). their note: "faded note 0"' in text      # the context's SELL shown reversed
+
+
+def test_yesno_down_maps_no_to_buy():
+    """In the YES/NO variant asking whether the asset closes down, P(BUY) = P(NO)/(P(YES)+P(NO))."""
+    YES, NO = 1003, 1004
+
+    class YNTok(WordTok):
+        words = {"BUY": BUY, "SELL": SELL, "YES": YES, "NO": NO}
+
+    class YNLLM(FakeLLM):
+        def __init__(self):
+            super().__init__()
+            self.tok = YNTok()
+
+        def generate(self, prompts, params, use_tqdm=False):
+            out = []
+            for pr in prompts:
+                assert self.tok.decode(pr["prompt_token_ids"]).endswith('{"answer": "')
+                lp = {YES: SimpleNamespace(logprob=np.log(0.2)), NO: SimpleNamespace(logprob=np.log(0.79)),
+                      7: SimpleNamespace(logprob=np.log(0.01))}
+                out.append(SimpleNamespace(outputs=[SimpleNamespace(token_ids=[NO], logprobs=[lp], finish_reason="length")]))
+            return out
+
+    be = A.AnalystVLLM(YNLLM(), "max", "u", K=2, params=FAKE_PARAMS, variant=A.PromptVariant(question="down", tokens="yesno"))
+    b = be.beliefs([_ctx(1)])[0]
+    assert be.buy_id == NO and be.sell_id == YES
+    assert b["p_buy"] == pytest.approx(0.79 / 0.99) and b["x"] == pytest.approx(0.5 * np.log(0.79 / 0.2))

@@ -37,6 +37,13 @@ flagged. The call is sampled at temperature 1 from P_buy with a stored uniform p
 so base runs and kick twins share draws (analyst_scenario.md section 5). The note is then generated conditional on
 the sampled call (prefix + call + '", "note": "', constrained to a quote-free string and '"}').
 
+Prompt variants (PromptVariant; the default is the prompt above, unchanged): the question can ask whether the asset
+closes "down" instead of "up"; the options can be listed SELL first; the decision can be a YES/NO answer to the
+question (recorded by the desk as BUY/SELL: YES = BUY for "up", YES = SELL for "down"), which separates a bias toward
+a token from a bias toward the content; and the faded colleagues' calls can be shown reversed by the desk
+("reversed"), optionally with the statement that a reversed call is as informative as an ally's ("reversed_equal").
+Contexts always hold the true calls; only the rendering changes. x is always the half log-odds of the up-call (BUY).
+
 Guardrail 4: no prompt text calls any field or text private, hidden or secret; the research note is "your own
 research note". tests/test_analyst.py checks every wording.
 """
@@ -78,6 +85,27 @@ WORDINGS = {
             "colleagues who are almost always wrong; treat each of their calls as strong evidence for the "
             "opposite call."),
 }
+
+@dataclass(frozen=True)
+class PromptVariant:
+    question: str = "up"           # "up" | "down": which closing direction the question asks about
+    order: str = "buy_first"       # "buy_first" | "sell_first": order of the options wherever they are listed
+    tokens: str = "buysell"        # "buysell" | "yesno": the decision word the model writes
+    fade: str = "ordinary"         # "ordinary" | "reversed" | "reversed_equal"
+
+    @property
+    def prefix(self) -> str:
+        return DECISION_PREFIX if self.tokens == "buysell" else '{"answer": "'
+
+    @property
+    def words(self) -> tuple[str, str]:
+        """(word for the up-call BUY, word for the down-call SELL)."""
+        if self.tokens == "buysell":
+            return ("BUY", "SELL")
+        return ("YES", "NO") if self.question == "up" else ("NO", "YES")
+
+
+DEFAULT_VARIANT = PromptVariant()
 
 TEMPLATE_NOTES = ("{C}.", "My call is {C}.", "I am calling {C} this round.", "{C} from me this round.",
                   "Going with {C}.")
@@ -183,16 +211,41 @@ class AnalystContext:
     meta: dict = field(default_factory=dict, compare=False, hash=False)
 
 
-def rules(wording: str, K: int = 16, asset: str = ASSET) -> str:
+def rules(wording: str, K: int = 16, asset: str = ASSET, v: PromptVariant = DEFAULT_VARIANT) -> str:
     ally, fade = WORDINGS[wording]
+    if v.fade != "ordinary":
+        fade = ("colleagues who are usually wrong. The desk reverses their calls before showing them to you: a faded "
+                "colleague who called SELL is shown as BUY (reversed), and one who called BUY is shown as SELL "
+                "(reversed). Their notes are shown as they wrote them.")
+        if v.fade == "reversed_equal":
+            fade += " A reversed call is as informative as an ally's call."
+    if v.question == "up":
+        q = f"whether {asset} will close up this week, that is, higher at Friday's close than at Monday's open."
+    else:
+        q = f"whether {asset} will close down this week, that is, lower at Friday's close than at Monday's open."
+    buy = f"BUY if they think {asset} will close up this week"
+    sell = f"SELL if they think {asset} will close down this week"
+    if v.tokens == "buysell":
+        first, second = (buy, sell.replace(" this week", "")) if v.order == "buy_first" else \
+            (sell, buy.replace(" this week", ""))
+        second = second.replace(f"think {asset}", "think it")
+        calls = f"call: {first}, {second}."
+        opts = '"BUY" or "SELL"' if v.order == "buy_first" else '"SELL" or "BUY"'
+        answer = f"- call: {opts}.\n"
+        fmt = '{"call": ' + opts + ', "note": "your note"}'
+    else:
+        rec = "YES is recorded as a BUY call and NO as a SELL call" if v.question == "up" else \
+            "YES is recorded as a SELL call and NO as a BUY call"
+        calls = f"call by answering the question YES or NO: {rec}."
+        answer = '- answer: "YES" or "NO".\n'
+        fmt = '{"answer": "YES" or "NO", "note": "your note"}'
     return (
         "You are one of the analysts on a research desk in a trading simulation. Everything in it is fictional: "
         "the asset, the desk, the colleagues and the data.\n\n"
         "The question\n"
-        f"- The desk covers one fictional asset, {asset}. The question for everyone is whether {asset} will close "
-        "up this week, that is, higher at Friday's close than at Monday's open.\n"
+        f"- The desk covers one fictional asset, {asset}. The question for everyone is {q}\n"
         "- The desk makes its calls over several rounds during the week. In every round each analyst commits to a "
-        f"call: BUY if they think {asset} will close up this week, SELL if they think it will close down.\n\n"
+        f"{calls}\n\n"
         "Your information\n"
         "- Your own research note: a few indicators you prepared before the week started. Each points UP or DOWN "
         "and is right with the probability shown next to it. The note stays the same all week.\n"
@@ -205,22 +258,25 @@ def rules(wording: str, K: int = 16, asset: str = ASSET) -> str:
         "  Which colleagues fall in which group stays the same all week. A group can be empty.\n"
         "- You also see your own call and note from the previous round.\n\n"
         "How to answer\n"
-        '- call: "BUY" or "SELL".\n'
+        f"{answer}"
         "- note: one sentence, at most 25 words, for the analysts who read your calls. They see it next round "
         "together with your call.\n"
         "- Weigh your research note, your news and your colleagues' calls in whatever way you judge best. You may "
         "change your call from round to round.\n"
-        '- Reply with one JSON object and nothing else: {"call": "BUY" or "SELL", "note": "your note"}'
+        f"- Reply with one JSON object and nothing else: {fmt}"
     )
 
 
-def _fmt_calls(msgs) -> str:
+def _fmt_calls(msgs, reversed_: bool = False) -> str:
     if not msgs:
         return "(none)"
+    if reversed_:
+        flip = {"BUY": "SELL", "SELL": "BUY"}
+        return "\n".join(f'- {flip[c]} (reversed). Their note: "{n.strip()}"' for c, n in msgs)
     return "\n".join(f'- {c}. Note: "{n.strip()}"' for c, n in msgs)
 
 
-def dynamic(ctx: AnalystContext) -> str:
+def dynamic(ctx: AnalystContext, v: PromptVariant = DEFAULT_VARIANT) -> str:
     """The user turn for one analyst and round."""
     parts = [f"Desk session {ctx.session}, round {ctx.round_t + 1}.",
              "Your news item this round:\n"
@@ -231,14 +287,18 @@ def dynamic(ctx: AnalystContext) -> str:
         c, n = ctx.own
         parts.append(f'Your call last round: {c}. Your note: "{n.strip()}"')
         parts.append("Allies' latest calls:\n" + _fmt_calls(ctx.allies))
-        parts.append("Faded colleagues' latest calls:\n" + _fmt_calls(ctx.faded))
+        if v.fade == "ordinary":
+            parts.append("Faded colleagues' latest calls:\n" + _fmt_calls(ctx.faded))
+        else:
+            parts.append("Faded colleagues' latest calls, reversed by the desk:\n" + _fmt_calls(ctx.faded, True))
     parts.append(f"Make your call for round {ctx.round_t + 1}.")
     return "\n\n".join(parts)
 
 
-def render_messages(ctx: AnalystContext, wording: str, K: int = 16, asset: str = ASSET) -> list[dict]:
-    return [{"role": "system", "content": f"{rules(wording, K, asset)}\n\n{ctx.note_text}"},
-            {"role": "user", "content": dynamic(ctx)}]
+def render_messages(ctx: AnalystContext, wording: str, K: int = 16, asset: str = ASSET,
+                    v: PromptVariant = DEFAULT_VARIANT) -> list[dict]:
+    return [{"role": "system", "content": f"{rules(wording, K, asset, v)}\n\n{ctx.note_text}"},
+            {"role": "user", "content": dynamic(ctx, v)}]
 
 
 # ---------------------------------------------------------------- logprobs -> belief, call
@@ -318,9 +378,11 @@ class AnalystVLLM:
     ``params`` overrides (SamplingParams, structured-output constructor), for tests."""
 
     def __init__(self, llm, wording: str, tag: str, K: int = 16, asset: str = ASSET, logprobs: int = 20,
-                 min_valid_mass: float = 0.95, note_max_tokens: int = 100, params=None):
+                 min_valid_mass: float = 0.95, note_max_tokens: int = 100, params=None,
+                 variant: PromptVariant = DEFAULT_VARIANT):
         from envs.vllm_backend import _vllm_params
         self.llm, self.wording, self.tag, self.K, self.asset = llm, wording, tag, K, asset
+        self.variant = variant
         self.logprobs, self.min_valid_mass, self.note_max_tokens = logprobs, min_valid_mass, note_max_tokens
         self.tok = llm.get_tokenizer()
         self.SP, self._so = params or _vllm_params()
@@ -331,24 +393,26 @@ class AnalystVLLM:
         self.note_prefix_ids = None
 
     def chat_text(self, ctx: AnalystContext) -> str:
-        return self.tok.apply_chat_template(render_messages(ctx, self.wording, self.K, self.asset), tokenize=False,
-                                            add_generation_prompt=True, enable_thinking=False)
+        return self.tok.apply_chat_template(render_messages(ctx, self.wording, self.K, self.asset, self.variant),
+                                            tokenize=False, add_generation_prompt=True, enable_thinking=False)
 
     def _check_tokens(self, chat: str):
-        """BUY and SELL must each be exactly one token after the prefix, and the decision prompt must tokenize as
-        the chat prompt + prefix with no merge across the boundary that changes the call token."""
+        """The up and down decision words (BUY/SELL, or YES/NO) must each be exactly one token after the prefix, and
+        the decision prompt must tokenize as the chat prompt + prefix with no merge across the boundary."""
         enc = lambda s: self.tok.encode(s, add_special_tokens=False)
-        base = enc(chat + DECISION_PREFIX)
+        pre = self.variant.prefix
+        base = enc(chat + pre)
         ids = {}
-        for w in ("BUY", "SELL"):
-            full = enc(chat + DECISION_PREFIX + w)
+        for w in set(self.variant.words):
+            full = enc(chat + pre + w)
             if full[:len(base)] != base or len(full) != len(base) + 1:
                 raise ValueError(f"{w!r} is not a single token after the decision prefix: {full[len(base) - 2:]}")
             ids[w] = full[-1]
-        self.buy_id, self.sell_id = ids["BUY"], ids["SELL"]
+        up, down = self.variant.words
+        self.buy_id, self.sell_id = ids[up], ids[down]          # token ids of the up-call and the down-call
         self.note_prefix_ids = {}
-        for w in ("BUY", "SELL"):
-            full = enc(chat + DECISION_PREFIX + w + NOTE_PREFIX)
+        for w in set(self.variant.words):
+            full = enc(chat + pre + w + NOTE_PREFIX)
             if full[:len(base) + 1] != base + [ids[w]]:
                 raise ValueError(f"the note prefix merges with the call token {w!r}")
             self.note_prefix_ids[w] = full[len(base) + 1:]
@@ -357,7 +421,7 @@ class AnalystVLLM:
         chat = self.chat_text(ctx)
         if self.buy_id is None:
             self._check_tokens(chat)
-        return self.tok.encode(chat + DECISION_PREFIX, add_special_tokens=False)
+        return self.tok.encode(chat + self.variant.prefix, add_special_tokens=False)
 
     def _gen(self, prompts, params):
         return self.llm.generate([{"prompt_token_ids": p} for p in prompts], params, use_tqdm=False)
@@ -380,7 +444,8 @@ class AnalystVLLM:
     def notes(self, ctxs, calls, key=()) -> list[dict]:
         """calls[i] in {"BUY", "SELL"}; key makes the sampling seeds (tag, *key, agent, attempt)."""
         t0 = time.time()
-        prompts = [self.decision_ids(c) + [self.buy_id if k == "BUY" else self.sell_id] + self.note_prefix_ids[k]
+        word = dict(zip(("BUY", "SELL"), self.variant.words))
+        prompts = [self.decision_ids(c) + [self.buy_id if k == "BUY" else self.sell_id] + self.note_prefix_ids[word[k]]
                    for c, k in zip(ctxs, calls)]
         res: list[dict | None] = [None] * len(ctxs)
         last_text = [""] * len(ctxs)
