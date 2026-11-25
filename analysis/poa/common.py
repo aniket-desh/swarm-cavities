@@ -27,10 +27,11 @@ from pathlib import Path
 
 import numpy as np
 
-sys.path.insert(0, "/workspace/swarm-cavity")
+REPO = Path(__file__).resolve().parents[2]          # the clone, /workspace-global/swarm-cavity/repo
+sys.path.insert(0, str(REPO))
 from analysis.poa_data import load_poa  # noqa: E402
 
-RESULTS = Path("/workspace/swarm-cavity/results/poa")
+RESULTS = REPO / "results" / "poa"
 ASYNC_PATH = Path("/workspace-global/swarm-cavity/data/poa/async/agent-opinions-async.parquet")
 SHORT = {"gpt-4o-mini": "gpt-4o-mini", "google/gemma-3n-E4B-it": "gemma-3n-E4B",
          "Qwen/Qwen3.5-9B": "Qwen3.5-9B", "meta-llama/Llama-3.1-8B-Instruct": "Llama-3.1-8B"}
@@ -74,13 +75,35 @@ def triangles_per_node(J: np.ndarray) -> np.ndarray:
     return np.einsum("ij,jk,ki->i", A, A, A) / 2
 
 
+def agree_components(J: np.ndarray) -> dict:
+    """Per-node facts about the agree subgraph (J = +1 edges), which is the whole interaction graph when the
+    disagree channel carries little coupling (b- ~ 0, field_sufficiency.py):
+      comp (N,) component label, comp_size (N,), bip (N,) bool: the node's agree component is bipartite,
+      deg_a (N,) agree degree, deg_d (N,) disagree degree."""
+    from scipy.sparse.csgraph import connected_components
+    Ap = (J > 0).astype(int)
+    nc, lab = connected_components(Ap, directed=False)
+    bip = np.zeros(nc, bool)
+    for k in range(nc):
+        idx = np.nonzero(lab == k)[0]
+        bip[k] = graph_class(Ap[np.ix_(idx, idx)]) != "lattice, not bipartite"
+    return dict(comp=lab, comp_size=np.bincount(lab)[lab], bip=bip[lab], deg_a=Ap.sum(1), deg_d=(J < 0).sum(1))
+
+
+def coupling_matrix(J: np.ndarray, b_plus: float, b_minus: float) -> np.ndarray:
+    """Effective coupling in logit units of the two-channel model M2 (claim1.md sec. 4.2): an agree tie pulls with
+    +b+, a disagree tie with -b-, so W_ij = b+ [J_ij = +1] - b- [J_ij = -1] and the logit is alpha_i + (W s)_i."""
+    return b_plus * (J > 0) - b_minus * (J < 0)
+
+
 # ------------------------------------------------------------------------------------------------ data
 
 def cells(path=None) -> dict:
     """{(model_short, mode): dict} with, stacked over the cell's statements (R communities):
     J (R,N,N) our orientation; S (R,T+1,N) majority spins and V (R,T+1,N,K) votes in the frame above;
     stmt (R,) statement index within the cell; graph (R,) graph index within the statement (0..9);
-    gid (R,) global graph id (index into the 14 distinct J); gclass (R,) class string; tau (R,)."""
+    gid (R,) global graph id (index into the 14 distinct J); gclass (R,) class string; tau (R,);
+    stmt_names: list of statement strings, indexed by stmt."""
     data = load_poa() if path is None else load_poa(path)
     out = {}
     gid_of = {}
@@ -102,6 +125,7 @@ def cells(path=None) -> dict:
         c["graph"].append(d["graph"])
         c["tau"].append(np.full(R, tau))
         c["_nstmt"] = n_stmt + 1
+        c.setdefault("stmt_names", []).append(statement)
     cls_of = {}
     for key, c in out.items():
         c.pop("_nstmt")
@@ -214,6 +238,18 @@ def fit_logit_fe(X, npos, ntot, group, n_groups, offset=None, lam_beta=1e-3, pri
         if gain < tol * max(1.0, abs(obj)):
             break
     return beta, alpha, ll
+
+
+def fit_m2(c: dict, averaged: bool = False):
+    """Full-data fit of the two-channel model M2 of field_sufficiency.py for one cell: returns (b_plus, b_minus,
+    alpha) with logit P(vote = +1) = alpha[stmt * N + agent] + b+ m_a - b- m_d (frame of ``cells``). With
+    averaged=True the M2avg form, m_a and m_d divided by the inbox size k (0 for an empty inbox)."""
+    T = transitions(c)
+    k = T["k_a"] + T["k_d"]
+    scale = np.where(k > 0, 1.0 / np.maximum(k, 1), 0.0) if averaged else 1.0
+    X = np.stack([T["m_a"] * scale, T["m_d"] * scale], 1)
+    beta, alpha, _ = fit_logit_fe(X, T["npos"], T["ntot"], T["group"], T["n_groups"])
+    return float(beta[0]), float(-beta[1]), alpha
 
 
 def loglik_rows(u, npos, ntot):

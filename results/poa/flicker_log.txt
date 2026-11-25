@@ -1,0 +1,66 @@
+Part A: GPT-4o-mini, same 60 statements x 8 random signed graphs; rounds (steps) 3..8
+  async: P(>=1 firing in lag 1) = 0.394, lag 2 = 0.632; memoryless null a2/a1 = 1.606
+  belief E2/E1 (async value contaminated by silent rows) | spin index P = a2/a1, corrected = P / null (1: no structure, <1: flicker)
+  async objective  all random                   n= 320 | E1 0.389 E2 0.745 E2/E1 1.91 (0.01) | a1 0.111 a2 0.208 P 1.87 (0.02) -> corrected 1.17 (0.01)
+  async objective  random, agree-bipartite      n= 100 | E1 0.392 E2 0.752 E2/E1 1.92 (0.02) | a1 0.110 a2 0.207 P 1.89 (0.02) -> corrected 1.18 (0.01)
+  async objective  random, agree-non-bipartite  n= 120 | E1 0.387 E2 0.737 E2/E1 1.90 (0.02) | a1 0.110 a2 0.205 P 1.86 (0.02) -> corrected 1.16 (0.01)
+  async objective  random, mixed                n= 100 | E1 0.390 E2 0.750 E2/E1 1.92 (0.03) | a1 0.113 a2 0.211 P 1.87 (0.03) -> corrected 1.17 (0.02)
+  async subjective all random                   n= 160 | E1 0.263 E2 0.505 E2/E1 1.92 (0.02) | a1 0.070 a2 0.132 P 1.89 (0.02) -> corrected 1.18 (0.01)
+  async subjective random, agree-bipartite      n=  50 | E1 0.263 E2 0.507 E2/E1 1.93 (0.03) | a1 0.070 a2 0.133 P 1.90 (0.03) -> corrected 1.18 (0.02)
+  async subjective random, agree-non-bipartite  n=  60 | E1 0.259 E2 0.510 E2/E1 1.97 (0.03) | a1 0.070 a2 0.134 P 1.92 (0.02) -> corrected 1.20 (0.01)
+  async subjective random, mixed                n=  50 | E1 0.267 E2 0.497 E2/E1 1.86 (0.02) | a1 0.071 a2 0.130 P 1.83 (0.02) -> corrected 1.14 (0.01)
+  sync  objective  all random                   n=1280 | E1 1.297 E2 0.283 E2/E1 0.22 (0.01) | a1 0.361 a2 0.104 P 0.29 (0.02) -> corrected 0.29 (0.02)
+  sync  objective  random, agree-bipartite      n= 400 | E1 1.390 E2 0.274 E2/E1 0.20 (0.02) | a1 0.380 a2 0.097 P 0.26 (0.02) -> corrected 0.26 (0.02)
+  sync  objective  random, agree-non-bipartite  n= 480 | E1 1.243 E2 0.284 E2/E1 0.23 (0.02) | a1 0.347 a2 0.105 P 0.30 (0.02) -> corrected 0.30 (0.02)
+  sync  objective  random, mixed                n= 400 | E1 1.269 E2 0.291 E2/E1 0.23 (0.01) | a1 0.359 a2 0.110 P 0.31 (0.02) -> corrected 0.31 (0.02)
+  sync  subjective all random                   n= 640 | E1 0.922 E2 0.207 E2/E1 0.22 (0.01) | a1 0.246 a2 0.064 P 0.26 (0.02) -> corrected 0.26 (0.02)
+  sync  subjective random, agree-bipartite      n= 200 | E1 1.042 E2 0.219 E2/E1 0.21 (0.01) | a1 0.277 a2 0.067 P 0.24 (0.01) -> corrected 0.24 (0.01)
+  sync  subjective random, agree-non-bipartite  n= 240 | E1 0.839 E2 0.205 E2/E1 0.24 (0.02) | a1 0.224 a2 0.063 P 0.28 (0.02) -> corrected 0.28 (0.02)
+  sync  subjective random, mixed                n= 200 | E1 0.901 E2 0.199 E2/E1 0.22 (0.02) | a1 0.240 a2 0.062 P 0.26 (0.02) -> corrected 0.26 (0.02)
+  spin flip rate s(t) != s(t-1), and fraction of rows with mixed votes, by round t = 1..8:
+    objective  sync  flip  0.484 0.415 0.387 0.374 0.364 0.355 0.348 0.340   mixed 0.124 0.099 0.090 0.086 0.082 0.080 0.079 0.077
+    objective  async flip  0.172 0.165 0.145 0.129 0.114 0.104 0.089 0.085   mixed 0.192 0.089 0.066 0.051 0.048 0.046 0.044 0.044
+    subjective sync  flip  0.326 0.272 0.260 0.253 0.249 0.244 0.237 0.232   mixed 0.059 0.041 0.040 0.036 0.035 0.034 0.032 0.030
+    subjective async flip  0.076 0.105 0.098 0.078 0.065 0.069 0.055 0.057   mixed 0.029 0.022 0.020 0.020 0.017 0.020 0.015 0.019
+
+Part B: degree against bipartiteness (sync, all models). E2/E1 (s.e. over statements) by graph group
+  cell                                square lattice  random, agree-bipartit           random, mixed  random, agree-non-bipa      triangular lattice
+  (mean degree / agree degree)             3.25 / 3.25             3.50 / 1.57             3.50 / 1.61             3.50 / 1.98             4.56 / 4.56
+  Llama-3.1-8B | objective               0.19 (0.02)             0.37 (0.04)             0.42 (0.03)             0.43 (0.03)             1.31 (0.08)
+  Llama-3.1-8B | subjective              0.44 (0.06)             0.36 (0.07)             0.44 (0.05)             0.48 (0.05)             1.09 (0.11)
+  Qwen3.5-9B | objective                 0.21 (0.02)             0.25 (0.02)             0.30 (0.02)             0.29 (0.03)             1.28 (0.10)
+  Qwen3.5-9B | subjective                0.38 (0.03)             0.37 (0.04)             0.38 (0.03)             0.41 (0.03)             0.88 (0.06)
+  gemma-3n-E4B | objective               0.47 (0.05)             0.70 (0.05)             0.73 (0.04)             0.68 (0.04)             1.10 (0.08)
+  gemma-3n-E4B | subjective              0.66 (0.10)             0.63 (0.06)             0.67 (0.06)             0.65 (0.03)             1.01 (0.05)
+  gpt-4o-mini | objective                0.18 (0.02)             0.20 (0.02)             0.23 (0.01)             0.23 (0.02)             0.95 (0.06)
+  gpt-4o-mini | subjective               0.20 (0.02)             0.21 (0.01)             0.22 (0.02)             0.24 (0.02)             0.88 (0.08)
+  spectral index -lam_min/lam_max of the unsigned graph (agree subgraph), mean triangles per node:
+    gid 9 triang 0.50 (0.50) tri 3.94, gid 3 random 0.69 (1.00) tri 1.12, gid 2 random 0.70 (0.92) tri 1.12, gid 11 random 0.71 (0.88) tri 0.94, gid 7 random 0.73 (1.00) tri 0.56, gid 10 random 0.74 (0.99) tri 0.84, gid 4 random 0.75 (1.00) tri 0.47, gid 12 random 0.77 (0.84) tri 0.56, gid 1 random 0.77 (0.89) tri 0.38, gid 6 random 0.77 (0.89) tri 0.66, gid 13 random 0.78 (0.89) tri 0.66, gid 5 random 0.84 (1.00) tri 0.28, gid 0 random 0.84 (0.92) tri 0.66, gid 8 square 1.00 (1.00) tri 0.00
+  correlation over the 12 random graphs of E2/E1 with the spectral index of the full (agree) graph:
+    Llama-3.1-8B | objective   r = +0.34 (-0.76); E2/E1 range 0.33-0.49
+    Llama-3.1-8B | subjective  r = -0.01 (-0.54); E2/E1 range 0.28-0.63
+    Qwen3.5-9B | objective     r = -0.08 (-0.66); E2/E1 range 0.22-0.38
+    Qwen3.5-9B | subjective    r = -0.04 (-0.36); E2/E1 range 0.33-0.44
+    gemma-3n-E4B | objective   r = -0.26 (+0.25); E2/E1 range 0.53-0.76
+    gemma-3n-E4B | subjective  r = -0.39 (-0.39); E2/E1 range 0.55-0.78
+    gpt-4o-mini | objective    r = -0.22 (-0.59); E2/E1 range 0.14-0.30
+    gpt-4o-mini | subjective   r = +0.05 (-0.00); E2/E1 range 0.15-0.34
+  B3, random signed graphs, agent level: OLS of E1_i - E2_i (s.e. clustered by statement)
+    Llama-3.1-8B | objective   mean E1-E2 0.217 | agree component bipartite: +0.085 (0.046)  agree degree: +0.017 (0.006)  disagree degree: -0.026 (0.005)  log agree component size: +0.057 (0.014)  triangles: -0.015 (0.006)
+    Llama-3.1-8B | subjective  mean E1-E2 0.228 | agree component bipartite: +0.046 (0.109)  agree degree: +0.010 (0.009)  disagree degree: +0.010 (0.007)  log agree component size: +0.057 (0.028)  triangles: -0.006 (0.011)
+    Qwen3.5-9B | objective     mean E1-E2 0.374 | agree component bipartite: +0.238 (0.052)  agree degree: +0.034 (0.008)  disagree degree: +0.001 (0.007)  log agree component size: +0.103 (0.017)  triangles: -0.052 (0.011)
+    Qwen3.5-9B | subjective    mean E1-E2 0.463 | agree component bipartite: +0.090 (0.086)  agree degree: +0.044 (0.011)  disagree degree: +0.035 (0.008)  log agree component size: +0.085 (0.022)  triangles: -0.048 (0.014)
+    gemma-3n-E4B | objective   mean E1-E2 0.108 | agree component bipartite: +0.035 (0.031)  agree degree: +0.029 (0.008)  disagree degree: +0.001 (0.005)  log agree component size: +0.014 (0.008)  triangles: -0.031 (0.010)
+    gemma-3n-E4B | subjective  mean E1-E2 0.209 | agree component bipartite: +0.018 (0.037)  agree degree: +0.024 (0.010)  disagree degree: +0.016 (0.009)  log agree component size: +0.034 (0.016)  triangles: -0.020 (0.013)
+    gpt-4o-mini | objective    mean E1-E2 1.014 | agree component bipartite: +0.331 (0.096)  agree degree: +0.046 (0.011)  disagree degree: +0.021 (0.010)  log agree component size: +0.245 (0.029)  triangles: -0.053 (0.013)
+    gpt-4o-mini | subjective   mean E1-E2 0.715 | agree component bipartite: +0.136 (0.106)  agree degree: +0.056 (0.012)  disagree degree: +0.027 (0.010)  log agree component size: +0.115 (0.026)  triangles: -0.077 (0.023)
+  B4, lattices at matched node degree [2, 3, 4]: E2/E1 square | triangular
+    Llama-3.1-8B | objective   deg 2: 0.25 (0.03) | 1.31 (0.13)   deg 3: 0.20 (0.02) | 1.39 (0.16)   deg 4: 0.15 (0.02) | 1.34 (0.07)
+    Llama-3.1-8B | subjective  deg 2: 0.34 (0.07) | 1.13 (0.10)   deg 3: 0.44 (0.06) | 0.97 (0.21)   deg 4: 0.50 (0.06) | 1.00 (0.10)
+    Qwen3.5-9B | objective     deg 2: 0.24 (0.02) | 1.34 (0.18)   deg 3: 0.21 (0.02) | 1.29 (0.21)   deg 4: 0.19 (0.03) | 1.35 (0.13)
+    Qwen3.5-9B | subjective    deg 2: 0.37 (0.04) | 0.88 (0.12)   deg 3: 0.41 (0.03) | 0.90 (0.08)   deg 4: 0.35 (0.04) | 0.86 (0.06)
+    gemma-3n-E4B | objective   deg 2: 0.46 (0.06) | 1.02 (0.14)   deg 3: 0.50 (0.05) | 0.98 (0.12)   deg 4: 0.44 (0.06) | 1.12 (0.09)
+    gemma-3n-E4B | subjective  deg 2: 0.65 (0.11) | 0.92 (0.13)   deg 3: 0.68 (0.10) | 0.95 (0.12)   deg 4: 0.64 (0.11) | 1.00 (0.05)
+    gpt-4o-mini | objective    deg 2: 0.22 (0.02) | 1.12 (0.11)   deg 3: 0.20 (0.02) | 0.98 (0.12)   deg 4: 0.15 (0.02) | 0.94 (0.06)
+    gpt-4o-mini | subjective   deg 2: 0.24 (0.04) | 0.87 (0.23)   deg 3: 0.21 (0.03) | 0.85 (0.18)   deg 4: 0.16 (0.02) | 0.91 (0.09)
+    nodes per degree: squ 2: 4, squ 3: 16, squ 4: 12, tri 2: 2, tri 3: 2, tri 4: 16, tri 6: 12

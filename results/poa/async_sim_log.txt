@@ -1,0 +1,14 @@
+objective M2: b+ = 3.395, b- = -0.068
+objective M2avg: b+ = 11.806, b- = -0.333
+subjective M2: b+ = 3.422, b- = 0.620
+subjective M2avg: b+ = 12.006, b- = 1.795
+
+Simulated fitted agent (20 runs per episode, 480 async episodes) against observed; P_corrected = (a2/a1)/null, null 1 (sync) or f2/f1 = 1.61 (async)
+  objective  M2    async | sim a1 0.111 (obs 0.111) P_corr 1.15 (obs 1.17 +- 0.01) | belief E2/E1 sim 2.03 (obs 1.91)
+  objective  M2    sync  | sim a1 0.380 (obs 0.361) P_corr 0.25 (obs 0.29 +- 0.02) | belief E2/E1 sim 0.08 (obs 0.22)
+  objective  M2avg async | sim a1 0.112 (obs 0.111) P_corr 1.15 (obs 1.17 +- 0.01) | belief E2/E1 sim 2.03 (obs 1.91)
+  objective  M2avg sync  | sim a1 0.369 (obs 0.361) P_corr 0.26 (obs 0.29 +- 0.02) | belief E2/E1 sim 0.09 (obs 0.22)
+  subjective M2    async | sim a1 0.071 (obs 0.070) P_corr 1.16 (obs 1.18 +- 0.01) | belief E2/E1 sim 2.04 (obs 1.92)
+  subjective M2    sync  | sim a1 0.236 (obs 0.246) P_corr 0.24 (obs 0.26 +- 0.02) | belief E2/E1 sim 0.08 (obs 0.22)
+  subjective M2avg async | sim a1 0.073 (obs 0.070) P_corr 1.17 (obs 1.18 +- 0.01) | belief E2/E1 sim 2.04 (obs 1.92)
+  subjective M2avg sync  | sim a1 0.219 (obs 0.246) P_corr 0.24 (obs 0.26 +- 0.02) | belief E2/E1 sim 0.09 (obs 0.22)

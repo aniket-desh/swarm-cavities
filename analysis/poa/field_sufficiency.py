@@ -14,8 +14,13 @@ P(vote = +1):
       (res/utils.py two_stage_fit). |J|s = J+s - J-s, so this spans exactly M2; b+ = bpos + b0, b- = bneg - b0.
   M2avg two channels, averaged   alpha + b+ m_a/k - b- m_d/k, k = inbox size (non-nested alternative to M2:
       does the agent sum or average what it reads? This decides the 1/sqrt(K) in claim1.md eq. (10))
+  M2avg_sep  each inbox averaged on its own: alpha + b+ m_a/k_a - b- m_d/k_d
+  M2cat two channels, additive but nonlinear: alpha + f(m_a) + g(m_d), f, g free on the levels -4..4
+      (|m| >= 4 pooled); M2cat vs M2 measures saturation within a channel
   M3  four free counts          alpha + c1 n_a+ + c2 n_a- + c3 n_d+ + c4 n_d-   (adds inbox-size effects)
-  M4  M3 + all 10 quadratic and interaction terms of the four counts (saturation, non-additivity)
+  M3sq M3 + the four squares    (saturation in each count)
+  M4  M3 + all 10 quadratic and interaction terms of the four counts; M4 vs M3sq is the pure interaction
+      (non-additivity) part
   M5  M4 + s_i(t)                own current state (not shown in the prompt)
   M6  M5 + s_i(t-1)              own state two rounds back (memory; PoA is nominally memoryless)
   M2+s, M2+s+s' : M2 with s_i(t), then s_i(t-1), for readable own-state coefficients.
@@ -28,7 +33,8 @@ Gain CIs: percentile bootstrap over statements (B resamples), full-data fits.
 
 Run: uv run python analysis/poa/field_sufficiency.py [--boot 200] [--selftest]
 Outputs (results/poa/): field_sufficiency_cv.csv, field_sufficiency_cv_by_class.csv, field_sufficiency_gains.csv,
-field_sufficiency_coefs.json, fits_M2.npz (alpha, b+, b- per cell, for effective_coupling.py), selftest_fit.txt.
+field_sufficiency_coefs.json, fits_M2.npz (alpha, b+, b- per cell for M2 and M2avg, statement names; used by
+effective_coupling.py and async_sim.py), selftest_fit.txt.
 """
 
 from __future__ import annotations
@@ -41,7 +47,7 @@ from itertools import combinations_with_replacement
 import numpy as np
 import pandas as pd
 
-sys.path.insert(0, "/workspace/swarm-cavity")
+sys.path.insert(0, str(__import__("pathlib").Path(__file__).resolve().parents[2]))
 from analysis.poa.common import RESULTS, cells, fit_logit_fe, loglik_rows, transitions  # noqa: E402
 
 N_AGENTS = 32
@@ -60,12 +66,22 @@ def design(T: dict, name: str):
     quad = [four[i] * four[j] for i, j in combinations_with_replacement(range(4), 2)]
     quad_names = [f"{four_names[i]}*{four_names[j]}" for i, j in combinations_with_replacement(range(4), 2)]
     k = T["k_a"] + T["k_d"]
+    sq_names = [f"{n}^2" for n in four_names]
+    # one-hot levels of m_a and m_d, reference level 0, |m| >= 4 pooled into +-4 (rare): additive in the two
+    # channels but free to saturate
+    lev = [-4, -3, -2, -1, 1, 2, 3, 4]
+    ca, cd = np.clip(m_a, -4, 4), np.clip(m_d, -4, 4)
+    cat_cols = [(ca == v).astype(float) for v in lev] + [(cd == v).astype(float) for v in lev]
+    cat_names = [f"m_a={v}" for v in lev] + [f"m_d={v}" for v in lev]
     cols = {
         "M0": ([], []),
         "M1": ([m_a - m_d], ["h"]),
         "M2": ([m_a, m_d], ["m_a", "m_d"]),
         "M2avg": ([safe_div(m_a, k), safe_div(m_d, k)], ["m_a/k", "m_d/k"]),
+        "M2avg_sep": ([safe_div(m_a, T["k_a"]), safe_div(m_d, T["k_d"])], ["m_a/k_a", "m_d/k_d"]),
+        "M2cat": (cat_cols, cat_names),
         "M3": (four, four_names),
+        "M3sq": (four + [x * x for x in four], four_names + sq_names),
         "M4": (four + quad, four_names + quad_names),
         "M5": (four + quad + [T["s_now"]], four_names + quad_names + ["s(t)"]),
         "M6": (four + quad + [T["s_now"], T["s_prev"]], four_names + quad_names + ["s(t)", "s(t-1)"]),
@@ -76,7 +92,7 @@ def design(T: dict, name: str):
     return X, cols[1]
 
 
-CV_MODELS = ["M0", "M1", "M2", "M2avg", "M3", "M4", "M5", "M6", "M2+s", "M2+s+s'"]
+CV_MODELS = ["M0", "M1", "M2", "M2avg", "M2avg_sep", "M2cat", "M3", "M3sq", "M4", "M5", "M6", "M2+s", "M2+s+s'"]
 BOOT_MODELS = ["M1", "M2", "M2avg", "M3", "M2+s", "M2+s+s'"]
 
 
@@ -209,6 +225,10 @@ def main():
             cv_rows.append(dict(model=model, mode=mode, **r))
             print(f"  {r["spec"]:8s} CE {r['ce_nats']:.4f}  dCE vs M1 {r['dce_vs_ref_mnats']:+7.2f} "
                   f"({r['se_mnats']:.2f}) mnat/vote")
+        for ref in ("M2", "M3sq"):          # s.e. of the channel, saturation and interaction contrasts
+            for r in ce_table(T, ll, ref=ref):
+                if r["spec"] != ref:
+                    cv_rows.append(dict(model=model, mode=mode, **r))
         for r in ce_table(T, ll, ref="M2", by="gclass"):
             cls_rows.append(dict(model=model, mode=mode, **r))
 
@@ -219,6 +239,10 @@ def main():
             full[m] = dict(beta=beta, names=names, ll=llf)
             if m == "M2":
                 fits[f"{model}|{mode}|alpha"] = alpha
+            if m == "M2avg":
+                fits[f"{model}|{mode}|alpha_avg"] = alpha
+                fits[f"{model}|{mode}|b_avg"] = np.array([beta[0], -beta[1]])
+        fits[f"{model}|{mode}|stmt_names"] = np.array(c["stmt_names"])
         poa = fit_poa_two_stage(T, allrows)
         boot = bootstrap(T, args.boot, rng)
         coefs[cell] = {}
