@@ -1,6 +1,6 @@
 # Theory for swarm-cavity: the current statement
 
-Last updated 2026-11-25 (evening). This file is the one place to read for the state of the theory. The derivations
+Last updated 2026-11-25 (evening; analyst-scenario predictions added). This file is the one place to read for the state of the theory. The derivations
 live in the notes it links (`claim1.md` … `claim6.md`, `quiet_regime.md`), each of which opens with its verdict and
 names the scripts in `theory/checks/` that verify its formulas.
 
@@ -105,11 +105,36 @@ sampling noise) can run N = 256–1024. The question being measured (`experiment
 using real-message calibration. If so, that is where the oscillation, zealot-hysteresis and Var(m_B) predictions get
 tested. **Not measured yet.**
 
+## 6. The analyst scenario: frozen predictions where the theory should be valid and nontrivial (`analyst_scenario.md`)
+
+Requested so that the cavity theory is tested where its Gaussian closure holds (K = 16 inputs per agent) and the
+disorder is order one: N = 256–1,024 Qwen analysts making committed BUY/SELL calls on fictional assets, each with a
+standing research note, fresh private news every round, and K = 16 colleagues on a signed trust graph (allies and
+faded colleagues), in three worlds of equal mean trust: mutual (γ = +1), one-way (γ = 0), antagonistic (γ = −1).
+Mean-field (Curie–Weiss) theory predicts the three worlds are identical. The predictions were frozen before any data
+(commit cad1d12; numbers in `checks/analyst_predictions.json`), for an agent whose half log-odds are linear in the
+inbox and whose call is sampled from its belief:
+
+- **The boundary exists only in the reciprocal worlds.** Sampling noise in committed calls keeps the one-way world
+  below Λ = 2/π at any gain; the mutual world's boundary is the spin-glass transition (ā = 4.23 at no news, about 5
+  with news of logit s.d. 0.5, about 5.9 with standing notes); the antagonistic world is the mutual one under a
+  period-4 sign pattern (about 5.1). This replaces the (1+|γ|) factor of `claim2.md` for committed calls.
+- **The reciprocity signatures are large well before the boundary**: echo ρ₂ = +0.12 / 0 / −0.12 at ā = 2 and
+  +0.26 / 0 / −0.26 at ā = 4 (mutual / one-way / antagonistic), against a run-to-run s.d. of about 0.01 at N = 256;
+  period-2 and period-4 spectral peaks that an asynchronous schedule removes; amplification 2.4 / 1.4 / 2.2 and
+  correlation times of 5–6 rounds at ā = 4; kick echoes of ±0.25 or exactly zero. Even the mean belief under a common
+  bias differs between worlds (0.108 / 0.076 / 0.047), which Curie–Weiss can't produce.
+- **The Gaussian closure holds at K = 16**: the K = ∞ solver matches graph simulations to 0.002 in ⟨s²⟩ and 1–4% in the
+  echo at every N tried, so going from 256 to 1,024 should halve the errors and change nothing else.
+- **Go/no-go**: the three-world contrast needs ā ≥ 1 and a₋/a₊ > 0.3 (faded colleagues must repel); reaching the
+  boundary needs a wording with ā ≳ 4.6. **Not measured yet**: the Qwen calibration for this game comes next.
+
 ## Files
 
 - `claim1.md` … `claim6.md`: the original derivations and red-team, with verdicts; `solver_spec.md` and
   `dmft_solver.py`: the Gaussian DMFT solver (gate a, reference tests in `tests/test_solver.py`).
 - `quiet_regime.md`: the anchored agent law, what still discriminates, kick-and-echo derivation and predictions.
+- `analyst_scenario.md`: frozen predictions for the K = 16 analyst swarms (three trust worlds), with `checks/analyst_lib.py`.
 - `checks/`: one script per verified formula with its printed output; `checks/kick_predictions.json` and
   `checks/kick_surrogate_table.json` hold the frozen kick numbers.
 - Data behind section 1: `experiments/03_calibration/`, `experiments/05_swarm/` (pilot, transfer),
