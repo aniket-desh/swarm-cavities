@@ -1,0 +1,105 @@
+Part 1. Code checks (cell P0).
+  B = 1 against analyst_signrule_check.simulate (laws M1 and M2, residual on): largest |X - X_ref|, calls that differ.
+    M1 mutual        0.0e+00, 0
+    M1 oneway        0.0e+00, 0
+    M1 antagonistic  0.0e+00, 0
+    M2 mutual        0.0e+00, 0
+    M2 oneway        0.0e+00, 0
+    M2 antagonistic  0.0e+00, 0
+  B = N against analyst_lib.simulate(mode='async') (calls-only law, no residual, the same permutations):
+    mutual        largest |s - s_ref| 2.2e-16, calls that differ 0
+    oneway        largest |s - s_ref| 2.2e-16, calls that differ 0
+    antagonistic  largest |s - s_ref| 2.2e-16, calls that differ 0
+
+Part 2. Where the echo goes. Calls-only law of cell P0 with kappa = 0 (no memory), 150 runs per entry, design
+size. D1 = rho_1(mutual) - rho_1(one-way), D2 the same at lag 2, D3 at lag 3; G d = the synchronous D2 (B = 1).
+Predicted: D1 = w1 G d, D2 = w2 G d to leading order. Entries: mean (s.e.).
+  B =   1: D1 +0.0014 (0.0007)  w1 G d +0.0000   D2 +0.0583 (0.0007)  w2 G d +0.0583   D3 -0.0001 (0.0007)   w1 0.000 w2 1.000
+  B =   2: D1 +0.0255 (0.0007)  w1 G d +0.0256   D2 +0.0341 (0.0007)  w2 G d +0.0327   D3 +0.0034 (0.0007)   w1 0.439 w2 0.561
+  B =   4: D1 +0.0355 (0.0007)  w1 G d +0.0356   D2 +0.0247 (0.0007)  w2 G d +0.0226   D3 +0.0035 (0.0007)   w1 0.611 w2 0.389
+  B =   8: D1 +0.0396 (0.0007)  w1 G d +0.0399   D2 +0.0206 (0.0008)  w2 G d +0.0183   D3 +0.0031 (0.0007)   w1 0.686 w2 0.314
+  B =  16: D1 +0.0417 (0.0007)  w1 G d +0.0419   D2 +0.0203 (0.0007)  w2 G d +0.0163   D3 +0.0037 (0.0007)   w1 0.720 w2 0.280
+  B =  32: D1 +0.0435 (0.0007)  w1 G d +0.0429   D2 +0.0183 (0.0007)  w2 G d +0.0154   D3 +0.0033 (0.0008)   w1 0.736 w2 0.264
+  B = 256: D1 +0.0431 (0.0007)  w1 G d +0.0437   D2 +0.0182 (0.0008)  w2 G d +0.0146   D3 +0.0025 (0.0007)   w1 0.750 w2 0.250
+
+Part 3. Predictions, cell P0, design size (N = 256, K = 16, T = 20, R = 2, rounds 5..20), 300 runs per entry,
+on the graphs, notes, news and uniforms of the synchronous predictions. Entries: mean (s.e. of the mean)
+[run-to-run s.d.]. B = 16 is the amendment's schedule; B = 256 is one analyst at a time; B = 1 synchronous.
+  B =  16 M1 mutual        rho1 -0.0330 (0.0003) [0.0060]  rho2 +0.0179 (0.0004) [0.0061]  rho3 -0.0001 (0.0004) [0.0066]  X2 +0.0168 (0.0004) [0.0062]  r12 -0.0509 (0.0005) [0.0083]  m -0.0019 (0.0017) [0.0301]  q +0.2210 (0.0002) [0.0030]
+  B =  16 M1 oneway        rho1 -0.0737 (0.0004) [0.0061]  rho2 +0.0059 (0.0004) [0.0064]  rho3 +0.0003 (0.0004) [0.0062]  X2 +0.0004 (0.0004) [0.0065]  r12 -0.0796 (0.0005) [0.0082]  m -0.0013 (0.0016) [0.0280]  q +0.2227 (0.0002) [0.0027]
+  B =  16 M1 antagonistic  rho1 -0.0667 (0.0003) [0.0057]  rho2 +0.0080 (0.0004) [0.0063]  rho3 -0.0003 (0.0004) [0.0063]  X2 +0.0036 (0.0004) [0.0063]  r12 -0.0748 (0.0005) [0.0085]  m +0.0007 (0.0015) [0.0265]  q +0.2218 (0.0002) [0.0026]
+  B =  16 M2 mutual        rho1 -0.0272 (0.0003) [0.0057]  rho2 +0.0166 (0.0004) [0.0063]  rho3 +0.0014 (0.0003) [0.0059]  X2 +0.0158 (0.0004) [0.0063]  r12 -0.0438 (0.0004) [0.0076]  m +0.4117 (0.0032) [0.0547]  q +0.3392 (0.0017) [0.0297]
+  B =  16 M2 oneway        rho1 -0.0643 (0.0003) [0.0059]  rho2 +0.0061 (0.0003) [0.0056]  rho3 +0.0020 (0.0004) [0.0063]  X2 +0.0019 (0.0003) [0.0056]  r12 -0.0704 (0.0005) [0.0083]  m +0.3728 (0.0034) [0.0587]  q +0.3198 (0.0016) [0.0281]
+  B =  16 M2 antagonistic  rho1 -0.0547 (0.0003) [0.0058]  rho2 +0.0084 (0.0004) [0.0062]  rho3 +0.0007 (0.0004) [0.0064]  X2 +0.0054 (0.0004) [0.0063]  r12 -0.0630 (0.0005) [0.0084]  m +0.3386 (0.0033) [0.0574]  q +0.3022 (0.0015) [0.0252]
+  B = 256 M1 mutual        rho1 -0.0312 (0.0003) [0.0057]  rho2 +0.0159 (0.0004) [0.0061]  rho3 -0.0006 (0.0004) [0.0066]  X2 +0.0149 (0.0004) [0.0061]  r12 -0.0470 (0.0004) [0.0077]  m -0.0018 (0.0017) [0.0292]  q +0.2210 (0.0002) [0.0029]
+  B = 256 M1 oneway        rho1 -0.0731 (0.0004) [0.0062]  rho2 +0.0059 (0.0004) [0.0064]  rho3 +0.0004 (0.0004) [0.0063]  X2 +0.0005 (0.0004) [0.0065]  r12 -0.0791 (0.0005) [0.0087]  m +0.0002 (0.0017) [0.0286]  q +0.2230 (0.0002) [0.0028]
+  B = 256 M1 antagonistic  rho1 -0.0662 (0.0003) [0.0060]  rho2 +0.0082 (0.0004) [0.0062]  rho3 -0.0003 (0.0004) [0.0063]  X2 +0.0038 (0.0004) [0.0063]  r12 -0.0745 (0.0005) [0.0087]  m +0.0017 (0.0015) [0.0265]  q +0.2219 (0.0002) [0.0026]
+  B = 256 M2 mutual        rho1 -0.0252 (0.0003) [0.0059]  rho2 +0.0151 (0.0004) [0.0062]  rho3 +0.0018 (0.0004) [0.0065]  X2 +0.0145 (0.0004) [0.0062]  r12 -0.0403 (0.0005) [0.0078]  m +0.4171 (0.0032) [0.0553]  q +0.3427 (0.0017) [0.0299]
+  B = 256 M2 oneway        rho1 -0.0638 (0.0004) [0.0061]  rho2 +0.0061 (0.0003) [0.0060]  rho3 +0.0016 (0.0004) [0.0062]  X2 +0.0020 (0.0004) [0.0061]  r12 -0.0699 (0.0005) [0.0085]  m +0.3774 (0.0033) [0.0572]  q +0.3224 (0.0016) [0.0274]
+  B = 256 M2 antagonistic  rho1 -0.0534 (0.0003) [0.0059]  rho2 +0.0080 (0.0004) [0.0066]  rho3 +0.0014 (0.0003) [0.0059]  X2 +0.0051 (0.0004) [0.0066]  r12 -0.0614 (0.0005) [0.0087]  m +0.3441 (0.0033) [0.0564]  q +0.3045 (0.0015) [0.0253]
+  B =   1 M1 mutual        rho1 -0.0740 (0.0004) [0.0065]  rho2 +0.0626 (0.0004) [0.0066]  rho3 -0.0120 (0.0004) [0.0066]  X2 +0.0571 (0.0004) [0.0066]  r12 -0.1366 (0.0006) [0.0096]  m -0.0020 (0.0016) [0.0269]  q +0.2264 (0.0002) [0.0029]
+  B =   1 M1 oneway        rho1 -0.0746 (0.0003) [0.0060]  rho2 +0.0051 (0.0003) [0.0060]  rho3 +0.0012 (0.0003) [0.0060]  X2 -0.0005 (0.0003) [0.0059]  r12 -0.0797 (0.0005) [0.0089]  m -0.0006 (0.0014) [0.0243]  q +0.2230 (0.0001) [0.0026]
+  B =   1 M1 antagonistic  rho1 -0.0739 (0.0003) [0.0061]  rho2 +0.0151 (0.0004) [0.0066]  rho3 -0.0013 (0.0004) [0.0061]  X2 +0.0096 (0.0004) [0.0066]  r12 -0.0891 (0.0005) [0.0090]  m +0.0008 (0.0014) [0.0247]  q +0.2230 (0.0001) [0.0026]
+  B =   1 M2 mutual        rho1 -0.0642 (0.0004) [0.0065]  rho2 +0.0581 (0.0004) [0.0072]  rho3 -0.0100 (0.0003) [0.0060]  X2 +0.0539 (0.0004) [0.0070]  r12 -0.1223 (0.0006) [0.0110]  m +0.3747 (0.0027) [0.0465]  q +0.3223 (0.0013) [0.0231]
+  B =   1 M2 oneway        rho1 -0.0665 (0.0003) [0.0057]  rho2 +0.0043 (0.0003) [0.0060]  rho3 +0.0016 (0.0004) [0.0063]  X2 -0.0002 (0.0003) [0.0060]  r12 -0.0708 (0.0005) [0.0086]  m +0.3519 (0.0029) [0.0497]  q +0.3074 (0.0013) [0.0231]
+  B =   1 M2 antagonistic  rho1 -0.0674 (0.0003) [0.0060]  rho2 +0.0215 (0.0004) [0.0063]  rho3 -0.0033 (0.0003) [0.0060]  X2 +0.0170 (0.0004) [0.0063]  r12 -0.0890 (0.0005) [0.0088]  m +0.3217 (0.0028) [0.0481]  q +0.2937 (0.0012) [0.0205]
+
+  Contrasts with the one-way world under the same schedule: D1 = rho_1 - rho_1(one-way), D2 = rho_2 - rho_2(one-way),
+  DX2 the same for X2 = rho_2 - rho_1^2. Mean (s.e.); [s.d. of the difference of one run from each world].
+  B =  16 M1 mutual        D1 +0.0407 (0.0005) [0.0086]  D2 +0.0120 (0.0005) [0.0088]  DX2 +0.0164 (0.0005) [0.0090]  D1-D2 +0.0286 (0.0007) [0.0117]
+  B =  16 M1 antagonistic  D1 +0.0070 (0.0005) [0.0084]  D2 +0.0022 (0.0005) [0.0090]  DX2 +0.0032 (0.0005) [0.0091]  D1-D2 +0.0048 (0.0007) [0.0118]
+  B =  16 M2 mutual        D1 +0.0370 (0.0005) [0.0082]  D2 +0.0104 (0.0005) [0.0084]  DX2 +0.0138 (0.0005) [0.0085]  D1-D2 +0.0266 (0.0006) [0.0112]
+  B =  16 M2 antagonistic  D1 +0.0096 (0.0005) [0.0083]  D2 +0.0023 (0.0005) [0.0084]  DX2 +0.0034 (0.0005) [0.0084]  D1-D2 +0.0073 (0.0007) [0.0117]
+  B = 256 M1 mutual        D1 +0.0420 (0.0005) [0.0084]  D2 +0.0099 (0.0005) [0.0088]  DX2 +0.0143 (0.0005) [0.0089]  D1-D2 +0.0320 (0.0007) [0.0116]
+  B = 256 M1 antagonistic  D1 +0.0069 (0.0005) [0.0086]  D2 +0.0023 (0.0005) [0.0089]  DX2 +0.0033 (0.0005) [0.0090]  D1-D2 +0.0046 (0.0007) [0.0123]
+  B = 256 M2 mutual        D1 +0.0386 (0.0005) [0.0085]  D2 +0.0091 (0.0005) [0.0087]  DX2 +0.0125 (0.0005) [0.0087]  D1-D2 +0.0295 (0.0007) [0.0115]
+  B = 256 M2 antagonistic  D1 +0.0104 (0.0005) [0.0085]  D2 +0.0020 (0.0005) [0.0089]  DX2 +0.0032 (0.0005) [0.0090]  D1-D2 +0.0084 (0.0007) [0.0122]
+  B =   1 M1 mutual        D1 +0.0006 (0.0005) [0.0089]  D2 +0.0575 (0.0005) [0.0089]  DX2 +0.0576 (0.0005) [0.0089]  D1-D2 -0.0569 (0.0008) [0.0131]
+  B =   1 M1 antagonistic  D1 +0.0007 (0.0005) [0.0085]  D2 +0.0100 (0.0005) [0.0089]  DX2 +0.0101 (0.0005) [0.0089]  D1-D2 -0.0094 (0.0007) [0.0127]
+  B =   1 M2 mutual        D1 +0.0023 (0.0005) [0.0086]  D2 +0.0538 (0.0005) [0.0094]  DX2 +0.0541 (0.0005) [0.0092]  D1-D2 -0.0515 (0.0008) [0.0139]
+  B =   1 M2 antagonistic  D1 -0.0009 (0.0005) [0.0083]  D2 +0.0172 (0.0005) [0.0087]  DX2 +0.0171 (0.0005) [0.0087]  D1-D2 -0.0181 (0.0007) [0.0123]
+
+  Replicas against graphs, B = 16, law M1: run-to-run s.d. with 4 replicas per graph (150 runs).
+  mutual        rho1 [0.0041]  rho2 [0.0045]  rho1 - rho2 [0.0064]   (2 replicas: [0.0060], [0.0061], [0.0083])
+  oneway        rho1 [0.0044]  rho2 [0.0043]  rho1 - rho2 [0.0060]   (2 replicas: [0.0061], [0.0064], [0.0082])
+
+Part 4. Calibration s.e. of the contrasts: 200 bootstrap draws of the cell-P0 fit, each on the same 32 graphs with the
+same random numbers and block orders, B = 16 and B = 1. ratio = D2(B = 16) / D2(B = 1) within a draw.
+Entries: value at the point estimate on these graphs, s.d. over draws, 2.5% and 97.5% of draws.
+  M1 B16|mutual|D1              +0.0393  sd 0.0019  [+0.0358, +0.0431]
+  M1 B16|mutual|D2              +0.0128  sd 0.0012  [+0.0110, +0.0156]
+  M1 B16|mutual|DX2             +0.0170  sd 0.0008  [+0.0159, +0.0187]
+  M1 B16|antagonistic|D1        +0.0063  sd 0.0020  [+0.0032, +0.0104]
+  M1 B16|antagonistic|D2        +0.0037  sd 0.0006  [+0.0026, +0.0047]
+  M1 B16|antagonistic|DX2       +0.0046  sd 0.0007  [+0.0033, +0.0059]
+  M1 mutual|ratio               +0.2127  sd 0.0167  [+0.1918, +0.2518]
+  M2 B16|mutual|D1              +0.0374  sd 0.0065  [+0.0186, +0.0433]
+  M2 B16|mutual|D2              +0.0110  sd 0.0021  [+0.0055, +0.0135]
+  M2 B16|mutual|DX2             +0.0145  sd 0.0029  [+0.0066, +0.0176]
+  M2 B16|antagonistic|D1        +0.0096  sd 0.0017  [+0.0069, +0.0133]
+  M2 B16|antagonistic|D2        +0.0032  sd 0.0009  [+0.0017, +0.0049]
+  M2 B16|antagonistic|DX2       +0.0043  sd 0.0010  [+0.0025, +0.0061]
+  M2 mutual|ratio               +0.1997  sd 0.0186  [+0.1591, +0.2289]
+
+Part 5. Sizing of falsifier 7. Statistic: T7 = D2_sync / 2 - D2_async, D2 = rho_2(mutual) - rho_2(one-way), the
+synchronous one from the experiment's own synchronous runs (2 mutual, 5 one-way; X2 and rho_2 contrasts coincide
+there). The falsifier fires if T7 < 0; the prediction is confirmed at 3 s.e. if T7 > 3 s.e.(T7). B = 16.
+s.e.(T7)^2 = [sd_m,sync^2 / 2 + sd_o,sync^2 / 5] / 4 + [sd_m,async^2 + sd_o,async^2] / n, n asynchronous runs per world.
+  M1: D2_sync +0.0575, D2_async +0.0120 (ratio 0.21), T7 +0.0167; run s.d. of rho_2: async mutual 0.0061, async one-way 0.0064; of rho_1: 0.0060, 0.0061.  n for 3 s.e.: 3.3
+     n = 1 per world: T7 = 1.8 s.e. (s.e. 0.0093);  lag-1 contrast D1 = +0.0407 = 4.8 s.e.;  an echo that did not move would sit 3.1 s.e. on the other side
+     n = 2 per world: T7 = 2.5 s.e. (s.e. 0.0068);  lag-1 contrast D1 = +0.0407 = 6.7 s.e.;  an echo that did not move would sit 4.2 s.e. on the other side
+     n = 3 per world: T7 = 2.9 s.e. (s.e. 0.0058);  lag-1 contrast D1 = +0.0407 = 8.2 s.e.;  an echo that did not move would sit 5.0 s.e. on the other side
+     n = 4 per world: T7 = 3.2 s.e. (s.e. 0.0052);  lag-1 contrast D1 = +0.0407 = 9.5 s.e.;  an echo that did not move would sit 5.5 s.e. on the other side
+     runs per world for T7 = 3 s.e. if the measured synchronous contrast is D2_sync and the asynchronous one is the
+     predicted fraction 0.21 of it (same noise):  D2_sync 0.030: 67.8   D2_sync 0.040: 10.1   D2_sync 0.050: 4.8   D2_sync 0.058: 3.3   D2_sync 0.070: 2.0
+     within the asynchronous runs alone: D1 - D2 = +0.0286 (synchronous: -0.0569), s.d. of one run pair 0.0117: 2.4 s.e. at n = 1, 3.5 s.e. at n = 2, 4.2 s.e. at n = 3, 4.9 s.e. at n = 4
+     asynchronous antagonistic: D1 = +0.0070, 1.2 s.e. with 2 runs per world, 1.9 with 5
+  M2: D2_sync +0.0538, D2_async +0.0104 (ratio 0.19), T7 +0.0164; run s.d. of rho_2: async mutual 0.0063, async one-way 0.0056; of rho_1: 0.0057, 0.0059.  n for 3 s.e.: 3.2
+     n = 1 per world: T7 = 1.9 s.e. (s.e. 0.0089);  lag-1 contrast D1 = +0.0370 = 4.5 s.e.;  an echo that did not move would sit 3.0 s.e. on the other side
+     n = 2 per world: T7 = 2.5 s.e. (s.e. 0.0066);  lag-1 contrast D1 = +0.0370 = 6.3 s.e.;  an echo that did not move would sit 4.1 s.e. on the other side
+     n = 3 per world: T7 = 2.9 s.e. (s.e. 0.0056);  lag-1 contrast D1 = +0.0370 = 7.8 s.e.;  an echo that did not move would sit 4.8 s.e. on the other side
+     n = 4 per world: T7 = 3.2 s.e. (s.e. 0.0051);  lag-1 contrast D1 = +0.0370 = 9.0 s.e.;  an echo that did not move would sit 5.3 s.e. on the other side
+     runs per world for T7 = 3 s.e. if the measured synchronous contrast is D2_sync and the asynchronous one is the
+     predicted fraction 0.19 of it (same noise):  D2_sync 0.030: 65.9   D2_sync 0.040: 8.4   D2_sync 0.050: 4.0   D2_sync 0.058: 2.7   D2_sync 0.070: 1.6
+     within the asynchronous runs alone: D1 - D2 = +0.0266 (synchronous: -0.0515), s.d. of one run pair 0.0112: 2.4 s.e. at n = 1, 3.3 s.e. at n = 2, 4.1 s.e. at n = 3, 4.7 s.e. at n = 4
+     asynchronous antagonistic: D1 = +0.0096, 1.6 s.e. with 2 runs per world, 2.6 with 5

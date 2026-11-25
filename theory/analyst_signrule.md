@@ -4,6 +4,8 @@ Frozen 2026-11-25, before any de-biased analyst swarm data exist. It replaces se
 `analyst_scenario.md` for this design; that note's law, notation and solver stand. Numbers:
 `theory/checks/analyst_signrule_predictions.json`. Code: `theory/checks/analyst_signrule_check.py` (parts A to F,
 outputs `analyst_signrule_out_<part>.txt`; calibration fits and bootstrap draws in `analyst_signrule_calib.json`).
+Amendment 1 at the end adds the asynchronous control and restates falsifier 7; it was frozen before any asynchronous
+run.
 
 **Design.** Qwen3.5-9B analysts, $N=256$, $K=16$, $T=20$, 2 replicas per graph, about 12 runs over the mutual
 ($\gamma=+1$), one-way ($\gamma=0$) and "antagonistic" ($\gamma=-1$) graphs at $p_-=\tfrac12$. The model returns the
@@ -376,3 +378,179 @@ effect if the calibration's leak fit is taken at face value.
 - Averaging within groups enters only as per-reader gains (one variant); the theory of per-agent gain spread is
   not worked out.
 - The asynchronous numbers are simulations of the calls-only law on 24 runs per world.
+
+## Amendment 1 (2026-11-25): the asynchronous control
+
+Added at the user's request after the synchronous runs of `experiments/09-analyst-signrule` had started, and frozen
+before any asynchronous run. I did not read the synchronous data: every number below comes from the calibration
+cell, as in sections 1 to 8. It replaces the last two sentences of section 7 and falsifier 7 of section 8; nothing
+else in the note changes. Numbers: `theory/checks/analyst_signrule_async_predictions.json`. Code:
+`theory/checks/analyst_signrule_async_check.py` (output `analyst_signrule_async_out.txt`).
+
+**Verdict.**
+
+1. *Schedule.* Block-random updates with 16 blocks of 16 analysts, a fresh random partition every round. It keeps
+   the engine batched (16 batches of 32 prompts per round at 2 replicas) and differs from one-at-a-time updating by
+   3 points in where the echo goes.
+2. *Prediction.* The echo moves to lag 1. Of the synchronous lag-2 echo, 72% reappears at lag 1 and 28% stays at
+   lag 2. Mutual minus one-way: lag-1 contrast $D_1=+0.041$ (calls-only) or $+0.037$ (note channel), lag-2 contrast
+   $D_2=+0.012$ or $+0.010$, against a synchronous $D_2$ of $+0.0575$ or $+0.054$. The predicted ratio of the
+   asynchronous to the synchronous $D_2$ is 0.21 (calibration s.e. 0.02) for the calls-only law and 0.19 for the
+   note channel, against the falsifier's threshold of 0.5.
+3. *Sizing.* 2 asynchronous mutual and 2 asynchronous one-way runs put falsifier 7 at 2.5 standard errors and the
+   lag-1 check at 6.7. Reaching 3 takes 3.3 runs per world, so 4 and 4, or 2 and 2 with 4 replicas each, which
+   is the same number of calls. The run-to-run s.d. of 0.006 is right; the comparison is a difference of two worlds
+   set against a threshold that has its own error.
+4. *An asynchronous antagonistic run adds nothing resolvable*: its lag-1 contrast is $+0.007$ to $+0.010$, 1.2 to 1.6
+   standard errors with 2 runs per world.
+
+### A1. Schedule
+
+Round 0 is synchronous, since there is no inbox. In every round $t\ge1$:
+
+1. A fresh random permutation of the 256 analysts is cut into $B=16$ blocks of 16. The permutation is drawn from a
+   stored seed per (graph, round) and shared by the replicas of a graph, as the notes and the news are.
+2. The blocks update one after another. All analysts of a block decide in one engine batch, their calls are drawn
+   from $\tanh(x-\hat c)$ with the stored uniforms $U(\text{replica},t,i)$, and they write their notes, before the
+   next block starts.
+3. An analyst reads each colleague's **latest** call and note: the round-$t$ ones if that colleague's block came
+   earlier in this round, the round-$(t-1)$ ones otherwise. Its own previous call and note are its round-$(t-1)$
+   ones and its news item is $\xi_i(t)$, as in the synchronous design.
+4. Every analyst updates exactly once per round, so rounds, news, uniforms and the echo function's lags keep their
+   meaning. The block index of every (round, analyst) is stored with the record.
+
+*Feasibility.* `envs/analyst.AnalystSwarm._round` builds the contexts of all analysts from the previous round's
+calls and notes and sends one engine batch. The block schedule calls the same code on 16 analysts at a time and
+writes their calls and notes into that state before the next block; an analyst's own entry in the state is still
+its previous-round one when it updates, so the context code is unchanged. A round is then 16 batches of 32 prompts
+(2 replicas in lockstep) for decisions and 16 for notes, in place of one batch of 512 each. The number of prompts
+is the same, so the cost should be close to a synchronous round's, which was 50 s per replica in the pilot; I have
+not timed it. Checkpointing has to treat a round as complete only when its 16 blocks are. One analyst at a time
+($B=256$) would be 256 batches of 2 per round and would give up the batching the pilot's throughput came from; it
+buys a lag-2 share of 0.25 in place of 0.28, which is not worth it.
+
+Statistics are those of section 2 and nothing else: the echo function on the sampling belief, rounds 5 to 20, lags
+counted in rounds. Replica-difference correlations are not used for this control, because sequential updates give
+them a schedule artifact (`analyst_scenario.md` section 4.3).
+
+### A2. Where the echo goes
+
+Let $p=(N/B-1)/(N-1)$ be the probability that two given analysts share a block; $p=15/255=0.059$ here, 0 for one
+at a time, 1 for synchronous rounds. Take a reciprocated pair $i,j$ and the call $\sigma_i(t)$.
+
+- $j$ reads $\sigma_i(t)$ in round $t$ if its block comes after $i$'s, and again or for the first time in round
+  $t+1$ if its block does not come after $i$'s there.
+- $i$ reads $j$'s answer at round $t+1$ in two ways: $j$ answered in round $t$ and $i$ is not after $j$ in round
+  $t+1$, or $j$ is strictly before $i$ in round $t+1$. These exclude each other, and their probabilities add to
+  $w_1$.
+- $i$ reads $j$'s round-$(t+1)$ answer a second time in round $t+2$ if $j$ was not after $i$ in round $t+1$ and
+  $i$ is not after $j$ in round $t+2$, with probability $w_2$.
+
+$$w_1=\frac{(1-p)(3+p)}4,\qquad w_2=\Big(\frac{1+p}2\Big)^2,\qquad w_1+w_2=1, \tag{S6}$$
+
+$$\rho_1=\kappa d+w_1Gd,\qquad X_2=w_2\,Gd+O(G^2),\qquad
+D_1=w_1Gd,\qquad D_2\simeq w_2Gd+w_1Gd\,(2\kappa d+w_1Gd), \tag{S7}$$
+
+where $D_\tau=\rho_\tau({\rm mutual})-\rho_\tau(\text{one-way})$ under the same schedule and $G$ is that of (S4).
+The last term of $D_2$ is the difference of $\rho_1^2$ between the worlds: the lag-1 echo cancels part of the
+anti-persistent own call ($\kappa<0$) in the mutual world, which lowers its $\rho_2$. For $B=16$: $w_1=0.720$,
+$w_2=0.280$; for one at a time $0.75$ and $0.25$; for synchronous rounds 0 and 1.
+
+Checks (parts 1, 2). The block simulation with $B=1$ equals the synchronous one exactly and with $B=N$ equals
+`analyst_lib.simulate(mode="async")` on the same permutations (0 calls differ). Without memory, the simulated $D_1$
+follows $w_1Gd$ within 1 s.e. for $B=1,2,4,8,16,32,256$ ($+0.0417$ against $+0.0419$ at $B=16$), and $D_2$ exceeds
+$w_2Gd$ by 0.002 to 0.004 at every $B>1$ ($+0.0203$ against $+0.0163$ at $B=16$), of which $(w_1Gd)^2=0.0018$ is
+the lag-1 echo taken twice. With the cell's memory, (S7) gives $D_1=+0.0415$ and $D_2=+0.0117$ at $B=16$ against
+$+0.0407$ and $+0.0120$ simulated.
+
+### A3. Predictions for B = 16
+
+Design size, rounds 5 to 20, 300 runs per entry on the graphs, notes, news and uniforms of section 4 (Monte Carlo
+s.e. 0.0004 per world, 0.0005 per contrast). Brackets: calibration s.e. from 200 bootstrap draws (part 4).
+
+| | law | mutual | one-way | "antagonistic" |
+|---|---|---|---|---|
+| $\rho_1$ | M1 | −0.0330 | −0.0737 | −0.0667 |
+| | M2 | −0.0272 | −0.0643 | −0.0547 |
+| $\rho_2$ | M1 | +0.0179 | +0.0059 | +0.0080 |
+| | M2 | +0.0166 | +0.0061 | +0.0084 |
+| $X_2$ | M1 | +0.0168 | +0.0004 | +0.0036 |
+| | M2 | +0.0158 | +0.0019 | +0.0054 |
+| $\rho_3$ | M1 | −0.0001 | +0.0003 | −0.0003 |
+| **lag-1 contrast $D_1$** | M1 | **+0.0407 (0.0019)** | – | +0.0070 (0.0020) |
+| | M2 | +0.0370 (0.0065) | – | +0.0096 (0.0017) |
+| **lag-2 contrast $D_2$** | M1 | **+0.0120 (0.0012)** | – | +0.0022 (0.0006) |
+| | M2 | +0.0104 (0.0021) | – | +0.0023 (0.0009) |
+| contrast in $X_2$ | M1 | +0.0164 (0.0008) | – | +0.0032 (0.0007) |
+| | M2 | +0.0138 (0.0029) | – | +0.0034 (0.0010) |
+| $D_2$ asynchronous / synchronous | M1 | 0.21 (0.02; 95% of draws 0.19 to 0.25) | | |
+| | M2 | 0.19 (0.02; 95% of draws 0.16 to 0.23) | | |
+
+- The synchronous contrasts on the same graphs are $D_2=+0.0575$ (M1) and $+0.0538$ (M2) with $D_1=+0.001$ and
+  $+0.002$: the sign of $D_1-D_2$ turns from $-0.057$ to $+0.029$.
+- One analyst at a time gives $D_1=+0.0420$, $D_2=+0.0099$ (M1) and $+0.0386$, $+0.0091$ (M2), so the block
+  schedule is within 0.002 of it.
+- The synchronous $\rho_3=-0.012$ of the mutual world, a product of memory and echo, goes to zero.
+- Under M2 the mean belief is $+0.41$, $+0.37$, $+0.34$, a little above the synchronous $+0.37$, $+0.35$, $+0.32$,
+  and has the same calibration uncertainty. Under M1 it stays at 0.
+- The law variants of section 4 scale $G$, so they move $D_1$ and $D_2$ in proportion to the synchronous contrast
+  and leave the ratio near its value here; that is why the falsifier is a ratio.
+
+### A4. Sizing
+
+Run-to-run s.d. of one asynchronous run (2 replicas): $\rho_1$ 0.0060 (mutual), 0.0061 (one-way); $\rho_2$ 0.0061,
+0.0064. With 4 replicas they are 0.0041 to 0.0045, so a replica is again worth a graph. The test statistic of
+falsifier 7 is
+
+$$T_7=\tfrac12D_2^{\rm sync}-D_2^{\rm async},\qquad
+{\rm s.e.}(T_7)^2=\tfrac14\,{\rm s.e.}(D_2^{\rm sync})^2+\frac{\sigma_{m}^2+\sigma_{o}^2}{n},$$
+
+with $D_2^{\rm sync}$ from the experiment's own synchronous runs (2 mutual, 5 one-way: s.e. 0.0054), $\sigma_m$,
+$\sigma_o$ the asynchronous run s.d. of $\rho_2$ in the two worlds and $n$ asynchronous runs per world. Predicted
+$T_7=+0.0167$ (M1), $+0.0164$ (M2).
+
+| asynchronous runs per world (2 replicas) | $T_7$ in s.e., M1 / M2 | lag-1 check $D_1$ in s.e., M1 / M2 | an echo that did not move: s.e. past the threshold |
+|---|---|---|---|
+| 1 | 1.8 / 1.9 | 4.8 / 4.5 | 3.1 / 3.0 |
+| 2 | 2.5 / 2.5 | 6.7 / 6.3 | 4.2 / 4.1 |
+| 3 | 2.9 / 2.9 | 8.2 / 7.8 | 5.0 / 4.8 |
+| **4** | **3.2 / 3.2** | **9.5 / 9.0** | **5.5 / 5.3** |
+
+- **The coordinator's 2 + 2 gives 2.5 s.e., not 3.** The s.d. of 0.006 is right for one world. The contrast of two
+  worlds has s.d. 0.0088 per pair of runs, half the synchronous contrast carries an error of 0.0027 of its own, and
+  the gap to resolve is 0.017, not 0.029. Three standard errors need $n=3.3$: **4 mutual and 4 one-way asynchronous
+  runs at 2 replicas, or 2 and 2 at 4 replicas.**
+- With 2 + 2 the control still does most of its work: the lag-1 contrast is at 6.7 s.e., and a lag-2 echo that had
+  not moved at all would be 4.2 s.e. on the wrong side of the threshold. What 2 + 2 cannot do is separate the
+  predicted ratio of 0.21 from 0.5 at 3 s.e.
+- The requirement depends on the synchronous contrast actually measured, because the gap is 0.29 of it. Runs per
+  world for 3 s.e.: 2.0 at $D_2^{\rm sync}=0.070$, 3.3 at 0.0575, 4.8 at 0.050, 10 at 0.040, 68 at 0.030 (M1; 1.6,
+  2.7, 4.0, 8.4, 66 under M2). Below about 0.04 the comparison is out of reach in practice, and the lag-1 check is
+  then the test.
+- Within the asynchronous runs alone, $D_1-D_2=+0.029$ against $-0.057$ synchronous, with s.d. 0.0117 per pair of
+  runs: 2.4 s.e. with 1 run per world and 3.5 with 2 (3.3 under M2). It needs no synchronous threshold and is
+  recorded as a secondary statistic.
+- **Antagonistic.** $D_1=+0.0070$ (M1) to $+0.0096$ (M2) and $D_2=+0.002$, against 0.0084 per pair of runs: 1.2 to 1.6
+  s.e. with 2 runs per world and 1.9 to 2.6 with 5. Not included.
+
+### A5. Falsifier 7, restated
+
+Asynchronous runs: block-random schedule of A1, $\hat c=-0.637$, cell and statistics as in the synchronous runs,
+$n$ mutual and $n$ one-way graphs. $D_\tau=\rho_\tau({\rm mutual})-\rho_\tau(\text{one-way})$, world means over
+runs, s.e. from the run-to-run spread.
+
+7. **The lag-2 echo survives asynchronous updating.** $D_2^{\rm async}>\tfrac12D_2^{\rm sync}$, that is $T_7<0$, by
+   more than 3 s.e.$(T_7)$. Predicted: $D_2^{\rm async}/D_2^{\rm sync}=0.21$ (M1), 0.19 (M2), $T_7=+0.017$.
+   - *Confirmed* if $T_7>3$ s.e.; *falsified* if $T_7<-3$ s.e.; otherwise *not resolved*, to be reported as such
+     with the ratio and its error.
+   - *Positive check, same runs:* $D_1^{\rm async}>0$ at 3 s.e., predicted $+0.041$ (M1), $+0.037$ (M2), which is
+     0.7 of the synchronous $D_2$. $D_1^{\rm async}$ within 3 s.e. of zero while the synchronous $D_2$ exceeds
+     $0.03$ falsifies the reaction term's account of where the echo goes, whatever $T_7$ is.
+   - *Magnitude, reported and not tested:* $D_1^{\rm async}/D_2^{\rm sync}$, predicted 0.71 (M1) and 0.69 (M2)
+     against $w_1=0.72$ at leading order, whatever the gains. Four runs per world measure it to about 15%.
+
+**Not verified in this amendment.** The GPU cost of the block schedule (estimated, not timed). That Qwen's response
+to an inbox that mixes this round's and last round's notes is the one the probes measured; the prompt says "latest
+calls" and does not mark which are new. The single-site theory of the block schedule is (S6)–(S7) at leading order
+plus simulation; the solver has no asynchronous mode. The asynchronous numbers under M2 rest on the same weakly
+identified note channel as section 5.
