@@ -118,7 +118,14 @@ N = 64. Qwen3.5-9B on vLLM (`envs/vllm_backend.py`; beliefs from digit-token log
 sampling noise) can run N = 256–1024. The question being measured (`experiments/06_qwen_*`) is whether any
 (K, wording) puts a Qwen swarm near the stability boundary (Λ ≳ 0.7) or makes it bistable (conformity slope > 1),
 using real-message calibration. If so, that is where the oscillation, zealot-hysteresis and Var(m_B) predictions get
-tested. **Not measured yet.**
+tested. **Measured (`experiments/06-qwen-calibration/RESULT.md`): no.** In the coin game Qwen3.5-9B couples more weakly
+than Haiku (inverted K = 2: a₊ = 0.33 against Haiku's 0.80), Λ_max ≤ 0.45 ± 0.05 in every (K, wording) cell, conformity
+slopes are 0.36–0.58 with a single fixed point, and its answers carry 2.5× Haiku's noise, almost all from the sampled
+rationale and message (the logprob readout removes only about 4% of it). Unlike Haiku it does not freeze (late answers
+keep moving by ≈ 0.09 per round). A K = 1,024 round costs $0.14 and 14 minutes on an A40. The analyst scenario was
+no-go for the same reason (section 6). So neither model available to the project reaches the regimes where claims 2–4
+make visible predictions; the Physics of Agents data suggest that committed binary votes with few, strongly weighted
+neighbours (per-neighbour logit gains 1.4–3.4) are where strong coupling lives, which a future design could target.
 
 ## 6. The analyst scenario: frozen predictions where the theory should be valid and nontrivial (`analyst_scenario.md`)
 

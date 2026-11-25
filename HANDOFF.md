@@ -186,8 +186,12 @@ in total, leaving room for Sonnet slices and reruns. Test 1 decides whether the 
   move agents about 0.6 as much as disconfirming ones, on closed and open paths alike. Operational fixes along the
   way (all in `engine/runner.py`): shared slim replay cache, slim in-memory checkpoint records, no checkpoint lines for
   pure replays in twins; base runs need ≤ 8 concurrent runs to stay under the 2M output-tokens/min API limit.
-- **GPU track** (Opus agent): worker `aniket-sc-06-qwen-calibration` still running on an A40 at $0.59/h (8 h cap,
-  ~4.3 h in, ≈ $2.5 so far); its agent hasn't reported yet.
+- **GPU track done** (`experiments/06-qwen-smoke/`, `experiments/06-qwen-calibration/`, ≈ $3.10 of pods, no worker
+  left): `envs/vllm_backend.py` validated on an A40 (13 unit tests; vLLM 0.32; 1 missing of 23,184 calls). Timing: N=256
+  round 187 s ($0.03), N=1,024 round 839 s ($0.14). Qwen3.5-9B couples weakly in the coin game (Λ_max ≤ 0.45 ± 0.05 in
+  every cell, conformity slopes 0.36–0.58, one fixed point) with 2.5× Haiku's noise, so the answer to "is any cell near
+  the boundary or bistable?" is no, and large-N swarms were not run. With the analyst scenario also no-go, task 4
+  (zealot hysteresis, Var(m_B) early warning) has no model with a tipping point to run on: blocked.
 - **Analyst scenario** (new request from the user, relayed by the editor session): a Fable agent is writing frozen
   predictions (`theory/analyst_scenario.md`, `theory/checks/analyst_predictions.json`) for N = 256–1,024 Qwen analysts
   at K = 16 in mutual / one-way / antagonistic trust worlds. Spend tracking for this scenario: projection before every
