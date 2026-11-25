@@ -80,19 +80,19 @@ if __name__ == "__main__":
             g = fit["gains_transfer"][f"{w}|K{K}"]["one_shot" if name != "anchoring" else "target"]
             batches = [stats(cell(K, gamma, g, law, 16, np.random.default_rng([11, b, int(2 * gamma) + 2, len(w), len(name), K])))
                        for b in range(3)]
-                a = np.array(batches)            # (3, 5): F, F_open, F_open_matched, frac_confirming, ratio
-                m, se = a.mean(0), a.std(0, ddof=1) / np.sqrt(3)
-                diff = a[:, 0] - a[:, 2]
-                key = f"{name}|{w}|K{K}|g{gamma:+.1f}"
-                out[key] = {"F": m[0], "F_se": se[0], "F_open": m[1], "F_open_se": se[1], "F_open_matched": m[2],
-                            "F_open_matched_se": se[2], "F_minus_open_matched": diff.mean(),
-                            "F_minus_open_matched_se": diff.std(ddof=1) / np.sqrt(3), "closed_frac_confirming": m[3],
-                            "open_confirm_over_disconfirm": m[4], "open_confirm_over_disconfirm_se": se[4]}
-                o = out[key]
-                print(f"{key:28s} F {o['F']:.3f}({o['F_se']:.3f}) F_open {o['F_open']:.3f}({o['F_open_se']:.3f}) "
-                      f"matched {o['F_open_matched']:.3f} F-matched {o['F_minus_open_matched']:+.3f}"
-                      f"({o['F_minus_open_matched_se']:.3f}) frac_conf {o['closed_frac_confirming']:.2f} "
-                      f"ratio {o['open_confirm_over_disconfirm']:.3f}({o['open_confirm_over_disconfirm_se']:.3f})", flush=True)
+            a = np.array(batches)            # (3, 5): F, F_open, F_open_matched, frac_confirming, ratio
+            m, se = a.mean(0), a.std(0, ddof=1) / np.sqrt(3)
+            diff = a[:, 0] - a[:, 2]
+            key = f"{name}|{w}|K{K}|g{gamma:+.1f}"
+            out[key] = {"F": m[0], "F_se": se[0], "F_open": m[1], "F_open_se": se[1], "F_open_matched": m[2],
+                        "F_open_matched_se": se[2], "F_minus_open_matched": diff.mean(),
+                        "F_minus_open_matched_se": diff.std(ddof=1) / np.sqrt(3), "closed_frac_confirming": m[3],
+                        "open_confirm_over_disconfirm": m[4], "open_confirm_over_disconfirm_se": se[4]}
+            o = out[key]
+            print(f"{key:28s} F {o['F']:.3f}({o['F_se']:.3f}) F_open {o['F_open']:.3f}({o['F_open_se']:.3f}) "
+                  f"matched {o['F_open_matched']:.3f} F-matched {o['F_minus_open_matched']:+.3f}"
+                  f"({o['F_minus_open_matched_se']:.3f}) frac_conf {o['closed_frac_confirming']:.2f} "
+                  f"ratio {o['open_confirm_over_disconfirm']:.3f}({o['open_confirm_over_disconfirm_se']:.3f})", flush=True)
         for grp, sel in (("pooled", lambda k: True), ("pooled_K2", lambda k: "|K2|" in k), ("pooled_K4", lambda k: "|K4|" in k)):
             cellsk = [k for k in out if k.startswith(name + "|") and "|pooled" not in k and sel(k)]
             if not cellsk:
