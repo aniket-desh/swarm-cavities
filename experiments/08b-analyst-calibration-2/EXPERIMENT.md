@@ -1,7 +1,7 @@
 ---
 name: 08b-analyst-calibration-2
 title: Analyst scenario, calibration 2: polarity counterbalancing and experimenter-reversed fading at K = 16 (Qwen3.5-9B, real notes)
-status: draft
+status: approved
 gpu: NVIDIA A40,NVIDIA RTX A6000,NVIDIA L40S
 count: 1
 min_gpu_gb: 40
@@ -10,6 +10,7 @@ budget_usd: 5
 disk_gb: 120
 data:
 secrets:
+approved_utc: 2026-11-25T18:55:50Z
 ---
 
 # Analyst scenario, calibration 2: polarity counterbalancing and experimenter-reversed fading at K = 16 (Qwen3.5-9B, real notes)
@@ -41,8 +42,10 @@ term given negative couplings; it does not test whether agents act on distrust.
   variant; a content bias would not. A bias carried by the bearish pilot notes would shrink in the template cell.
 - **Fading.** Reversal turns the faded channel into an ally-like one, so r > 0.3, and plausibly r near 1, at least
   once the faded colleagues' bearish notes are removed (F3).
-- **Go rule.** With r near 1 and ā ≈ 1.2 to 1.7, the contrast rule passes, but the predicted echoes stay small
-  (Γ = g² ≈ 0.1). So the echo-resolvability criterion is expected to pass only if the bias is also near 0.
+- **Go rule.** With r near 1 and ā ≈ 1.5, the contrast rule passes, and the leading-order echo |Γ|(1−q)² is
+  about 0.06 even at c = −0.6 (the reviewer's synthetic check: a₊ = 1.6, a₋ = 1.4). So echo resolvability is
+  expected to pass whenever reversed fading works. The bias mainly matters for Λ_mutual, which stays far below 0.7
+  at K = 16 in either case.
 
 ## Method
 
@@ -176,7 +179,7 @@ tok and selection 2 min. Total ≈ 30 min: ≈ $0.30 on an A40 ($0.59/h) or ≈ 
 ## Questions asked before launch
 
 None needed. The coordinator's request, as amended by the user's scope change, fixed the questions, the reuse of
-the pilot pool, the constraints, the spend protocol and the ~$5 budget. Choices made here:
+the pilot pool, the constraints, the spend protocol and the ~$5 budget, and a standing go-ahead covers approval. Choices made here:
 - the "max" wording;
 - the YES/NO pair as the token-versus-content control, beyond the suggested order swap and "close down" framing;
 - reversed variants that state the reversed call is as informative as an ally's, with and without the faded notes;
