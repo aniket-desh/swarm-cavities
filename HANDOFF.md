@@ -1,6 +1,6 @@
 # HANDOFF: swarm-cavity overnight run
 
-Last updated: 2026-11-25 05:45 UTC. Running in tmux session `swarm-cavity` (attach: `tmux attach -t swarm-cavity`).
+Last updated: 2026-11-25 05:45 UTC. Working copy: `/workspace-global/swarm-cavity/repo` (see Blocked). Running in tmux session `swarm-cavity` (attach: `tmux attach -t swarm-cavity`).
 
 ## Spend against the $2,000
 
@@ -104,6 +104,13 @@ in total, leaving room for Sonnet slices and reruns. Test 1 decides whether the 
 
 ## Blocked
 
+- **The /workspace network volume is full** (as of about 06:15 UTC), so writes fail with "Disk quota exceeded" for
+  every project and every Claude session, since Claude transcripts live on it via /root/.claude. It's at about 55 GB.
+  The biggest folders are coupled-tensor-networks (22 GB), the shared uv cache (12 GB) and participation-ratios
+  (9.9 GB). The swarm-cavity repo is 114 MB. My attempt to force-prune the uv cache was denied, which is fair, since
+  it's shared. Meanwhile this project works from `/workspace-global/swarm-cavity/repo` and pushes to GitHub, and the
+  spend watcher runs from there too. To fix it, resize the network volume or clear space in the other projects, then
+  `cd /workspace/swarm-cavity && git pull` brings the old copy up to date.
 - **GPU work (Exp 4) needs you to pick the Runpod account.** `orch doctor` fails for every project on this
   coordinator, not just this one: "network volume 2we3auziu3 doesn't exist on this account". The cause is that the
   `RUNPOD_API_KEY` in the shared `/workspace/.env` belongs to an account that doesn't hold this coordinator's volumes

@@ -7,6 +7,10 @@ belief dynamics with asymmetric couplings and context-window memory, then test t
 
 ## Environment
 
+- **The working copy is `/workspace-global/swarm-cavity/repo`** (moved 2026-11-25 06:20 UTC because the /workspace
+  network volume ran out of quota and writes there fail). `/workspace/swarm-cavity` is a stale copy that holds the
+  real `.env` (the clone's `.env` is a symlink to it) and the `orch.toml` that orch commands need. GitHub `main` is
+  the source of truth. Run code from the clone so the ledger lands in the clone's `budget/`.
 - The network volume is near its quota, so the venv and uv cache live on the container disk. Before any `uv` command:
   `source scripts/env.sh` (sets `UV_CACHE_DIR=/root/.cache/uv-sc`, `UV_PROJECT_ENVIRONMENT=/root/venvs/swarm-cavity`).
   If the container restarted, `uv sync` rebuilds it. Don't write large files under `/workspace`; put bulky outputs
