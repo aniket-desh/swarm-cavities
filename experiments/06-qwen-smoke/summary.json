@@ -1,0 +1,139 @@
+{
+ "engine_start": {
+  "load_s": 64.60273098945618,
+  "prefix_caching": 1,
+  "max_num_seqs": 256
+ },
+ "env": {
+  "vllm": "0.32.0",
+  "torch": "2.13.0+cu129",
+  "gpu": "NVIDIA A40",
+  "gpu_mem_gb": 44.423828125,
+  "prefix_caching": 1,
+  "model": "Qwen/Qwen3.5-9B",
+  "step_s": 0.00011444091796875
+ },
+ "tok": {
+  "single_token": {
+   "0": true,
+   "1": true,
+   "2": true,
+   "3": true,
+   "4": true,
+   "5": true,
+   "6": true,
+   "7": true,
+   "8": true,
+   "9": true,
+   ".": true
+  },
+  "prompt_tail": "round 1.<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n",
+  "ends_with_empty_think": true,
+  "canonical_number_tokens": [
+   "_prob",
+   "\":",
+   " ",
+   "0",
+   ".",
+   "6",
+   "2",
+   "}"
+  ],
+  "n_prompt_tokens_round0": 587,
+  "step_s": 0.00610804557800293
+ },
+ "probes": {
+  "label": {
+   "n": 16,
+   "ok": 16,
+   "missing": {
+    "malformed_sample": 0,
+    "low_valid_mass": 0
+   },
+   "valid_mass_min": 0.9999490966827129,
+   "valid_mass_median": 0.9999826585162211,
+   "skipped_mass_max": 0.0013884137759145767,
+   "mean_abs_logprob_minus_sampled": 0.012733537823799605,
+   "prefix_tails": [
+    "ief|_prob|\":| "
+   ]
+  },
+  "inverted": {
+   "n": 16,
+   "ok": 16,
+   "missing": {
+    "malformed_sample": 0,
+    "low_valid_mass": 0
+   },
+   "valid_mass_min": 0.9997698295797527,
+   "valid_mass_median": 0.9999638774930557,
+   "skipped_mass_max": 0.0018177693364604583,
+   "mean_abs_logprob_minus_sampled": 0.022572316702162185,
+   "prefix_tails": [
+    "ief|_prob|\":| "
+   ]
+  },
+  "step_s": 34.773983001708984
+ },
+ "swarm": {
+  "sync": {
+   "wall_s": 80.57754564285278,
+   "swarm_missing": 0,
+   "swarm_n": 80,
+   "m_truth_aligned_by_round": [
+    0.085,
+    0.172,
+    0.255,
+    0.189,
+    0.283
+   ],
+   "replica_rms_diff_by_round": [
+    0.0,
+    0.102,
+    0.133,
+    0.18,
+    0.144
+   ],
+   "n": 72,
+   "ok": 72,
+   "missing": {
+    "malformed_sample": 0,
+    "low_valid_mass": 0
+   },
+   "valid_mass_min": 0.9995853704982178,
+   "valid_mass_median": 0.999981515778597,
+   "skipped_mass_max": 0.0022933968930096324,
+   "mean_abs_logprob_minus_sampled": 0.015923602442640725
+  },
+  "async": {
+   "wall_s": 277.86470127105713,
+   "swarm_missing": 0,
+   "swarm_n": 80,
+   "m_truth_aligned_by_round": [
+    0.127,
+    0.102,
+    0.193,
+    0.233,
+    0.259
+   ],
+   "replica_rms_diff_by_round": [
+    0.0,
+    0.128,
+    0.107,
+    0.176,
+    0.248
+   ],
+   "n": 72,
+   "ok": 72,
+   "missing": {
+    "malformed_sample": 0,
+    "low_valid_mass": 0
+   },
+   "valid_mass_min": 0.9997064252871974,
+   "valid_mass_median": 0.9999852452165545,
+   "skipped_mass_max": 0.002107223397708696,
+   "mean_abs_logprob_minus_sampled": 0.00628955789700646
+  },
+  "step_s": 358.46933579444885
+ }
+}
