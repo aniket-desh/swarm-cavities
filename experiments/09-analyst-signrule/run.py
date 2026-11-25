@@ -162,8 +162,18 @@ def step_asmoke(llm, label: str):
         print("timing", t, flush=True)
 
 
-def step_abase(llm, runs):
+def step_abase(llm, runs, budget_s: float, label: str):
+    """Asynchronous runs in order; before each run, skip it if its projected time (21 x the last measured seconds per
+    round: the previous run's, else the asmoke round) would not finish within budget_s of the step's start, so the
+    time cap never cuts a run partway."""
+    start = time.time()
+    sm = [t["total_s"] for t in read_jsonl(RESULTS / f"{TAG}-asmoke-{label}" / "analyst_timings.jsonl") if t["round_t"] >= 1]
+    per_round = max(sm) if sm else 300.0
     for k, (w, g) in enumerate(runs):
+        proj = (T + 1) * per_round
+        if time.time() - start + proj > budget_s:
+            progress(f"abase {k + 1}/{len(runs)} {w}:{g}: SKIPPED (projected {proj:.0f} s would pass the {budget_s:.0f} s budget)")
+            continue
         t0 = time.time()
         sw = swarm(w, g, backend(llm, async_id(w, g)), tag=async_id(w, g), blocks=BLOCKS)
         sw.dir.mkdir(parents=True, exist_ok=True)
@@ -171,6 +181,7 @@ def step_abase(llm, runs):
                                                        if k_ != "eigvals"}, default=float))
         out = sw.run()
         s = np.tanh(np.nan_to_num(out["x"]) - CHAT)
+        per_round = (time.time() - t0) / (T + 1)
         progress(f"abase {k + 1}/{len(runs)} {w}:{g}: {time.time() - t0:.0f} s, missing {int(out['missing'].sum())}/"
                  f"{out['missing'].size}, mean sampling belief rounds 5-20 {s[5:].mean():+.3f}")
 
@@ -197,11 +208,12 @@ if __name__ == "__main__":
     ap.add_argument("step", choices=["smoke", "base", "kicks", "asmoke", "abase"])
     ap.add_argument("runs", nargs="*", help="world:g")
     ap.add_argument("--label", default="W", help="worker label for the smoke tag")
+    ap.add_argument("--budget-hours", type=float, default=6.8, help="abase: time available for the step")
     a = ap.parse_args()
     runs = [(r.split(":")[0], int(r.split(":")[1])) for r in a.runs]
     assert all(r in (ASYNC_RUNS if a.step == "abase" else RUNS) for r in runs), runs
     llm = vb.make_llm(max_num_seqs=256, max_logprobs=LOGPROBS)
     t = time.time()
     {"smoke": lambda: step_smoke(llm, a.label), "base": lambda: step_base(llm, runs), "kicks": lambda: step_kicks(llm, runs),
-     "asmoke": lambda: step_asmoke(llm, a.label), "abase": lambda: step_abase(llm, runs)}[a.step]()
+     "asmoke": lambda: step_asmoke(llm, a.label), "abase": lambda: step_abase(llm, runs, a.budget_hours * 3600, a.label)}[a.step]()
     print(f"== step {a.step} done in {time.time() - t:.0f} s", flush=True)

@@ -18,8 +18,7 @@ approved_utc: 2026-11-25T21:21:53Z
 This definition launches **four workers** from the same contract:
 - W1: mutual and one-way synchronous runs;
 - W2: antagonistic and one one-way synchronous run;
-- W3: asynchronous mutual runs (Amendment 1);
-- W4: asynchronous one-way runs (Amendment 1).
+- W3 and W4: the asynchronous runs (Amendment 1), interleaved across the two worlds.
 
 Each worker has the time cap and budget above, so the worst case is 4 × $9 = $36.
 
@@ -391,25 +390,42 @@ the test count. The reviewer said it is ready to run with this fix.
 - predicted 3.2 s.e. on falsifier 7 and 9.5 s.e. on the lag-1 check;
 - no asynchronous antagonistic run, since the amendment shows it adds nothing resolvable (1.2 to 1.6 s.e.).
 
-**Workers and commands.** W3 runs the 4 asynchronous mutual runs and W4 the 4 one-way ones, each after its own timing
-step:
+**Workers and commands.** Each worker runs its own timing step first, then its asynchronous runs, interleaved so that
+a failed or slow worker takes out runs from both worlds equally: W3 = mutual:10, oneway:10, mutual:11, oneway:11 and
+W4 = mutual:12, oneway:12, mutual:13, oneway:13. W3's commands:
 
 ```bash
 set -euo pipefail; bash experiments/06-qwen-smoke/setup_vllm.sh
 set -euo pipefail; uv run --no-sync pytest -q tests/test_analyst.py tests/test_vllm_backend.py
 set -euo pipefail; uv run --no-sync python experiments/09-analyst-signrule/run.py asmoke --label W3 2>&1 | tee results/analyst-signrule-asmoke-W3.log
-set -euo pipefail; uv run --no-sync python experiments/09-analyst-signrule/run.py abase mutual:10 mutual:11 mutual:12 mutual:13 2>&1 | tee results/analyst-signrule-abase-W3.log
+set -euo pipefail; uv run --no-sync python experiments/09-analyst-signrule/run.py abase mutual:10 oneway:10 mutual:11 oneway:11 --label W3 --budget-hours 7.3 2>&1 | tee results/analyst-signrule-abase-W3.log
 ```
 
-W4 runs the same, with `--label W4` and `abase oneway:10 oneway:11 oneway:12 oneway:13`.
+W4 runs the same, with `--label W4` and `abase mutual:12 oneway:12 mutual:13 oneway:13`.
 
 **Time and cost.** The block schedule is 16 batches of 32 prompts per round, against one batch of 512. It is timed
 by `asmoke` before the projection is sent. If a block round takes s seconds, a run takes about 21 s, and a worker
-with 4 runs takes about 84 s plus setup. Contingency (fixed): if an asynchronous round takes more than 300 s, each
-worker runs 3 runs instead of 4 (g = 10–12). That still gives 2.9 s.e. on falsifier 7, and it is reported as such.
+with 4 runs takes about 84 s plus setup.
+- **Clock check** (replaces the earlier 300 s contingency, from the re-check). Before each run, `abase` skips the run
+  if 21 × (the last measured seconds per round: the previous run's, else the slowest asmoke round) would end past
+  `--budget-hours 7.3` from the step's start. So the 8 h cap can never cut a run partway, and the interleaving keeps
+  any shortfall balanced between the two worlds.
+- **Completeness check.** `analyze.load_run` uses a run only if all (T+1)·R·N records exist. Incomplete runs, of
+  either schedule, are excluded and listed. This was verified on the dry run by truncating one asynchronous run: it
+  was excluded, and F7 used the remaining 3 + 4 runs.
+- **Reported beside the decision, which stays as frozen:** the Welch degrees of freedom and one-sided t p-values for
+  T₇, and T₇'s s.e. with the asynchronous run s.d. pooled over both worlds (the re-check noted that 3 d.f. per world
+  make the normal 3-s.e. cut looser than it looks).
 
 **Analysis and figure.** `analyze.f7` and `plot.asynchronous` (`paper/figures/analyst_signrule_async`), as described
 under "Fixed rules".
+
+### Re-check of Amendment 1 (same reviewer)
+
+No P0. The schedule code, seeds, f7() and verdict() matched the theory amendment, and 83 tests plus the dry run
+passed. One P1: an incomplete run (cut by the cap) would have been analysed as complete. Fixed by the completeness
+check in `load_run` and the clock check in `abase`. Two P2s: W3/W4 now interleave the worlds, and the t-based p and
+pooled-s.d. s.e. for T₇ are reported. The reviewer said it is ready to run with these fixes.
 
 ## Outcome
 

@@ -79,6 +79,7 @@ PRED = json.loads((ROOT / "theory" / "checks" / "analyst_signrule_predictions.js
 CHAT = float(PRED["design"]["chat"])
 TAG = "analyst-signrule-20261125"
 A_RUNS = {"mutual": [], "oneway": []}       # asynchronous runs, filled by main()
+INCOMPLETE = []                             # runs with fewer than (T+1) R N records: excluded and reported
 RES = ROOT / "results"
 OUT = RES / "analyst-signrule"
 W3 = ("mutual", "oneway", "antagonistic")
@@ -101,7 +102,13 @@ def load_run(world: str, g: int, asynchronous: bool = False):
     X = np.full((T + 1, R, N), np.nan)
     sig = np.zeros((T + 1, R, N))
     notes, n_miss, n_cens = [], 0, 0
-    for r in read_jsonl(d / "analyst_calls.jsonl"):
+    keys = set()
+    recs_all = list(read_jsonl(d / "analyst_calls.jsonl"))
+    for r in recs_all:
+        keys.add((r["round_t"], r["replica"], r["agent_id"]))
+    if len(keys) < (T + 1) * R * N:                        # a run cut short (e.g. by the time cap) is not analysed
+        return {"incomplete": True, "n_records": len(keys), "n_expected": (T + 1) * R * N, "dir": str(d)}
+    for r in recs_all:
         t, rep, i = r["round_t"], r["replica"], r["agent_id"]
         sig[t, rep, i] = r["call"]
         if r["status"] == "ok":
@@ -364,6 +371,16 @@ def f7(W, A_runs) -> dict:
     out["ratio_D1_over_D2sync"] = {"est": out["D1_async"]["diff"] / D2s["diff"] if D2s["diff"] else float("nan"),
                                    "pred_M1": 0.71}
     out["T7_outcome"] = "confirmed" if T7 > 3 * se7 else "falsified" if T7 < -3 * se7 else "not resolved"
+    # reported alongside (not the decision): Welch d.f. and one-sided t p-values, and the s.e. with the asynchronous
+    # run s.d. pooled over both worlds
+    from scipy.stats import t as tdist
+    vm, vo = out["D2_async"]["sigma_m"] ** 2 / nm, out["D2_async"]["sigma_o"] ** 2 / no
+    dfw = (vm + vo) ** 2 / (vm**2 / (nm - 1) + vo**2 / (no - 1)) if vm + vo > 0 else float("nan")
+    sp2 = ((nm - 1) * out["D2_async"]["sigma_m"] ** 2 + (no - 1) * out["D2_async"]["sigma_o"] ** 2) / (nm + no - 2)
+    se7p = float(np.sqrt(0.25 * D2s["se"] ** 2 + sp2 * (1 / nm + 1 / no)))
+    out["T7"].update(welch_df=float(dfw), p_one_sided_T7_gt_0=float(tdist.sf(T7 / se7, dfw)),
+                     p_one_sided_T7_lt_0=float(tdist.cdf(T7 / se7, dfw)), se_pooled_async_sd=se7p,
+                     z_pooled=float(T7 / se7p))
     d1 = out["D1_async"]
     if d1["diff"] > 3 * d1["se"]:
         pc = "passes"
@@ -435,6 +452,9 @@ def main():
     for w in W3:
         for g in range(5):
             r = load_run(w, g)
+            if r is not None and r.get("incomplete"):
+                INCOMPLETE.append(r)
+                continue
             if r is not None:
                 runs[w].append(r)
                 meta[f"{w}:{g}"] = {k: r[k] for k in ("n_missing", "n_censored", "n_calls", "n_refusal", "n_notes",
@@ -445,11 +465,16 @@ def main():
     for w in A_RUNS:
         for g in range(10, 14):
             r = load_run(w, g, asynchronous=True)
+            if r is not None and r.get("incomplete"):
+                INCOMPLETE.append(r)
+                continue
             if r is not None:
                 A_RUNS[w].append(r)
                 ameta[f"{w}:{g}"] = {k: r[k] for k in ("n_missing", "n_censored", "n_calls", "n_refusal", "n_notes",
                                                        "sec_per_round", "m_t", "q_t")} | {"stats": r["stats"]}
-    S = {"runs": meta, "async_runs": ameta, "chat": CHAT}
+    S = {"runs": meta, "async_runs": ameta, "chat": CHAT, "incomplete_runs": INCOMPLETE}
+    if INCOMPLETE:
+        print("EXCLUDED incomplete runs:", INCOMPLETE)
     W = world_table(runs)
     S["worlds"] = W
     for w in W3:

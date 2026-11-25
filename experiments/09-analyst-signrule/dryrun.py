@@ -29,7 +29,7 @@ t = time.time()
 R.step_base(None, R.RUNS)
 print("base", time.time() - t)
 R.step_kicks(None, R.RUNS)
-R.step_abase(None, R.ASYNC_RUNS)                                  # asynchronous control (Amendment 1)
+R.step_abase(None, R.ASYNC_RUNS, 1e9, 'dry')                                  # asynchronous control (Amendment 1)
 print("kicks", time.time() - t)
 AN = load("an09", "/workspace/swarm-cavity/experiments/09-analyst-signrule/analyze.py")
 AN.RES = tmp / "results"; AN.OUT = tmp / "an"
