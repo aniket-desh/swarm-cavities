@@ -42,6 +42,7 @@ from envs.graphs import fixed_indegree_signed_couplings, spectral_log  # noqa: E
 from envs.swarm import LLMBackend, Swarm, SwarmConfig  # noqa: E402
 
 LEDGER = ROOT / "budget" / "ledger.jsonl"
+BATCH = False   # set by --batch: synchronous rounds through Message Batches (50% off, ~6 min per round)
 MU, SIGMA, K_CLUES, H, REPLICAS = 0.5, 1.0, 3, 1, 2
 
 
@@ -67,6 +68,11 @@ def cells(name: str) -> list[dict]:
         # confirmatory analysis (graphs 900+ are reserved for it)
         return [dict(base, wording="inverted", K=K, p_neg=0.5, gamma=g, graph=900)
                 for K, g in itertools.product((2, 4), (-1.0, 0.0, 1.0))]
+    if name == "kick1":
+        # base runs for stage 1 of the kick-and-echo test (experiments/07_kick/DESIGN.md): both wordings, K=2,
+        # gamma in {-1, 0, +1}, 8 graphs each (graphs 0-7; confirmatory)
+        return [dict(base, wording=w, K=2, p_neg=0.5, gamma=g, graph=G)
+                for w, g, G in itertools.product(("inverted", "label"), (-1.0, 0.0, 1.0), range(8))]
     raise ValueError(f"unknown cell set {name}")
 
 
@@ -76,7 +82,7 @@ async def run_cell(c: dict, tag: str, guard: BudgetGuard, sem: asyncio.Semaphore
         t0 = time.time()
         runner = Runner(exp, guard, cfg=AgentConfig(), concurrency=16, ledger_path=LEDGER)
         cfg = SwarmConfig(experiment_id=exp, T=c["T"], H=H, replicas=REPLICAS, mode=c["mode"], seed=c["graph"])
-        sw = Swarm(graph_for(c), game_for(c), cfg, LLMBackend(runner, disagree=c["wording"]))
+        sw = Swarm(graph_for(c), game_for(c), cfg, LLMBackend(runner, batch=BATCH, poll_s=30, disagree=c["wording"]))
         out = await sw.run()
         n_miss = int(out["missing"].sum())
         print(f"[{exp}] done in {time.time() - t0:.0f}s, missing {n_miss}/{out['missing'].size}", flush=True)
@@ -89,7 +95,7 @@ async def main_async(name: str, tag: str, cap: float, max_runs: int):
     n_calls = sum(c["N"] * (1 + c["T"] * REPLICAS) for c in cs)
     # measured per call so far: ~1370 prompt tokens (mostly cache reads) and 600-700 output tokens incl. thinking
     usd = guard.project(n_calls, in_tokens=400, cached_tokens=1000, out_tokens=700, model="claude-haiku-5-5",
-                        batch=False)
+                        batch=BATCH)
     if usd > cap:
         sys.exit(f"projection ${usd:.2f} exceeds the cap ${cap:.2f}")
     man = ROOT / "results" / tag
@@ -114,5 +120,7 @@ if __name__ == "__main__":
     ap.add_argument("tag")
     ap.add_argument("--cap", type=float, required=True)
     ap.add_argument("--max-runs", type=int, default=6)
+    ap.add_argument("--batch", action="store_true")
     a = ap.parse_args()
+    BATCH = a.batch
     asyncio.run(main_async(a.cellset, a.tag, a.cap, a.max_runs))

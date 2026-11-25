@@ -37,8 +37,11 @@ class RoundError(RuntimeError):
                          "; ".join(f"{k}: {e!r}" for k, e in list(errors.items())[:5]))
 
 
-def request_key(params: dict, attempt: int) -> str:
-    blob = json.dumps({"params": params, "attempt": attempt}, sort_keys=True, separators=(",", ":"))
+def request_key(params: dict, attempt: int, salt: str | None = None) -> str:
+    """Replay-cache key. `salt` (never sent to the API) gives a Runner its own cache namespace: identical params then
+    draw a fresh reply instead of replaying another run's, which the sham arm of the kick experiment needs."""
+    d = {"params": params, "attempt": attempt} if salt is None else {"params": params, "attempt": attempt, "salt": salt}
+    blob = json.dumps(d, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(blob.encode()).hexdigest()
 
 
@@ -73,11 +76,12 @@ class ReplayCache:
 class Runner:
     def __init__(self, experiment_id: str, guard: BudgetGuard, client=None, cfg: AgentConfig = AgentConfig(),
                  concurrency: int = 16, results_root: Path = ROOT / "results", replay_dir: Path | None = None,
-                 ledger_path: Path = LEDGER, sdk_max_retries: int = 4):
+                 ledger_path: Path = LEDGER, sdk_max_retries: int = 4, replay_salt: str | None = None):
         if client is None:
             import anthropic  # deferred so tests and spend_watch never need the network client
             client = anthropic.AsyncAnthropic(max_retries=sdk_max_retries)
         self.experiment_id = experiment_id
+        self.replay_salt = replay_salt
         self.guard = guard
         self.client = client
         self.cfg = cfg
@@ -137,7 +141,7 @@ class Runner:
     # ---------- realtime ----------
 
     async def _call(self, params: dict, attempt: int):
-        key = request_key(params, attempt)
+        key = request_key(params, attempt, self.replay_salt)
         hit = self.replay.get(key)
         if hit is not None:
             return key, hit["response"], hit["request_id"], 0.0, usage_tokens(hit["response"]["usage"]), True
@@ -229,7 +233,7 @@ class Runner:
         final: dict = {}  # agent_id -> (belief, reason)
         pending = list(reqs)
         for attempt in range(MAX_ATTEMPTS):
-            keys = {a: request_key(params[a], attempt) for a in pending}
+            keys = {a: request_key(params[a], attempt, self.replay_salt) for a in pending}
             fresh = {}
             for a in pending:
                 hit = self.replay.get(keys[a])

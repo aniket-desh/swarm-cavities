@@ -73,11 +73,18 @@ def compatible_kicks(J: np.ndarray, candidates, n_max: int) -> list[int]:
     return chosen
 
 
-async def kick_twin(sw: Swarm, rows: dict, rep: int, t0: int, kicked: list[int], n_rounds: int = 2) -> dict:
+async def kick_twin(sw: Swarm, rows: dict, rep: int, t0: int, kicked: list[int], n_rounds: int = 2,
+                    sham_backend=None) -> dict:
     """Run one twin. `sw` is a Swarm on the base run's J, game and config (same seed and H, mode "sync") whose
     backend writes to the twin's Runner. Returns, for rounds t0+1 .. t0+n_rounds, base and twin carried beliefs
     (n_rounds, N), the twin's missing mask, which agents were sent to the model rather than replayed, and the
-    kick itself (p before and after)."""
+    kick itself (p before and after).
+
+    Sham twin (`sham_backend` given, a backend whose Runner has its own replay salt): no message is changed, but at
+    round t0+1 the readers of the kicked agents are sent through `sham_backend`, so they draw fresh replies to
+    prompts identical to the base run's; later rounds propagate exactly as in a real twin. Regressed on the kick the
+    agent would have received, a sham twin's changes measure what resampling alone contributes to the slopes (it
+    must be zero within noise). The returned kick is the hypothetical one."""
     if sw.cfg.mode != "sync":
         raise ValueError("kick twins are defined for synchronous runs")
     N = sw.N
@@ -86,20 +93,30 @@ async def kick_twin(sw: Swarm, rows: dict, rep: int, t0: int, kicked: list[int],
     for i in kicked:
         p_new, m_new = mirror(st.p[i], st.msg[i])
         kick[int(i)] = (float(st.p[i]), p_new)
-        st.p[i], st.msg[i] = p_new, m_new            # what readers see in round t0+1; hist[i] keeps the truth
-    key = f"r{rep}|t{t0}|k{'-'.join(map(str, kicked))}"
+        if sham_backend is None:
+            st.p[i], st.msg[i] = p_new, m_new        # what readers see in round t0+1; hist[i] keeps the truth
+    sham_set = {int(j) for i in kicked for j in np.flatnonzero(sw.J[:, i])} if sham_backend is not None else set()
+    key = f"r{rep}|t{t0}|k{'-'.join(map(str, kicked))}" + ("|sham" if sham_backend is not None else "")
     base_p = np.array([rows[(rep, t)]["p_carried"] for t in range(t0 + 1, t0 + n_rounds + 1)], float)
     twin_p = np.zeros((n_rounds, N))
     missing = np.zeros((n_rounds, N), bool)
     sent = np.zeros((n_rounds, N), bool)
     for k, t in enumerate(range(t0 + 1, t0 + n_rounds + 1)):
         ctxs = [sw._context(st, rep, t, i) for i in range(N)]
-        res = await sw.backend.respond(key, t, ctxs, sw.cfg.H)
+        if k == 0 and sham_set:
+            fresh = sorted(sham_set)
+            rest = [i for i in range(N) if i not in sham_set]
+            got = dict(zip(fresh, await sham_backend.respond(key, t, [ctxs[i] for i in fresh], sw.cfg.H)))
+            got.update(zip(rest, await sw.backend.respond(key, t, [ctxs[i] for i in rest], sw.cfg.H)))
+            res = [got[i] for i in range(N)]
+        else:
+            res = await sw.backend.respond(key, t, ctxs, sw.cfg.H)
         for i, r in enumerate(res):
             st.apply(i, r)
             missing[k, i] = r.status != "ok"
             rec = r.record or {}
             sent[k, i] = any(not a.get("replayed", True) for a in rec.get("attempts", [])) if rec else True
         twin_p[k] = st.p
-    return {"rep": rep, "t0": t0, "kicked": [int(i) for i in kicked], "kick": kick, "base_p": base_p,
+    return {"rep": rep, "t0": t0, "kicked": [int(i) for i in kicked], "kick": kick, "sham": sham_backend is not None,
+            "base_p": base_p,
             "twin_p": twin_p, "missing": missing, "sent": sent}

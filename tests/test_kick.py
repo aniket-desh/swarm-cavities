@@ -100,3 +100,30 @@ def test_compatible_kicks_do_not_overlap():
                 assert not (R[a] & R[:, b]).any()             # a reads nobody who reads b
                 assert not R[a, b] and not R[b, a]
     assert len(ks) >= 3
+
+
+def test_sham_twin_redraws_only_readers(tmp_path):
+    """Sham twin: nothing is changed, the readers of the kicked agent are redrawn at t0+1 through a salted Runner
+    (fresh calls on byte-identical prompts), every other agent replays the base run, and a deterministic fake model
+    therefore reproduces the base run exactly."""
+    N, K = 12, 2
+    J = fixed_indegree_signed_couplings(N, K, 1.0, 0.5, np.random.default_rng(5))
+    game = make_game(N, seed=6)
+    runner, ledger = make_runner(tmp_path, FakeClient(_mean_agree_responder()), exp="base")
+    cfg = SwarmConfig("base", T=4, H=1, replicas=1, results_root=tmp_path / "results")
+    run_swarm(J, game, cfg, LLMBackend(runner))
+    n_base = len(list(read_jsonl(ledger)))
+
+    plain_client, sham_client = FakeClient(_mean_agree_responder()), FakeClient(_mean_agree_responder())
+    plain, _ = make_runner(tmp_path, plain_client, exp="base-kick")
+    sham, _ = make_runner(tmp_path, sham_client, exp="base-sham")
+    sham.replay_salt = "sham"
+    i, t0 = 3, 1
+    sw = Swarm(J, game, cfg, LLMBackend(plain))
+    out = asyncio.run(kick_twin(sw, base_rows(cfg.results_root / "base"), 0, t0, [i], 2, sham_backend=LLMBackend(sham)))
+    readers = set(np.flatnonzero(J[:, i]))
+    assert out["sham"] and len(sham_client.calls) == len(readers)          # only the readers, fresh, at t0+1
+    assert {int(c["messages"][0]["content"].split("round ")[1].split(".")[0]) for c in sham_client.calls} == {t0 + 2}
+    assert len(plain_client.calls) == 0                                    # deterministic model: identical draws replay
+    np.testing.assert_array_equal(out["twin_p"], out["base_p"])
+    assert len(list(read_jsonl(ledger))) == n_base + len(readers)
