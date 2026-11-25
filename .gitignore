@@ -6,3 +6,6 @@ __pycache__/
 *.egg-info/
 data/raw/
 .ipynb_checkpoints/
+budget/spend_watch.out
+budget/alerts_state.json
+third_party/
