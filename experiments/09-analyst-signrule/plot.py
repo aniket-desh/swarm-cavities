@@ -3,7 +3,8 @@ One question per figure:
 
   analyst_signrule_echo       Does the memory-robust echo X2 follow the sign rule per world?  (gray: runs; black: world
                               mean with s.e.; theory: frozen M1 value with its calibration s.d. (bar), the zero-shot
-                              interval (gray band), and G d from the swarm's own couplings (open diamond))
+                              interval (gray band), and G d from the swarm's own couplings plus the one-way X2, since
+                              G d predicts the difference from the one-way world (open diamond))
   analyst_signrule_kick       Do kick twins return the same echo?  (E per world, both replays, with s.e.; frozen M1
                               and M2 values as ticks)
   analyst_signrule_mean       Which law holds for the mean belief?  (m(t): gray runs, black world means; frozen M1
@@ -55,8 +56,9 @@ def echo(S):
         ax.errorbar(k, m["mean"], yerr=m["se"], fmt="o", color="k", ms=5, capsize=2, zorder=3,
                     label="world mean (s.e.)" if k == 0 else None)
         if "reaction" in S and w != "oneway":
-            g = S["reaction"][w]["Gd_M" if w == "mutual" else "Gd_A"]
-            ax.plot(k + 0.3, g, "D", mfc="w", color="k", ms=5, label=r"$\hat G d$ from the swarm" if k == 0 else None)
+            g = S["reaction"][w]["Gd_M" if w == "mutual" else "Gd_A"] + S["worlds"]["oneway"]["X2"]["mean"]
+            ax.plot(k + 0.3, g, "D", mfc="w", color="k", ms=5,
+                    label=r"$\hat G d$ + $X_2$(one-way), swarm couplings" if k == 0 else None)
     ax.axhline(0, color="0.7", lw=0.6)
     ax.set_xticks(range(3), [LAB[w] for w in W3])
     ax.set_ylabel(r"$X_2=\rho_2-\rho_1^2$ (rounds 5-20)")
