@@ -8,6 +8,7 @@ One question per figure:
   analyst_calib2_go     Which variants pass the frozen go rule for the three-world contrast?  (r = a_-/a_+ against
                         abar per cell with s.e.; gray lines at abar = 1 and r = 0.3)
 
+Cells with >= 5% missing probes (the YES/NO cells P4, P5) are left out, as in the analysis.
 Conventions (paper-writing figure rules): black = estimates with s.e.; gray = reference lines. PDF and PNG.
 """
 
@@ -28,6 +29,11 @@ LABELS = {"P0": "up, BUY first", "P1": "up, SELL first", "P2": "down, BUY first"
           "F3": "reversed + equal,\nno notes", "T0": "template notes", "best": "best (combined)"}
 
 
+def valid(S, c):
+    x = S["cells"].get(c)
+    return x is not None and x["n_missing"] < 0.05 * (x["n"] + x["n_missing"])
+
+
 def save(fig, name):
     FIG.mkdir(parents=True, exist_ok=True)
     for ext in ("pdf", "png"):
@@ -36,7 +42,7 @@ def save(fig, name):
 
 
 def bias(S):
-    cells = [c for c in ("P0", "P1", "P2", "P3", "P4", "P5", "T0") if c in S["cells"]]
+    cells = [c for c in ("P0", "P1", "P2", "P3", "P4", "P5", "T0") if valid(S, c)]
     fig, ax = plt.subplots(figsize=(5.2, 2.8))
     e = [S["cells"][c]["c"]["est"] for c in cells]
     se = [S["cells"][c]["c"]["se"] for c in cells]
@@ -67,12 +73,17 @@ def fade(S):
 def go(S):
     fig, ax = plt.subplots(figsize=(4.4, 3.2))
     for nm, c in S["cells"].items():
+        if not valid(S, nm):
+            continue
         ax.errorbar(c["abar"]["est"], c["r"]["est"], xerr=c["abar"]["se"], yerr=c["r"]["se"], fmt="o", color="k",
                     ms=4, capsize=2)
         ax.annotate(nm, (c["abar"]["est"], c["r"]["est"]), textcoords="offset points", xytext=(4, 3), fontsize=7)
     ax.axvline(1.0, color="0.6", ls="--", lw=0.8)
     ax.axhline(0.3, color="0.6", ls="--", lw=0.8)
     ax.axhline(0.0, color="0.8", lw=0.6)
+    ax.axhline(1.0, color="0.8", lw=0.6, ls=":")
+    ax.set_xlim(0.5, 1.6)
+    ax.set_ylim(-0.5, 1.1)
     ax.set_xlabel(r"$\bar a=\sqrt{(a_+^2+a_-^2)/2}$")
     ax.set_ylabel(r"$r=a_-/a_+$")
     ax.text(0.98, 0.32, "contrast go: right of 1, above 0.3", transform=ax.get_yaxis_transform(), ha="right",

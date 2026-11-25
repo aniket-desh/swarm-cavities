@@ -1,7 +1,7 @@
 ---
 name: 08b-analyst-calibration-2
 title: Analyst scenario, calibration 2: polarity counterbalancing and experimenter-reversed fading at K = 16 (Qwen3.5-9B, real notes)
-status: approved
+status: done
 gpu: NVIDIA A40,NVIDIA RTX A6000,NVIDIA L40S
 count: 1
 min_gpu_gb: 40
@@ -11,6 +11,9 @@ disk_gb: 120
 data:
 secrets:
 approved_utc: 2026-11-25T18:55:50Z
+result: not-supported
+finished_utc: 2026-11-25T19:42:54Z
+writeup: experiments/08b-analyst-calibration-2/RESULT.md
 ---
 
 # Analyst scenario, calibration 2: polarity counterbalancing and experimenter-reversed fading at K = 16 (Qwen3.5-9B, real notes)
@@ -211,4 +214,11 @@ that still had small-K cells: needs revision.
 
 ## Outcome
 
-Not run yet.
+- Run complete: 10 cells × 1,000 probes; P4/P5 (YES/NO) 89% missing (Qwen writes BUY/SELL instead), excluded; all
+  other cells 0 missing, 0 censored. The selection picked P1 with ordinary fading (no extra cell run).
+- 1, bias removed (|c| < 0.2): fails in every valid cell. Best P1, c = −0.38 (0.01); order +0.34, framing −0.27,
+  pilot notes −0.15.
+- 2, reversed fading works (r > 0.3): fails in F1, F2, F3 (r = −0.29, −0.30, −0.09; ordinary −0.08).
+- 3, go rule: contrast no in all cells; echo resolvable in no cell at its measured c (mutual only at c = 0);
+  Λ_mutual ≤ 0.032 (≤ 0.11 at c = 0).
+- Overall: not supported. Cost ≈ $0.35 (A40, 0.6 h) against $0.30 projected and a $5 budget. Write-up: RESULT.md.
