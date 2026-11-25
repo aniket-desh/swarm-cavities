@@ -1,7 +1,7 @@
 ---
 name: 06-qwen-calibration
 title: Qwen3.5-9B calibration with real Qwen swarm messages: pilot swarm, real-vs-template probes, conformity curve
-status: approved
+status: done
 gpu: NVIDIA A40,NVIDIA RTX A6000
 count: 1
 min_gpu_gb: 40
@@ -11,6 +11,9 @@ disk_gb: 120
 data:
 secrets:
 approved_utc: 2026-11-25T15:38:29Z
+result: inconclusive
+finished_utc: 2026-11-25T20:08:50Z
+writeup: experiments/06-qwen-calibration/RESULT.md
 ---
 
 # Qwen3.5-9B calibration with real Qwen swarm messages: pilot swarm, real-vs-template probes, conformity curve
@@ -216,4 +219,12 @@ None.
 
 ## Outcome
 
-Not run yet.
+- Near the stability boundary: no cell. Lambda_max (probe d) is 0.22-0.45, and the largest upper 2 s.e. bound is 0.54
+  (label K=4); all six cells are "below".
+- Bistable: no cell. beta_resp is 0.36-0.58, with one fixed point everywhere. Every real-text cell is called
+  "inconclusive" by the rule, because its steepest local slope (1.15-2.16) exceeds 1. An exploratory null (fitted tanh
+  plus the observed noise) gives a mean steepest slope of 1.3, so the rule's inconclusive branch fires on noise.
+- Overall by the fixed rules: inconclusive (driven by that branch); in substance, Qwen is in the quiet,
+  noise-dominated regime.
+- Run quality: 1 missing of 23,184 calls.
+- Cost $2.61 estimated against a $6 budget; 4.4 h against the 8 h cap. Write-up: RESULT.md.

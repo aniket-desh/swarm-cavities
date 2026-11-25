@@ -315,8 +315,45 @@ def main():
                "haiku_conformity_within_sd": haiku_conformity_noise(ROOT / "results"),
                "haiku_transfer_real_fit": haiku_transfer_resid(ROOT / "results")}
     summary["verdicts"] = verdicts(summary)
+    summary["conformity_null_exploratory"] = steepest_slope_null(summary)
+    summary["noise"] = noise_summary(summary)
     (a.root / "qwen-calib" / "summary.json").write_text(json.dumps(summary, indent=1, default=float))
     print_tables(summary)
+
+
+def steepest_slope_null(s: dict, M: int = 4000) -> dict:
+    """EXPLORATORY (added after seeing the data, not a fixed rule). How steep does the steepest of the 10 local slopes
+    get when the true curve is the fitted tanh? Level means are redrawn as tanh(beta_resp hbar + c) + N(0, se_level^2)
+    with each level's observed s.e. (evidence 0.4, own answer HEADS); returns the null mean of the maximum slope and
+    the fraction of draws whose maximum reaches the observed steepest slope."""
+    out = {}
+    rng = np.random.default_rng(7)
+    for key, o in s["conformity"].items():
+        v = o["by_ev"]["0.4"]
+        hb, se = np.array(v["hbar"]), np.array(v["se_s"])
+        c = [val for kk, val in o["offsets"].items() if kk.startswith("0.4|")][0]
+        mu = np.tanh(o["beta_resp"] * hb + c)
+        sims = mu + se * rng.standard_normal((M, len(hb)))
+        mx = (np.diff(sims, axis=1) / np.diff(hb)).max(1)
+        out[key] = {"null_mean_max_slope": float(mx.mean()), "null_q95_max_slope": float(np.quantile(mx, 0.95)),
+                    "p_null_ge_observed": float(np.mean(mx >= v["steepest_slope"])), "observed": v["steepest_slope"]}
+    return out
+
+
+def noise_summary(s: dict) -> dict:
+    """Within-level s.d. of s (logprob belief) and s_sampled, averaged over conformity cells, and the residual s.d.
+    of the transfer real-arm fits; the number-sampling component is sqrt(var_sampled - var_logprob)."""
+    wl = np.array([[v["within_sd_s"], v["within_sd_s_sampled"]] for o in s["conformity"].values()
+                   for v in o["by_ev"].values()])
+    tr = np.array([[o["s"]["real_resid_sd"], o["s_sampled"]["real_resid_sd"]] for o in s["transfer"].values()])
+    return {"conf_within_sd_logprob": float(np.sqrt(np.mean(wl[:, 0] ** 2))),
+            "conf_within_sd_sampled": float(np.sqrt(np.mean(wl[:, 1] ** 2))),
+            "conf_number_component": float(np.sqrt(max(np.mean(wl[:, 1] ** 2 - wl[:, 0] ** 2), 0))),
+            "transfer_resid_sd_logprob": float(np.sqrt(np.mean(tr[:, 0] ** 2))),
+            "transfer_resid_sd_sampled": float(np.sqrt(np.mean(tr[:, 1] ** 2))),
+            "transfer_number_component": float(np.sqrt(max(np.mean(tr[:, 1] ** 2 - tr[:, 0] ** 2), 0))),
+            "haiku_conf_within_sd": float(np.sqrt(np.mean(np.square(list(s["haiku_conformity_within_sd"].values()))))),
+            "haiku_transfer_resid_sd": float(np.sqrt(np.mean([v["resid_sd"] ** 2 for v in s["haiku_transfer_real_fit"].values()])))}
 
 
 def verdicts(s: dict) -> dict:
@@ -382,6 +419,11 @@ def print_tables(s: dict):
     for key, v in s["verdicts"]["cells"].items():
         print(key, v)
     print("overall:", s["verdicts"]["overall"])
+    print("\n== exploratory: steepest local slope under the fitted tanh (null)")
+    for key, v in s["conformity_null_exploratory"].items():
+        print(f"{key}: observed {v['observed']:.2f}, null mean max {v['null_mean_max_slope']:.2f}, "
+              f"q95 {v['null_q95_max_slope']:.2f}, P(null >= obs) {v['p_null_ge_observed']:.2f}")
+    print("\n== noise", {k: round(v, 3) for k, v in s["noise"].items()})
     print("\nHaiku conformity within-level sd:", s["haiku_conformity_within_sd"])
     print("Haiku transfer real-arm fits:", s["haiku_transfer_real_fit"])
 

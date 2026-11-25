@@ -99,17 +99,19 @@ def lambda_panel(ax, s):
 def pilot_figure(s):
     fig, axs = plt.subplots(1, 2, figsize=(9, 3.3))
     t = np.arange(1, 11)
-    for name, key, ax in (("Qwen", "qwen_unchanged", axs[0]), ("Haiku", "haiku_unchanged", axs[0])):
-        rows = [r[key]["same_displayed"] for r in s["pilot"].values() if key in r]
+    # Qwen: modal stated number unchanged (argmax of the digit distribution), the analogue of Haiku restating its number
+    for name, key, ax, fld in (("Qwen (modal number)", "qwen_unchanged", axs[0], "same_mode"),
+                               ("Haiku (stated number)", "haiku_unchanged", axs[0], "same_displayed")):
+        rows = [r[key][fld] for r in s["pilot"].values() if key in r]
         if not rows:
             continue
         rows = np.array(rows)
         for r in rows:
             ax.plot(t, r, color="0.75", lw=0.7)
         ax.errorbar(t, rows.mean(0), yerr=rows.std(0, ddof=1) / np.sqrt(len(rows)), color="k",
-                    fmt="-o" if name == "Qwen" else "--s", ms=3, capsize=2, label=name)
+                    fmt="-o" if name.startswith("Qwen") else "--s", ms=3, capsize=2, label=name)
     axs[0].set_xlabel("round t")
-    axs[0].set_ylabel("fraction with p(t) = p(t-1) (2 decimals)")
+    axs[0].set_ylabel("fraction with the same number as at t-1")
     axs[0].legend(frameon=False, fontsize=8)
     for name, key, fmt in (("Qwen", "qwen_unchanged", "-o"), ("Haiku", "haiku_unchanged", "--s")):
         rows = np.array([r[key]["mean_abs_dp"] for r in s["pilot"].values() if key in r])
