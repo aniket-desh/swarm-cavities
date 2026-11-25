@@ -1,6 +1,6 @@
 # Kick and echo, stage 2: do echoes add over ties, survive at K = 4, and is the confirm/disconfirm asymmetry real?
 
-Status: revision 2 (after blind review 1), frozen by commit before any stage-2 data. Stage 1
+Status: revision 3 (after blind review 1 and its re-check), frozen by commit before any stage-2 data. Stage 1
 (`experiments/07_kick/RESULT.md`) confirmed the sign structure of the reaction term at K = 2. Stage 2 asks the
 questions stage 1 couldn't, using only the inverted wording (the label wording's echoes at K = 4 are predicted at
 0.003–0.012 and stage 1 found label single-message responses at half their predicted size, so those cells would not
@@ -51,8 +51,8 @@ uv run python experiments/07_kick/kick.py kick2-20261125 kick2e-20261125 --t0 0 
 # 5. analysis (lagged slope factors and equal-weight pooling are the defaults; --stage1-frozen reproduces stage 1)
 uv run python experiments/07_kick/analyze_kick.py kick2k-20261125
 uv run python experiments/07_kick/additivity.py
-uv run python experiments/07_kick/analyze_kick.py kick2e-20261125 --t0 0
-uv run python experiments/07_kick/analyze_kick.py kick2e-20261125 --t0 1
+uv run python experiments/07_kick/analyze_kick.py kick2e-20261125 --t0 0     # writes kick2e-20261125-t0-0-summary.json
+uv run python experiments/07_kick/analyze_kick.py kick2e-20261125 --t0 1     # writes kick2e-20261125-t0-1-summary.json
 ```
 
 ## Estimators
@@ -96,7 +96,8 @@ Parameter-free, from stage 1's measured echoes and additivity: E(+0.5) ≈ 0.5 �
 
 Factorization slopes and the asymmetry ratio with this stage's estimators (lagged slope factors;
 `refreeze_predictions.py --stage2`, `refrozen_predictions_stage2.json`, revision 2; 3 × 16 simulated graphs per cell;
-Monte Carlo s.e. 0.004–0.07 per cell; pooled = unweighted mean of cells):
+pooled = unweighted mean of cells; the Monte Carlo s.e. of each pooled value, per law and K, is listed under the
+decision rules):
 
 | law | pooled F | pooled F_open | pooled F − F_open,matched | ratio K = 2 | ratio K = 4 | K = 4 only: F / F_open / F − F_open,matched |
 |---|---|---|---|---|---|---|
@@ -112,7 +113,10 @@ gains): E ≈ −0.019 (γ = −1) and +0.093 (γ = +1) at K = 4. Sign predictio
 ## Decision rules (fixed before the data)
 
 "2 s.e." below means two combined standard errors: the graph-bootstrap s.e. of the measurement and the Monte Carlo
-s.e. of the prediction (±0.03 for pooled slopes and differences, ±0.05 for the asymmetry ratio). With 8 graph clusters,
+s.e. of the prediction, taken per law and per K from `refrozen_predictions_stage2.json` (pooled s.e. = root sum of
+squared cell s.e. over the number of cells). Asymmetry ratio: linear 0.016–0.028 (K = 2) and 0.033–0.056 (K = 4),
+anchoring 0.018 (K = 2) and 0.133 (K = 4). F − F_open,matched: ≤ 0.03 pooled, 0.02–0.046 at K = 4. F and F_open:
+≤ 0.026. With 8 graph clusters,
 2 s.e. corresponds to about 91% two-sided coverage under t₇ and 3 s.e. to about 98%.
 
 0. **Validity.** As in stage 1: machinery checks hold (kicked agent unchanged at t0+1, no non-reader resent, γ = 0 echo
@@ -136,8 +140,11 @@ s.e. of the prediction (±0.03 for pooled slopes and differences, ±0.05 for the
    (confirming) and near 1 (disconfirming).
 5. **Asymmetry (replication of the stage-1 finding)**, at K = 2 and K = 4 separately. **Replicates** if the pooled
    ratio is below the linear null (K = 2: 0.90–0.93; K = 4: 1.00–1.04) by more than 2 s.e. and below the anchoring law's
-   ratio (K = 2: 0.83; K = 4: 0.78) by more than 2 s.e., i.e. stronger than either law produces. **Does not replicate**
-   if within 2 s.e. of the linear null. Otherwise unresolved (including "consistent with the anchoring law's ratio").
+   ratio (K = 2: 0.83 ± 0.018; K = 4: 0.78 ± 0.133, so at K = 4 only a ratio well below about 0.5 can beat it) by more
+   than 2 s.e., i.e. stronger than either law produces. **Does not replicate** if within 2 s.e. of the linear null or
+   above it. Otherwise unresolved (including "consistent with the anchoring law's ratio"). At K = 4 the expected
+   outcome given stage 1's 0.60 is "below the linear null but not distinguishable from the anchoring law"; that would
+   be reported as unresolved against anchoring, not as a replication.
 6. **Magnitude** (secondary): each echo against both frozen columns in combined s.d., as stage 1's rule 4.
 7. **Early kicks** (exploratory): sign at ≥ 3 s.e. per t0, reported; t0 = 0 magnitudes compared with the in-sample
    values without a decision.
@@ -173,6 +180,11 @@ Blind review 1 (general-purpose agent given only this file): verdict "needs revi
   and F per alignment class; budget text corrected and cap-abort instruction added; --parallel 32 and rerun-until-done
   for kick commands; early kicks analysed per t0; inputs committed with this file; sham minimum detectable offset
   stated.
+
+Re-check (revision 2 → 3): the P0 and all three P1s confirmed fixed; one new P1 (rule 5 used ±0.05 for the anchoring
+ratio's Monte Carlo s.e., which is 0.133 at K = 4) fixed by taking every Monte Carlo s.e. per law and K from the JSON;
+P2s fixed: rule 5 reads "above the linear null" as no replication, the per-t0 early analyses write separate summaries,
+and the K = 4 Monte Carlo terms in rules 3 and 4 are stated.
 
 ## Amendments
 

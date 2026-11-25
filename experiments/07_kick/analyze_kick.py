@@ -360,6 +360,7 @@ if __name__ == "__main__":
                 print(f"  sham {k}: {off:+.4f} ({se:.4f}) -> {'PASS' if abs(off) < 3 * se else 'FAIL: subtract'}; "
                       f"minimum detectable offset (3 s.e.) {3 * se:.4f}")
         clean = [{k: v for k, v in r.items() if not k.startswith("_")} for r in rows]
-        (ROOT / "results" / f"{tag}-summary.json").write_text(json.dumps(
+        stem = f"{tag}-t0-{T0_ONLY}" if T0_ONLY is not None else tag
+        (ROOT / "results" / f"{stem}-summary.json").write_text(json.dumps(
             {"cells": clean, "pooled": pool, "pooled_by_K": {str(k): v for k, v in pool_by_K.items()},
              "d_mode": D_MODE, "pool_mode": POOL_MODE}, indent=1, default=float))
