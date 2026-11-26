@@ -9,6 +9,12 @@ analysed and committed (kick stage 2: `experiments/07_kick/RESULT_stage2.md`; an
 user has reviewed every result. No workers are running for this project (`orch ls`); the tmux sessions left are
 `sc-spend` (spend watcher), `sc-viewer` and `sc-work` (this session).
 
+**Slide deck** (made 2026-11-26 with the research-slide skill): `slides/slides.pdf`, 10 frames covering the kick
+experiment (stages 1–2), where every calibrated swarm sits relative to the instability, the Qwen analyst calibrations
+and the sign-rule test, and a closing frame of candidate next measurements. Source `slides/slides.tex`; its figures are
+redrawn at slide size by `slides/make_figures.py` from the frozen analyses' summaries (no new analysis). Build:
+`cd slides && latexmk -pdf slides.tex`.
+
 ## Spend against the $2,000
 
 | | so far |

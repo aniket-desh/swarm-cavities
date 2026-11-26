@@ -8,7 +8,8 @@ names the scripts in `theory/checks/` that verify its formulas.
 run don't sit where its striking predictions live. Haiku 5.5 agents in this game are weakly coupled once real
 messages are used (real messages couple 25–50% more weakly than the templates the first calibration used, and the
 inverted disagree channel nearly switches off), and they anchor on their own last answer whenever their inbox brings
-nothing new. Both push every Haiku cell into a quiet regime (Λ ≈ 0.45 at best) where the oscillation and
+nothing new. Both push every Haiku cell into a quiet regime (Λ = d·g(1+|γ_eff|) between 0.23 and 0.64 across cells,
+`quiet_regime.md` section 2.1) where the oscillation and
 amplification signatures of claims 2–3 can't be measured. What still isolates the cavity-specific structure is the
 reaction term itself, which a kick-and-echo experiment measures directly. Stage 1 of that experiment found it, with
 the predicted sign structure: on identical graphs, the wording that makes disagree ties repel turns the echo through
