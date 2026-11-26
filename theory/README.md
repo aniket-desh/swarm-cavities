@@ -1,6 +1,6 @@
 # Theory for swarm-cavity: the current statement
 
-Last updated 2026-11-26 (kick stage 1 result, analyst calibrations and the analyst sign-rule result added). This file is the one place to read for the state of the theory. The derivations
+Last updated 2026-11-26 (kick stages 1–2, analyst calibrations and the analyst sign-rule result). This file is the one place to read for the state of the theory. The derivations
 live in the notes it links (`claim1.md` … `claim6.md`, `quiet_regime.md`), each of which opens with its verdict and
 names the scripts in `theory/checks/` that verify its formulas.
 
@@ -57,7 +57,7 @@ law +0.07 ± 0.07) and the heavy-tailed noise.
 
 | claim | verdict from the derivations | tested by data so far |
 |---|---|---|
-| 1. DMFT reduction (`claim1.md`) | **Holds with three corrections**: full ⟨ss⟩ noise covariance, a two-round reaction term ΣR(t,t′)s(t′), the neighbour population's kernel; matches an N = 4000 simulation to 0.004. | **Scalar-field premise tested and revised**: a two-channel field is needed (Haiku, Physics of Agents). The reaction term is **confirmed in sign structure** by kick stage 1 (section 4): echoes of the predicted sign in all four \|γ\| = 1 cells at 4.9–10.5 s.e., exactly zero at γ = 0, and composed from single-link responses as the reaction term assumes. Zero-shot DMFT curves are no longer zero-shot, since the agent law was tuned on the pilot. |
+| 1. DMFT reduction (`claim1.md`) | **Holds with three corrections**: full ⟨ss⟩ noise covariance, a two-round reaction term ΣR(t,t′)s(t′), the neighbour population's kernel; matches an N = 4000 simulation to 0.004. | **Scalar-field premise tested and revised**: a two-channel field is needed (Haiku, Physics of Agents). The reaction term is **confirmed in sign structure and additivity** by kick stages 1–2 (section 4): echoes of the predicted sign in all eight cells tested (K = 2 and 4, \|γ\| = 0.5 and 1) at 3.5–10.5 s.e., exactly zero at γ = 0, adding over reciprocated ties (R = 0.43 ± 0.07 against 0.5), and composed from single-link responses as the reaction term assumes; magnitudes need gains measured on settled agents. Zero-shot DMFT curves are no longer zero-shot, since the agent law was tuned on the pilot. |
 | 2. Sharp γ_c into frozen polarization (`claim2.md`) | **False as stated.** Boundary d·g(1+\|γ\|) = 1 for memoryless agents; γ < 0 destabilizes too (period 4); no freezing for γ < 1. | **Unmeasurable for Haiku.** Anchoring moves the γ = −1 boundary to d·g = ½√((1+ρ)/(1−ρ)) ≈ 1.19 at ρ ≈ 0.7 and leaves the static one in place (`quiet_regime.md` 2.2); real gains give d·g ≈ 0.4. P_δ = (1−c2)/(1−c1) for any stationary sequence and carries no period information. Period-2 flicker as a synchronous-update effect is **confirmed** in the Physics of Agents data. |
 | 3. Two-site cavity and PR (`claim3.md`) | **Theory holds; safety claim false**: PR doesn't fall before a zealot flip, N·Var(m_B) rises 5–20×. | **Untested.** Needs a model and setting with a tipping point (section 5). |
 | 4. Zealot threshold and hysteresis (`claim4.md`) | Threshold and hysteresis already known (De Marzo et al. 2026); **the spec's γ effect has the wrong sign**: γ > 0 widens the loop. | **Untested.** Hysteresis needs bistability (steep conformity); Haiku's response is not steep, so it likely has none in this game. |
@@ -110,6 +110,24 @@ $45.9). **Stage 1 result** (`experiments/07_kick/RESULT.md`):
   reproduces them.
 - *Unplanned finding:* agents under-react to inputs that confirm their lean (slope ≈ 0.6) and react fully to inputs
   that contradict it (≈ 1.0–1.1), on closed and open paths alike, which a stated-confidence ceiling would produce.
+
+**Stage 2 result** (`experiments/07_kick/RESULT_stage2.md`; inverted wording; DESIGN_stage2.md frozen at 653a1ce;
+9,755 twins, $78.4):
+
+- *Additivity confirmed within resolution:* R+ = E(+0.5)/E(+1) = 0.43 ± 0.07 (2-s.e. interval [0.30, 0.56] contains
+  0.5 and excludes 0.15 and 0.85); slope-factor normalized 0.39 ± 0.06. Mild saturation (R ≈ 0.6–0.7) isn't excluded.
+- *Sign at K = 4 and γ = ±0.5 holds in all four cells* (3.5–8.3 s.e.), exactly zero at K = 4, γ = 0.
+- *Composition holds* pooled (F − F_open,matched = −0.09 ± 0.09) and at K = 4; the K = 2 pair alone shows a 20%
+  discount of returning changes (−0.18 ± 0.04), not pre-registered and only 1.6 s.e. from stage 1's value.
+- *Linear response over anchoring*, pooled and at K = 4, with pooled F again at the edge (2.01 s.e. above anchoring).
+- *The confirm/disconfirm asymmetry replicates at K = 2* (0.54 ± 0.04 against 0.90–0.93 linear and 0.83 anchoring);
+  at K = 4 it is 0.71 ± 0.12, below linear but indistinguishable from the anchoring law. It is absent for round-0 kicks
+  (1.00 ± 0.11) and present by round 1 (exploratory).
+- *K = 4 magnitudes miss the frozen linear values by a factor of 4–6* (4.1 and 4.6 s.d.), because settled K = 4
+  agents respond to one flipped message at about half the transfer-check gains (r_A ≈ 0.066 against 0.128); composing
+  the measured responses gives the echoes within a factor of 1.4. Together with stage 1's label wording, this means
+  the transfer-check gains are not the gains of settled agents: the reaction term's structure is confirmed, its
+  zero-shot magnitude is not.
 
 ## 5. What the open-weight track is for
 

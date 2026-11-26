@@ -97,6 +97,16 @@ step: agree-tie readers whose lean the kick contradicts respond more than reader
 in the label cells, s.e. 0.005–0.025). This was not pre-registered and should be tested directly (single-agent probes
 with confirming against disconfirming single-message changes at matched size) before it is relied on.
 
+## Sensitivity to the slope-factor convention (added after the stage-2 design review)
+
+Stage 2's review found that taking each response's slope factor from the same round's base draw, as this stage's
+frozen estimator does, shares noise with the outcome and biases the alignment split. Re-analysing stage 1 with lagged
+factors (readers' d from s(t0), the receiver's from s(t0+1); `analyze_kick.py`, default since stage 2) gives pooled
+F = 1.05 ± 0.08, F_open = 1.12 ± 0.08, F − F_open,matched = −0.05 ± 0.07 and an open-path confirm/disconfirm ratio of
+0.60 ± 0.05 (`results/kick1k-20261125-analysis-lagged-d.txt`). Composition and the asymmetry are unchanged, and F
+moves further from the anchoring value. This is a sensitivity analysis; the verdicts above are the frozen ones.
+Stage 2 (`RESULT_stage2.md`) replicated the asymmetry at K = 2 on new data (0.54 ± 0.04).
+
 ## Figures
 
 - `paper/figures/kick1_echo.{pdf,png}`: echoes and first-order responses against the frozen linear (open blue) and

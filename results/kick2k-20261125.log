@@ -1,0 +1,66 @@
+[budget] projection: 12288 calls x (in 400 + cache_read 1000 + cache_write 0, out 700) on claude-haiku-5-5 batch=False -> $4.92 ($0.00040/call); spent $78.79 of cap $1900.00
+[kick2k-20261125-inverted-K4-pn0.5-g+0.0-N64-T10-sync-G0] 52 twins, 1090 calls sent; spent so far $0.612
+[kick2k-20261125-inverted-K4-pn0.5-g+0.0-N64-T10-sync-G1] 58 twins, 1286 calls sent; spent so far $1.128
+[kick2k-20261125-inverted-K4-pn0.5-g+0.0-N64-T10-sync-G2] 50 twins, 1028 calls sent; spent so far $1.384
+[kick2k-20261125-inverted-K4-pn0.5-g+0.0-N64-T10-sync-G3] 58 twins, 1254 calls sent; spent so far $1.866
+[kick2k-20261125-inverted-K4-pn0.5-g+0.0-N64-T10-sync-G4] 60 twins, 1297 calls sent; spent so far $2.337
+[kick2k-20261125-inverted-K4-pn0.5-g+0.0-N64-T10-sync-G5] 51 twins, 1126 calls sent; spent so far $2.703
+[kick2k-20261125-inverted-K4-pn0.5-g+0.0-N64-T10-sync-G6] 55 twins, 1161 calls sent; spent so far $3.118
+[kick2k-20261125-inverted-K4-pn0.5-g+0.0-N64-T10-sync-G7] 55 twins, 1208 calls sent; spent so far $3.353
+done: 9450 calls sent in 1166s; spent $3.353 on kick2k-20261125
+TRY 1 EXIT 0: kick2-20261125 kick2k-20261125 --t0 6 --rep 0 --min-abs-s 0.1 --cap 6 --parallel 32 --cells K4-pn0.5-g+0.0
+[budget] projection: 131072 calls x (in 400 + cache_read 1000 + cache_write 0, out 700) on claude-haiku-5-5 batch=False -> $52.43 ($0.00040/call); spent $82.25 of cap $1900.00
+[kick2k-20261125-inverted-K2-pn0.5-g-0.5-N64-T10-sync-G0] 210 twins, 1623 calls sent; spent so far $4.050
+[kick2k-20261125-inverted-K2-pn0.5-g-0.5-N64-T10-sync-G1] 246 twins, 1911 calls sent; spent so far $4.793
+[kick2k-20261125-inverted-K2-pn0.5-g-0.5-N64-T10-sync-G2] 240 twins, 1840 calls sent; spent so far $5.514
+[kick2k-20261125-inverted-K2-pn0.5-g-0.5-N64-T10-sync-G3] 249 twins, 1948 calls sent; spent so far $6.259
+[kick2k-20261125-inverted-K2-pn0.5-g-0.5-N64-T10-sync-G4] 234 twins, 1826 calls sent; spent so far $6.973
+[kick2k-20261125-inverted-K2-pn0.5-g-0.5-N64-T10-sync-G5] 214 twins, 1666 calls sent; spent so far $7.627
+[kick2k-20261125-inverted-K2-pn0.5-g-0.5-N64-T10-sync-G6] 239 twins, 1840 calls sent; spent so far $8.334
+[kick2k-20261125-inverted-K2-pn0.5-g-0.5-N64-T10-sync-G7] 249 twins, 1952 calls sent; spent so far $9.107
+[kick2k-20261125-inverted-K2-pn0.5-g+0.5-N64-T10-sync-G0] 243 twins, 1953 calls sent; spent so far $9.891
+[kick2k-20261125-inverted-K2-pn0.5-g+0.5-N64-T10-sync-G1] 238 twins, 1800 calls sent; spent so far $10.578
+[kick2k-20261125-inverted-K2-pn0.5-g+0.5-N64-T10-sync-G2] 239 twins, 1903 calls sent; spent so far $11.323
+[kick2k-20261125-inverted-K2-pn0.5-g+0.5-N64-T10-sync-G3] 241 twins, 1871 calls sent; spent so far $12.026
+[kick2k-20261125-inverted-K2-pn0.5-g+0.5-N64-T10-sync-G4] 247 twins, 2031 calls sent; spent so far $12.815
+[kick2k-20261125-inverted-K2-pn0.5-g+0.5-N64-T10-sync-G5] 240 twins, 1915 calls sent; spent so far $13.552
+[kick2k-20261125-inverted-K2-pn0.5-g+0.5-N64-T10-sync-G6] 240 twins, 1921 calls sent; spent so far $14.297
+[kick2k-20261125-inverted-K2-pn0.5-g+0.5-N64-T10-sync-G7] 242 twins, 1949 calls sent; spent so far $15.045
+[kick2k-20261125-inverted-K4-pn0.5-g-1.0-N64-T10-sync-G0] 222 twins, 4471 calls sent; spent so far $16.757
+[kick2k-20261125-inverted-K4-pn0.5-g-1.0-N64-T10-sync-G1] 248 twins, 5012 calls sent; spent so far $18.508
+[kick2k-20261125-inverted-K4-pn0.5-g-1.0-N64-T10-sync-G2] 221 twins, 4479 calls sent; spent so far $20.122
+[kick2k-20261125-inverted-K4-pn0.5-g-1.0-N64-T10-sync-G3] 226 twins, 4420 calls sent; spent so far $21.732
+[kick2k-20261125-inverted-K4-pn0.5-g-1.0-N64-T10-sync-G4] 222 twins, 4370 calls sent; spent so far $23.259
+[kick2k-20261125-inverted-K4-pn0.5-g-1.0-N64-T10-sync-G5] 212 twins, 4282 calls sent; spent so far $24.797
+[kick2k-20261125-inverted-K4-pn0.5-g-1.0-N64-T10-sync-G6] 240 twins, 4853 calls sent; spent so far $26.558
+[kick2k-20261125-inverted-K4-pn0.5-g-1.0-N64-T10-sync-G7] 229 twins, 4559 calls sent; spent so far $28.188
+[kick2k-20261125-inverted-K4-pn0.5-g+1.0-N64-T10-sync-G0] 231 twins, 4459 calls sent; spent so far $29.754
+[kick2k-20261125-inverted-K4-pn0.5-g+1.0-N64-T10-sync-G1] 260 twins, 5112 calls sent; spent so far $31.536
+[kick2k-20261125-inverted-K4-pn0.5-g+1.0-N64-T10-sync-G2] 241 twins, 4814 calls sent; spent so far $33.253
+[kick2k-20261125-inverted-K4-pn0.5-g+1.0-N64-T10-sync-G3] 227 twins, 4611 calls sent; spent so far $34.887
+[kick2k-20261125-inverted-K4-pn0.5-g+1.0-N64-T10-sync-G4] 234 twins, 4598 calls sent; spent so far $36.505
+[kick2k-20261125-inverted-K4-pn0.5-g+1.0-N64-T10-sync-G5] 247 twins, 4934 calls sent; spent so far $38.253
+[kick2k-20261125-inverted-K4-pn0.5-g+1.0-N64-T10-sync-G6] 245 twins, 4840 calls sent; spent so far $39.992
+[kick2k-20261125-inverted-K4-pn0.5-g+1.0-N64-T10-sync-G7] 231 twins, 4676 calls sent; spent so far $41.500
+done: 104439 calls sent in 20958s; spent $41.500 on kick2k-20261125
+TRY 1 EXIT 0: kick2-20261125 kick2k-20261125 --t0 6 8 --rep 0 1 --min-abs-s 0.1 --sham 16 --cap 60 --parallel 32 --cells K2-pn0.5-g-0.5 K2-pn0.5-g+0.5 K4-pn0.5-g-1.0 K4-pn0.5-g+1.0
+[budget] projection: 49152 calls x (in 400 + cache_read 1000 + cache_write 0, out 700) on claude-haiku-5-5 batch=False -> $19.66 ($0.00040/call); spent $130.20 of cap $1900.00
+[kick2e-20261125-inverted-K4-pn0.5-g-1.0-N64-T10-sync-G0] 107 twins, 2156 calls sent; spent so far $1.075
+[kick2e-20261125-inverted-K4-pn0.5-g-1.0-N64-T10-sync-G1] 115 twins, 2320 calls sent; spent so far $1.952
+[kick2e-20261125-inverted-K4-pn0.5-g-1.0-N64-T10-sync-G2] 114 twins, 2307 calls sent; spent so far $2.906
+[kick2e-20261125-inverted-K4-pn0.5-g-1.0-N64-T10-sync-G3] 115 twins, 2260 calls sent; spent so far $3.821
+[kick2e-20261125-inverted-K4-pn0.5-g-1.0-N64-T10-sync-G4] 112 twins, 2226 calls sent; spent so far $4.703
+[kick2e-20261125-inverted-K4-pn0.5-g-1.0-N64-T10-sync-G5] 107 twins, 2172 calls sent; spent so far $5.577
+[kick2e-20261125-inverted-K4-pn0.5-g-1.0-N64-T10-sync-G6] 106 twins, 2143 calls sent; spent so far $6.436
+[kick2e-20261125-inverted-K4-pn0.5-g-1.0-N64-T10-sync-G7] 104 twins, 2070 calls sent; spent so far $7.254
+[kick2e-20261125-inverted-K4-pn0.5-g+1.0-N64-T10-sync-G0] 108 twins, 2090 calls sent; spent so far $8.069
+[kick2e-20261125-inverted-K4-pn0.5-g+1.0-N64-T10-sync-G1] 118 twins, 2325 calls sent; spent so far $8.936
+[kick2e-20261125-inverted-K4-pn0.5-g+1.0-N64-T10-sync-G2] 116 twins, 2326 calls sent; spent so far $9.880
+[kick2e-20261125-inverted-K4-pn0.5-g+1.0-N64-T10-sync-G3] 111 twins, 2253 calls sent; spent so far $10.788
+[kick2e-20261125-inverted-K4-pn0.5-g+1.0-N64-T10-sync-G4] 113 twins, 2213 calls sent; spent so far $11.603
+[kick2e-20261125-inverted-K4-pn0.5-g+1.0-N64-T10-sync-G5] 107 twins, 2142 calls sent; spent so far $12.458
+[kick2e-20261125-inverted-K4-pn0.5-g+1.0-N64-T10-sync-G6] 113 twins, 2243 calls sent; spent so far $13.357
+[kick2e-20261125-inverted-K4-pn0.5-g+1.0-N64-T10-sync-G7] 102 twins, 2067 calls sent; spent so far $13.957
+done: 35313 calls sent in 6763s; spent $13.957 on kick2e-20261125
+TRY 1 EXIT 0: kick2-20261125 kick2e-20261125 --t0 0 1 --rep 0 --min-abs-s 0.1 --cap 18 --parallel 32 --cells K4-pn0.5-g-1.0 K4-pn0.5-g+1.0
+KICK2_ALL_DONE

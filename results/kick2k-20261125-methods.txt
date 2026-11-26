@@ -1,0 +1,5 @@
+inv K=2 g=-0.5 | twins 1753 sham 128 sent 14606 missing 0 | self-changed@t0+1 0 non-readers-sent@t0+1 0
+inv K=2 g=+0.5 | twins 1802 sham 128 sent 15343 missing 0 | self-changed@t0+1 0 non-readers-sent@t0+1 0
+inv K=4 g=-1.0 | twins 1692 sham 128 sent 36446 missing 0 | self-changed@t0+1 0 non-readers-sent@t0+1 0
+inv K=4 g=+0.0 | twins 439 sham 0 sent 9450 missing 0 | self-changed@t0+1 0 non-readers-sent@t0+1 0
+inv K=4 g=+1.0 | twins 1789 sham 128 sent 38064 missing 0 | self-changed@t0+1 0 non-readers-sent@t0+1 0

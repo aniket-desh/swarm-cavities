@@ -1,0 +1,554 @@
+{
+ "cells": [
+  {
+   "wording": "inverted",
+   "K": 2,
+   "p_neg": 0.5,
+   "gamma": -0.5,
+   "N": 64,
+   "n_twins": 1753,
+   "n_sham": 128,
+   "calls_sent": 14606,
+   "missing": 0,
+   "kicked_self_changed_t1": 0,
+   "non_readers_sent_t1": 0,
+   "graphs": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "n_used": 1753,
+   "D2_mean": 0.7761588134626354,
+   "open_per_twin": 2.4386765544780378,
+   "frac_echo_exactly_zero": 0.293782087849401,
+   "r_agree": 0.31059956615210377,
+   "r_disagree": -0.07404532447049612,
+   "echo": -0.008342633108296417,
+   "F": 0.4793334907909395,
+   "F_confirm": 0.4505424902932343,
+   "F_disconfirm": 1.0676014550785122,
+   "F_open": 0.9526084995125568,
+   "F_open_confirm": 0.6141055094327018,
+   "F_open_disconfirm": 1.0969045127167178,
+   "closed_frac_confirming": 0.953341573268085,
+   "F_open_matched": 0.6141055094327018,
+   "F_minus_open_matched": -0.1347720186417623,
+   "open_confirm_over_disconfirm": 0.5598532071964392,
+   "rA_small": 0.1612453974855486,
+   "rA_large": 0.3522830380589244,
+   "rA_ratio": 0.45771547325698375,
+   "rA_same_lean": 0.33089740237492,
+   "rA_opp_lean": 0.22578629779164758,
+   "r_agree_se": 0.020950913312390254,
+   "r_disagree_se": 0.006470600237691149,
+   "echo_se": 0.001741671432956226,
+   "F_se": 0.07216302947755908,
+   "F_confirm_se": 0.07733554375240309,
+   "F_disconfirm_se": 0.4664290380272926,
+   "F_open_se": 0.06039985768790004,
+   "F_open_confirm_se": 0.04876527536243963,
+   "F_open_disconfirm_se": 0.07047059452654279,
+   "closed_frac_confirming_se": 0.02160446002260338,
+   "F_open_matched_se": 0.04876527536243963,
+   "F_minus_open_matched_se": 0.05077793402813123,
+   "open_confirm_over_disconfirm_se": 0.051660488653904865,
+   "rA_small_se": 0.012605606206090584,
+   "rA_large_se": 0.02278002353871828,
+   "rA_ratio_se": 0.04791709787088628,
+   "rA_same_lean_se": 0.024140225862262644,
+   "rA_opp_lean_se": 0.020532096481226832,
+   "se_method": "bootstrap over 8 graphs",
+   "D_terciles": [
+    0.52,
+    0.96
+   ],
+   "sham_r_agree": -0.0006274541553657476,
+   "sham_r_agree_se": 0.010512490452110976,
+   "sham_r_disagree": -0.00957490502104938,
+   "sham_r_disagree_se": 0.005268792533496324,
+   "sham_echo": 0.005334648906429864,
+   "sham_echo_se": 0.006265183164713088,
+   "sham_se_method": "bootstrap over 8 graphs",
+   "n_sham_used": 128
+  },
+  {
+   "wording": "inverted",
+   "K": 2,
+   "p_neg": 0.5,
+   "gamma": 0.5,
+   "N": 64,
+   "n_twins": 1802,
+   "n_sham": 128,
+   "calls_sent": 15343,
+   "missing": 0,
+   "kicked_self_changed_t1": 0,
+   "non_readers_sent_t1": 0,
+   "graphs": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "n_used": 1802,
+   "D2_mean": 0.8942020532741399,
+   "open_per_twin": 2.6032186459489455,
+   "frac_echo_exactly_zero": 0.258046614872364,
+   "r_agree": 0.23851927785901153,
+   "r_disagree": -0.07975721120813094,
+   "echo": 0.024147422527950282,
+   "F": 0.8686400640813764,
+   "F_confirm": 0.07200475287457088,
+   "F_disconfirm": 0.8764673407814545,
+   "F_open": 0.8990335000523971,
+   "F_open_confirm": 0.5561841845816693,
+   "F_open_disconfirm": 1.0892677096732999,
+   "closed_frac_confirming": 0.00972982065013564,
+   "F_open_matched": 1.0892677096732999,
+   "F_minus_open_matched": -0.2206276455919235,
+   "open_confirm_over_disconfirm": 0.5106037566728969,
+   "rA_small": 0.1466961000735835,
+   "rA_large": 0.25792650390679106,
+   "rA_ratio": 0.5687515546157142,
+   "rA_same_lean": 0.24408925267124026,
+   "rA_opp_lean": 0.19220284935452342,
+   "r_agree_se": 0.01679709412816871,
+   "r_disagree_se": 0.0034525406616865185,
+   "echo_se": 0.002918674147358336,
+   "F_se": 0.037486494189121713,
+   "F_confirm_se": 0.24526996623895972,
+   "F_disconfirm_se": 0.04037591281881488,
+   "F_open_se": 0.07867321223077602,
+   "F_open_confirm_se": 0.06560949905010975,
+   "F_open_disconfirm_se": 0.0988497036922483,
+   "closed_frac_confirming_se": 0.0032242947235968608,
+   "F_open_matched_se": 0.0988497036922483,
+   "F_minus_open_matched_se": 0.07220949230823101,
+   "open_confirm_over_disconfirm_se": 0.06893183181285688,
+   "rA_small_se": 0.0036384887199213305,
+   "rA_large_se": 0.024764268165337326,
+   "rA_ratio_se": 0.051476605557780955,
+   "rA_same_lean_se": 0.019427142417931115,
+   "rA_opp_lean_se": 0.01851448477664577,
+   "se_method": "bootstrap over 8 graphs",
+   "D_terciles": [
+    0.6000000000000001,
+    1.0
+   ],
+   "sham_r_agree": -0.013306269733874602,
+   "sham_r_agree_se": 0.0047839770734869605,
+   "sham_r_disagree": -0.00617486267157858,
+   "sham_r_disagree_se": 0.01216504602608558,
+   "sham_echo": -0.004812065760504151,
+   "sham_echo_se": 0.004949501963998116,
+   "sham_se_method": "bootstrap over 8 graphs",
+   "n_sham_used": 128
+  },
+  {
+   "wording": "inverted",
+   "K": 4,
+   "p_neg": 0.5,
+   "gamma": -1.0,
+   "N": 64,
+   "n_twins": 1692,
+   "n_sham": 128,
+   "calls_sent": 36446,
+   "missing": 0,
+   "kicked_self_changed_t1": 0,
+   "non_readers_sent_t1": 0,
+   "graphs": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "n_used": 1692,
+   "D2_mean": 0.6260756501182034,
+   "open_per_twin": 9.160756501182034,
+   "frac_echo_exactly_zero": 0.34456264775413714,
+   "r_agree": 0.07267589778756837,
+   "r_disagree": -0.01945681685221631,
+   "echo": -0.003507910735188611,
+   "F": 0.9418554135707513,
+   "F_confirm": 0.9079052583850162,
+   "F_disconfirm": 1.2320219279490838,
+   "F_open": 1.158789957108972,
+   "F_open_confirm": 1.020825183002113,
+   "F_open_disconfirm": 1.243369609453731,
+   "closed_frac_confirming": 0.8952532887882698,
+   "F_open_matched": 1.020825183002113,
+   "F_minus_open_matched": -0.07896976943136158,
+   "open_confirm_over_disconfirm": 0.8210150668316624,
+   "rA_small": 0.06168791370433931,
+   "rA_large": 0.0758928245170599,
+   "rA_ratio": 0.8128293300043474,
+   "rA_same_lean": 0.07125122242139019,
+   "rA_opp_lean": 0.07599426635392234,
+   "r_agree_se": 0.005887927162765629,
+   "r_disagree_se": 0.0018291171637712829,
+   "echo_se": 0.001030208702046554,
+   "F_se": 0.29300078636098026,
+   "F_confirm_se": 0.2544185820972912,
+   "F_disconfirm_se": 0.7605241543175617,
+   "F_open_se": 0.15032068913231442,
+   "F_open_confirm_se": 0.20982047304960869,
+   "F_open_disconfirm_se": 0.18014178375203643,
+   "closed_frac_confirming_se": 0.016655128758703584,
+   "F_open_matched_se": 0.20982047304960869,
+   "F_minus_open_matched_se": 0.19215093340845366,
+   "open_confirm_over_disconfirm_se": 0.18105116048352152,
+   "rA_small_se": 0.007788978372732473,
+   "rA_large_se": 0.008074481341896821,
+   "rA_ratio_se": 0.15906941450576637,
+   "rA_same_lean_se": 0.00862567397525468,
+   "rA_opp_lean_se": 0.0034964764386786274,
+   "se_method": "bootstrap over 8 graphs",
+   "D_terciles": [
+    0.48,
+    0.7999999999999999
+   ],
+   "sham_r_agree": 0.0025132629548255733,
+   "sham_r_agree_se": 0.004778933248968092,
+   "sham_r_disagree": 0.0040103279679173836,
+   "sham_r_disagree_se": 0.007961337447304748,
+   "sham_echo": -0.002723524305555562,
+   "sham_echo_se": 0.004982579514173306,
+   "sham_se_method": "bootstrap over 8 graphs",
+   "n_sham_used": 128
+  },
+  {
+   "wording": "inverted",
+   "K": 4,
+   "p_neg": 0.5,
+   "gamma": 0.0,
+   "N": 64,
+   "n_twins": 439,
+   "n_sham": 0,
+   "calls_sent": 9450,
+   "missing": 0,
+   "kicked_self_changed_t1": 0,
+   "non_readers_sent_t1": 0,
+   "graphs": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "n_used": 439,
+   "D2_mean": 0.7017403189066058,
+   "open_per_twin": 11.742596810933941,
+   "frac_echo_exactly_zero": 1.0,
+   "r_agree": 0.07027839784244358,
+   "r_disagree": -0.020319484454157145,
+   "echo": 0.0,
+   "F": NaN,
+   "F_confirm": NaN,
+   "F_disconfirm": NaN,
+   "F_open": 0.9669830505494947,
+   "F_open_confirm": 0.6187580623022396,
+   "F_open_disconfirm": 1.1349397800415815,
+   "closed_frac_confirming": 0.0,
+   "F_open_matched": 1.1349397800415815,
+   "F_minus_open_matched": NaN,
+   "open_confirm_over_disconfirm": 0.5451902146557678,
+   "rA_small": 0.05230344209661765,
+   "rA_large": 0.07914467133813004,
+   "rA_ratio": 0.6608586682123107,
+   "rA_same_lean": 0.06498293068156868,
+   "rA_opp_lean": 0.08691250903832248,
+   "r_agree_se": 0.01251674215363605,
+   "r_disagree_se": 0.0025796803698118396,
+   "echo_se": 0.0,
+   "F_se": NaN,
+   "F_confirm_se": NaN,
+   "F_disconfirm_se": NaN,
+   "F_open_se": 0.1321909700405192,
+   "F_open_confirm_se": 0.19237957639620099,
+   "F_open_disconfirm_se": 0.20492661517494962,
+   "closed_frac_confirming_se": 0.0,
+   "F_open_matched_se": 0.20492661517494962,
+   "F_minus_open_matched_se": NaN,
+   "open_confirm_over_disconfirm_se": 0.18808373647399382,
+   "rA_small_se": 0.008883325770220935,
+   "rA_large_se": 0.016087277372061122,
+   "rA_ratio_se": 0.16333188529874856,
+   "rA_same_lean_se": 0.014815499757580801,
+   "rA_opp_lean_se": 0.009468699690361106,
+   "se_method": "bootstrap over 8 graphs",
+   "D_terciles": [
+    0.52,
+    0.8799999999999999
+   ]
+  },
+  {
+   "wording": "inverted",
+   "K": 4,
+   "p_neg": 0.5,
+   "gamma": 1.0,
+   "N": 64,
+   "n_twins": 1789,
+   "n_sham": 128,
+   "calls_sent": 38064,
+   "missing": 0,
+   "kicked_self_changed_t1": 0,
+   "non_readers_sent_t1": 0,
+   "graphs": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "n_used": 1789,
+   "D2_mean": 0.8167396310788151,
+   "open_per_twin": 9.567356064840693,
+   "frac_echo_exactly_zero": 0.3487982112912241,
+   "r_agree": 0.05949884574349438,
+   "r_disagree": -0.015584315230787509,
+   "echo": 0.007969628248269578,
+   "F": 1.1454897618341546,
+   "F_confirm": -0.05838871743627411,
+   "F_disconfirm": 1.1824233412443848,
+   "F_open": 0.8816366529497155,
+   "F_open_confirm": 0.6231803913462803,
+   "F_open_disconfirm": 1.0715136616056036,
+   "closed_frac_confirming": 0.02976565157619536,
+   "F_open_matched": 1.0715136616056036,
+   "F_minus_open_matched": 0.07397610022855106,
+   "open_confirm_over_disconfirm": 0.5815888435920445,
+   "rA_small": 0.04341620387190533,
+   "rA_large": 0.06468480811265608,
+   "rA_ratio": 0.6711963000074298,
+   "rA_same_lean": 0.057938765007192035,
+   "rA_opp_lean": 0.06956314528983475,
+   "r_agree_se": 0.0046716660251169325,
+   "r_disagree_se": 0.0011909399107889952,
+   "echo_se": 0.001238066501038007,
+   "F_se": 0.16751608302691032,
+   "F_confirm_se": 0.9871789007747426,
+   "F_disconfirm_se": 0.1671326192534649,
+   "F_open_se": 0.11660798001126102,
+   "F_open_confirm_se": 0.16741316693258393,
+   "F_open_disconfirm_se": 0.2208753295541434,
+   "closed_frac_confirming_se": 0.007319064143481785,
+   "F_open_matched_se": 0.2208753295541434,
+   "F_minus_open_matched_se": 0.20277397263180819,
+   "open_confirm_over_disconfirm_se": 0.24585465503515944,
+   "rA_small_se": 0.004349206873881775,
+   "rA_large_se": 0.006131160472638994,
+   "rA_ratio_se": 0.08321160007021391,
+   "rA_same_lean_se": 0.0046302608444613305,
+   "rA_opp_lean_se": 0.008125877481765074,
+   "se_method": "bootstrap over 8 graphs",
+   "D_terciles": [
+    0.56,
+    1.0
+   ],
+   "sham_r_agree": 0.002246443131708125,
+   "sham_r_agree_se": 0.003606876978245439,
+   "sham_r_disagree": 0.0029020657355523925,
+   "sham_r_disagree_se": 0.0033782156185547148,
+   "sham_echo": 0.0031448114781448167,
+   "sham_echo_se": 0.005459279467931599,
+   "sham_se_method": "bootstrap over 8 graphs",
+   "n_sham_used": 128
+  }
+ ],
+ "pooled": {
+  "F": [
+   0.8588296825693054,
+   0.12184371862751489
+  ],
+  "F_open": [
+   0.9730171524059102,
+   0.07311880340273036
+  ],
+  "F_open_matched": [
+   0.9489280159284296,
+   0.11846825916137518
+  ],
+  "F_minus_open_matched": [
+   -0.09009833335912408,
+   0.08856231920062999
+  ],
+  "F_confirm": [
+   0.3430159460291368,
+   0.2908961014112801
+  ],
+  "F_open_confirm": [
+   0.7035738170906911,
+   0.07975461925536735
+  ],
+  "F_disconfirm": [
+   1.0896285162633588,
+   0.28584313896017827
+  ],
+  "F_open_disconfirm": [
+   1.125263873362338,
+   0.08696121138441792
+  ],
+  "open_confirm_over_disconfirm": [
+   0.6182652185732608,
+   0.06419950363748195
+  ],
+  "rA_ratio": [
+   0.6276231644711188,
+   0.05991665684819369
+  ],
+  "pooled_open_confirm_over_disconfirm": [
+   0.6252522930362828,
+   0.06306177407321364
+  ],
+  "sham_r_agree": [
+   -0.0022935044506766627,
+   0.0035341218335196295
+  ],
+  "sham_r_disagree": [
+   -0.0022093434972895462,
+   0.004338449340697296
+  ],
+  "sham_echo": [
+   0.00023596757962874204,
+   0.003659040859752328
+  ]
+ },
+ "pooled_by_K": {
+  "2": {
+   "F": [
+    0.673986777436158,
+    0.044120767740079295
+   ],
+   "F_open": [
+    0.9258209997824769,
+    0.03446162466038982
+   ],
+   "F_open_matched": [
+    0.8516866095530009,
+    0.06022043749470231
+   ],
+   "F_minus_open_matched": [
+    -0.1776998321168429,
+    0.03790181330328667
+   ],
+   "F_confirm": [
+    0.2612736215839026,
+    0.1364026252580831
+   ],
+   "F_open_confirm": [
+    0.5851448470071856,
+    0.04987897821333697
+   ],
+   "F_disconfirm": [
+    0.9720343979299834,
+    0.23092052282453973
+   ],
+   "F_open_disconfirm": [
+    1.0930861111950088,
+    0.03928089802714344
+   ],
+   "open_confirm_over_disconfirm": [
+    0.535228481934668,
+    0.040679451425443644
+   ],
+   "rA_ratio": [
+    0.513233513936349,
+    0.029674325881460573
+   ],
+   "pooled_open_confirm_over_disconfirm": [
+    0.535314501771027,
+    0.04101556327883416
+   ],
+   "sham_r_agree": [
+    -0.006966861944620175,
+    0.006914506302519255
+   ],
+   "sham_r_disagree": [
+    -0.00787488384631398,
+    0.007392273214683579
+   ],
+   "sham_echo": [
+    0.0002612915729628567,
+    0.003595814565393024
+   ]
+  },
+  "4": {
+   "F": [
+    1.0436725877024529,
+    0.20747665670234386
+   ],
+   "F_open": [
+    1.0202133050293436,
+    0.12494013091548498
+   ],
+   "F_open_matched": [
+    1.0461694223038582,
+    0.18774373619962528
+   ],
+   "F_minus_open_matched": [
+    -0.0024968346014052623,
+    0.16695754232540946
+   ],
+   "F_confirm": [
+    0.4247582704743711,
+    0.5033019593882451
+   ],
+   "F_open_confirm": [
+    0.8220027871741966,
+    0.13956049357573883
+   ],
+   "F_disconfirm": [
+    1.2072226345967343,
+    0.4256835508592037
+   ],
+   "F_open_disconfirm": [
+    1.1574416355296673,
+    0.1521720919560579
+   ],
+   "open_confirm_over_disconfirm": [
+    0.7013019552118535,
+    0.1164435600162473
+   ],
+   "rA_ratio": [
+    0.7420128150058887,
+    0.1044824510193265
+   ],
+   "pooled_open_confirm_over_disconfirm": [
+    0.7101894056178759,
+    0.11633486174067541
+   ],
+   "sham_r_agree": [
+    0.0023798530432668492,
+    0.002984248898813889
+   ],
+   "sham_r_disagree": [
+    0.0034561968517348883,
+    0.004845079591824763
+   ],
+   "sham_echo": [
+    0.00021064358629462737,
+    0.004251344911143863
+   ]
+  }
+ },
+ "d_mode": "lagged",
+ "pool_mode": "equal"
+}

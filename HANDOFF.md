@@ -1,17 +1,21 @@
 # HANDOFF: swarm-cavity
 
-Last updated: 2026-11-25 20:00 UTC. Working copy: `/workspace/swarm-cavity` again (the volume is now 1 TB; the
-`/workspace-global` clone is stale). The overnight session died at about 08:25 UTC when its OAuth token was revoked;
-this afternoon's session resumed the plan at 14:20 and lost its editor connection at 14:42 (nothing was lost; see
-"Afternoon session").
+Last updated: 2026-11-26 ~04:30 UTC. Working copy: `/workspace/swarm-cavity` (the volume is 1 TB; the
+`/workspace-global` clone is stale).
+
+**State: stopped for review.** Every task from the tmux prompt is done or blocked, both outstanding experiments are
+analysed and committed (kick stage 2: `experiments/07_kick/RESULT_stage2.md`; analyst sign-rule test:
+`experiments/09-analyst-signrule/RESULT.md`), and, as the editor session relayed, nothing new is launched until the
+user has reviewed every result. No workers are running for this project (`orch ls`); the tmux sessions left are
+`sc-spend` (spend watcher), `sc-viewer` and `sc-work` (this session).
 
 ## Spend against the $2,000
 
 | | so far |
 |---|---|
-| Anthropic API (experiment code, `budget/ledger.jsonl`) | $54.81 (151,345 calls) |
-| Runpod pods (`orch spend`, estimated) | $4.33 (06 worker still running) |
-| **total** | **≈ $59** |
+| Anthropic API (experiment code, `budget/ledger.jsonl`) | $129.85 |
+| Runpod pods (`orch spend`, estimated, all workers deleted) | $15.94 |
+| **total** | **≈ $146** |
 
 ## Afternoon session (14:20–15:00 UTC): pilot and transfer check
 
@@ -234,20 +238,34 @@ in total, leaving room for Sonnet slices and reruns. Test 1 decides whether the 
   measured couplings, not distrust; notes from the biased belief) and option (a)'s negative result up front.
 - **Kick stage 2** (`experiments/07_kick/DESIGN_stage2.md` revision 3, commit 653a1ce, after a blind review that found an
   outcome-correlated slope factor, fixed with lagged factors; stage 1's asymmetry 0.60 ± 0.05 survives the fix): base
-  runs done (40/40, 0 missing, $19.58), saturation null frozen, replay check passed, twins running in tmux
-  `sc-kick2twins` (`experiments/07_kick/run_stage2_twins.sh`, reruns each command until clean).
+  runs done (40/40, 0 missing, $19.58), saturation null frozen, replay check passed; twins ran in tmux
+  `sc-kick2twins` (`experiments/07_kick/run_stage2_twins.sh`), every command clean on its first try.
+  **Stage 2 result** (`experiments/07_kick/RESULT_stage2.md`, 9,755 twins, $78.39 against $80 projected): validity
+  passes; sign holds in all four new cells (3.5–8.3 s.e.); additivity consistent (R+ = 0.43 ± 0.07, interval
+  [0.30, 0.56]); composition holds pooled; linear over anchoring with pooled F at the 2 s.e. edge again; the
+  confirm/disconfirm asymmetry replicates at K = 2 (0.54 ± 0.04) and is unresolved against anchoring at K = 4
+  (0.71 ± 0.12); K = 4 echoes are 4–6× below the frozen linear values because settled K = 4 agents respond at about
+  half the transfer-check gains. Unplanned: a 20% discount of returning changes in the K = 2 pair (−0.18 ± 0.04), and
+  no asymmetry for round-0 kicks. Figures `paper/figures/kick2_{echo,composition}`. Stage 1's RESULT.md now notes the
+  lagged-slope-factor sensitivity analysis.
 
-## Next
+## Next (for the user to decide; nothing is queued)
 
-1. Theory (Fable agent): revise the single-agent surrogate with the real-message gains and a state-dependent noise
-   model (stickiness when the inbox is stable), and re-derive which observables can still discriminate the theory
-   in the quiet regime. A kick-and-echo measurement looks like the cleanest: perturb one agent's message once and
-   read its own answer two rounds later. The replay cache makes unaffected agents free, the echo is exactly zero
-   at γ=0, and its sign is set by γ and the wording. It measures the reaction term without relying on any noise model.
-2. Redo DESIGN.md with pre-registered predictions, get an unanchored review, then run Test 2 (pilot first).
-3. GPU track: finish validating `envs/vllm_backend.py` on a worker, time large-N rounds, calibrate Qwen3.5-9B with
-   real-message inboxes (templates are now known not to transfer).
-4. Zealot hysteresis and the Var(m_B) early warning on whichever model shows strong enough coupling.
+Status of the tmux prompt's tasks: 1 (Fable theory revision) done; 2 (redesigned Haiku kick tests) done, stages 1
+and 2; 3 (GPU track, Qwen) done, with the answer that Qwen at K = 16 is far from the boundary; 4 (zealot hysteresis
+and the Var(m_B) early warning) blocked, because no model tested has a tipping point.
+
+Candidate follow-ups the results point to, none started:
+
+1. Single-agent probes of the confirm/disconfirm asymmetry (confirming against disconfirming single-message changes at
+   matched size, settled against round-0 agents). Cheap on Haiku, and now the best-replicated deviation from tanh.
+2. Gains measured on settled agents receiving one flipped message, per K and wording, to make echo magnitudes
+   zero-shot (the transfer-check gains miss by about 2× at K = 4 and in the label wording).
+3. A pre-registered test of the K = 2 returning-change discount (−0.18 ± 0.04, stage 2 only), the one observable
+   that would bear on self-recognition.
+4. Small K (2 or 4) for the analyst scenario: deferred by the user, needs its own frozen predictions and the user's
+   go-ahead.
+5. Task 4 needs a model or game with steep conformity; none is in hand.
 
 ## Decisions for you to review
 

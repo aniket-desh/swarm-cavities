@@ -1,0 +1,189 @@
+{
+ "cells": [
+  {
+   "wording": "inverted",
+   "K": 4,
+   "p_neg": 0.5,
+   "gamma": -1.0,
+   "N": 64,
+   "n_twins": 431,
+   "n_sham": 0,
+   "calls_sent": 8644,
+   "missing": 0,
+   "kicked_self_changed_t1": 0,
+   "non_readers_sent_t1": 0,
+   "graphs": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "n_used": 431,
+   "D2_mean": 0.9482885313225058,
+   "open_per_twin": 9.308584686774942,
+   "frac_echo_exactly_zero": 0.18561484918793503,
+   "r_agree": 0.37734883408569164,
+   "r_disagree": -0.057739413400907304,
+   "echo": -0.016987399282375987,
+   "F": 0.3785933850980846,
+   "F_confirm": 0.2763104456471828,
+   "F_disconfirm": 0.7070818484560603,
+   "F_open": 0.4853164633894745,
+   "F_open_confirm": 0.47551632569219937,
+   "F_open_disconfirm": 0.4911783070413389,
+   "closed_frac_confirming": 0.7625586592239916,
+   "F_open_matched": 0.47551632569219937,
+   "F_minus_open_matched": -0.09692294059411477,
+   "open_confirm_over_disconfirm": 0.9681134506051763,
+   "rA_small": 0.2997971411340642,
+   "rA_large": 0.4130742300636935,
+   "rA_ratio": 0.7257706226017472,
+   "rA_same_lean": 0.3525151144877974,
+   "rA_opp_lean": 0.41294030256483805,
+   "r_agree_se": 0.01263789016179906,
+   "r_disagree_se": 0.005416671842510626,
+   "echo_se": 0.005051210717352332,
+   "F_se": 0.06056795443099216,
+   "F_confirm_se": 0.05468401965209858,
+   "F_disconfirm_se": 0.19312165058138783,
+   "F_open_se": 0.021159248596614274,
+   "F_open_confirm_se": 0.02540516117570129,
+   "F_open_disconfirm_se": 0.04083769826095459,
+   "closed_frac_confirming_se": 0.043072793555181337,
+   "F_open_matched_se": 0.02540516117570129,
+   "F_minus_open_matched_se": 0.06476275506818882,
+   "open_confirm_over_disconfirm_se": 0.1171389333284293,
+   "rA_small_se": 0.018247467762387077,
+   "rA_large_se": 0.01516235832109238,
+   "rA_ratio_se": 0.05091136419389212,
+   "rA_same_lean_se": 0.013884857748576557,
+   "rA_opp_lean_se": 0.01435299785275367,
+   "se_method": "bootstrap over 8 graphs",
+   "D_terciles": [
+    0.64,
+    1.08
+   ]
+  },
+  {
+   "wording": "inverted",
+   "K": 4,
+   "p_neg": 0.5,
+   "gamma": 1.0,
+   "N": 64,
+   "n_twins": 431,
+   "n_sham": 0,
+   "calls_sent": 8566,
+   "missing": 0,
+   "kicked_self_changed_t1": 0,
+   "non_readers_sent_t1": 0,
+   "graphs": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "n_used": 431,
+   "D2_mean": 0.9482885313225058,
+   "open_per_twin": 9.183294663573086,
+   "frac_echo_exactly_zero": 0.13921113689095127,
+   "r_agree": 0.36621431683272393,
+   "r_disagree": -0.0544811400483053,
+   "echo": 0.13265681614808628,
+   "F": 0.5353842463129915,
+   "F_confirm": 0.626415526498379,
+   "F_disconfirm": 0.5250574325481672,
+   "F_open": 0.3904887311143216,
+   "F_open_confirm": 0.4002868476115253,
+   "F_open_disconfirm": 0.3848352266264844,
+   "closed_frac_confirming": 0.10188445108189269,
+   "F_open_matched": 0.3848352266264844,
+   "F_minus_open_matched": 0.15054901968650714,
+   "open_confirm_over_disconfirm": 1.0401512645307753,
+   "rA_small": 0.2983449184325344,
+   "rA_large": 0.3905928202464819,
+   "rA_ratio": 0.7638259152952815,
+   "rA_same_lean": 0.33765038622155186,
+   "rA_opp_lean": 0.4164858761370419,
+   "r_agree_se": 0.011956004553386993,
+   "r_disagree_se": 0.0032040264272138776,
+   "echo_se": 0.00870498662401013,
+   "F_se": 0.04402073285581316,
+   "F_confirm_se": 0.06332453450531582,
+   "F_disconfirm_se": 0.04950067342906081,
+   "F_open_se": 0.03214439660003267,
+   "F_open_confirm_se": 0.02919637464003998,
+   "F_open_disconfirm_se": 0.04636297653319533,
+   "closed_frac_confirming_se": 0.03794458603662308,
+   "F_open_matched_se": 0.04636297653319533,
+   "F_minus_open_matched_se": 0.05080023726657601,
+   "open_confirm_over_disconfirm_se": 0.1436951812473699,
+   "rA_small_se": 0.01855106529039814,
+   "rA_large_se": 0.020332120627340005,
+   "rA_ratio_se": 0.06869247416833639,
+   "rA_same_lean_se": 0.01667134705395724,
+   "rA_opp_lean_se": 0.013509352339735539,
+   "se_method": "bootstrap over 8 graphs",
+   "D_terciles": [
+    0.64,
+    1.08
+   ]
+  }
+ ],
+ "pooled": {
+  "F": [
+   0.45698881570553807,
+   0.035366516059564305
+  ],
+  "F_open": [
+   0.43790259725189806,
+   0.01897289727251537
+  ],
+  "F_open_matched": [
+   0.4301757761593419,
+   0.023013145120830556
+  ],
+  "F_minus_open_matched": [
+   0.026813039546196182,
+   0.037485522519581926
+  ],
+  "F_confirm": [
+   0.4513629860727809,
+   0.04935562794917608
+  ],
+  "F_open_confirm": [
+   0.4379015866518623,
+   0.016589908779269965
+  ],
+  "F_disconfirm": [
+   0.6160696405021138,
+   0.09494554378920012
+  ],
+  "F_open_disconfirm": [
+   0.43800676683391165,
+   0.03494122176979662
+  ],
+  "open_confirm_over_disconfirm": [
+   1.004132357567976,
+   0.10871141217344227
+  ],
+  "rA_ratio": [
+   0.7447982689485144,
+   0.048774953206889946
+  ],
+  "pooled_open_confirm_over_disconfirm": [
+   0.9997598663079805,
+   0.10695278378487626
+  ]
+ },
+ "pooled_by_K": {},
+ "d_mode": "lagged",
+ "pool_mode": "equal"
+}
