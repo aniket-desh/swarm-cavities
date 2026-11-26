@@ -1,6 +1,6 @@
 # Theory for swarm-cavity: the current statement
 
-Last updated 2026-11-25 (night; kick stage 1 result and analyst calibrations added). This file is the one place to read for the state of the theory. The derivations
+Last updated 2026-11-26 (kick stage 1 result, analyst calibrations and the analyst sign-rule result added). This file is the one place to read for the state of the theory. The derivations
 live in the notes it links (`claim1.md` … `claim6.md`, `quiet_regime.md`), each of which opens with its verdict and
 names the scripts in `theory/checks/` that verify its formulas.
 
@@ -168,7 +168,18 @@ inbox and whose call is sampled from its belief:
   +0.017 if notes leak the sender's confidence), kick echoes +0.055 / 0 / +0.009–0.017; mutual against one-way resolves
   at about 10 s.e., the "antagonistic" sign mainly through the kicks. The antagonistic sign rule is conditional on the
   swarm's own measured couplings. It tests the reaction term's sign rule given the measured couplings, not distrust;
-  notes are still written from the biased belief. Running as `experiments/09-analyst-signrule/`.
+  notes are still written from the biased belief.
+- **Sign-rule result (`experiments/09-analyst-signrule/RESULT.md`): the sign rule holds, given the swarm's own
+  couplings.** X₂ = +0.076 (0.004) mutual, +0.002 (0.003) one-way, +0.033 (0.003) "antagonistic"; kick echoes +0.069
+  (0.014), 0, +0.031 (0.007). Reciprocity, ordering, the antagonistic sign and one-step memory are confirmed. The
+  antagonistic echo is 3.3× its zero-shot prediction because faded colleagues attract about 3× more inside the swarm
+  than in the probes (in-swarm a₋ ≈ −0.43 to −0.54 against −0.146); with the in-swarm couplings the reaction coefficient
+  predicts both echoes within tolerance (+0.043 against +0.031, +0.057 against +0.074). So the zero-shot calibration of
+  the couplings, not the reaction term, is what misses. The asynchronous control moves the echo to lag 1 as predicted
+  (D₁ = +0.044 against +0.041), but the lag-2 contrast only fell to 0.36 of the synchronous one (predicted 0.21), so
+  falsifier 7 is unresolved (T₇ = +0.010 ± 0.007). The same caveats as above apply: a sign-blind reciprocity effect
+  would give the same signs, and nobody acts on distrust. The mean belief kept a residual SELL bias (m ≈ −0.07 to
+  −0.23) that neither law predicts, and the asynchronous runs drifted to BUY, unexplained.
 
 ## Files
 

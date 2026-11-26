@@ -225,6 +225,13 @@ in total, leaving room for Sonnet slices and reruns. Test 1 decides whether the 
   f613f1b, frozen before asynchronous data; block-random schedule, 16 × 16) and of the 09 definition (re-checked by the
   reviewer), 4 asynchronous mutual + 4 asynchronous one-way runs; W3 and W4 (A40) each ≈ 2.9 h ≈ $1.7 (timed at 111 s
   per asynchronous round). 09 total projection ≈ $11.2; analyst-scenario pod spend ≈ $12.6 when done.
+  **09 result** (`experiments/09-analyst-signrule/RESULT.md`, commit 52c6eac; pods $10.95 billed, all four deleted;
+  scenario total ≈ $12.3, never crossed $25): label *supported*. X₂ = +0.076 / +0.002 / +0.033 (s.e. 0.003–0.004),
+  kick echoes +0.069 / 0 / +0.031; F1–F6 consistent; the antagonistic echo is 3.3× zero-shot because in-swarm faded
+  ties attract ~3× more than in the probes (the reaction coefficient from in-swarm couplings predicts it); F7 positive
+  check passes (async D₁ = +0.044 against +0.041) but T₇ = +0.010 ± 0.007 is unresolved. Residual SELL bias in the
+  synchronous runs and an unexplained BUY drift in the asynchronous ones. RESULT.md states the scope (sign rule given
+  measured couplings, not distrust; notes from the biased belief) and option (a)'s negative result up front.
 - **Kick stage 2** (`experiments/07_kick/DESIGN_stage2.md` revision 3, commit 653a1ce, after a blind review that found an
   outcome-correlated slope factor, fixed with lagged factors; stage 1's asymmetry 0.60 ± 0.05 survives the fix): base
   runs done (40/40, 0 missing, $19.58), saturation null frozen, replay check passed, twins running in tmux
