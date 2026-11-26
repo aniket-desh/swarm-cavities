@@ -1,7 +1,7 @@
 ---
 name: 09-analyst-signrule
 title: Analyst de-biased sign-rule test: Qwen3.5-9B swarms (N=256, K=16, T=20) in mutual, one-way and antagonistic graphs, echo function and kick twins against frozen predictions
-status: approved
+status: done
 gpu: NVIDIA A40,NVIDIA L40S,NVIDIA RTX A6000
 count: 1
 min_gpu_gb: 40
@@ -11,6 +11,9 @@ disk_gb: 120
 data:
 secrets:
 approved_utc: 2026-11-25T21:21:53Z
+result: supported
+finished_utc: 2026-11-26T04:38:34Z
+writeup: experiments/09-analyst-signrule/RESULT.md
 ---
 
 # Analyst de-biased sign-rule test: Qwen3.5-9B swarms (N=256, K=16, T=20) in mutual, one-way and antagonistic graphs, echo function and kick twins against frozen predictions
@@ -429,4 +432,17 @@ pooled-s.d. s.e. for T₇ are reported. The reviewer said it is ready to run wit
 
 ## Outcome
 
-Not run yet.
+- Run complete: 12 synchronous and 8 asynchronous runs, 0 of 215,040 decisions missing, 0 refusals, and 545 kick
+  twins plus 50 null twins. All four workers finished within cap and were deleted.
+- F1 consistent (mutual − one-way X₂ = +0.074 (0.005); E = +0.069 (0.014)).
+- F2 consistent (one-way X₂ = +0.002 (0.003)).
+- F3 consistent, sign resolved (antagonistic − one-way = +0.031 (0.004); E = +0.031 (0.007); notes kept +0.029
+  (0.005); Ĝ_A d = +0.043 (0.002)).
+- F4 consistent (mutual − antagonistic = +0.043 (0.005)).
+- F5: within 3 s.e. of the zero-shot intervals (antagonistic borderline, 3.3× the central value); consistent with Ĝd
+  from the in-swarm couplings.
+- F6 consistent where powered (the antagonistic twins were unpowered, with note noise 0.27–0.37 logit).
+- F7: T₇ = +0.010 (0.007), not resolved; positive check D₁(async) = +0.044 (0.011) passes.
+- Label: supported (reciprocity, ordering and the antagonistic sign); one-step memory holds.
+- Recorded: m = −0.23, −0.12, −0.07, matching neither law.
+- Cost $10.95 billed ($11.45 estimated) against ≈ $11.2 projected. Write-up: RESULT.md.
